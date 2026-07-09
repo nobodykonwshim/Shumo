@@ -1,0 +1,196 @@
+# 2024 高教社杯 A 题《板凳龙》参数库
+# 范围：问题一至问题三
+# 原则：题面常量、单位换算量、编号规则和问题特定参数统一在此登记；论文正文只引用，不重复解释。
+
+metadata:
+  contest: "2024 高教社杯全国大学生数学建模竞赛"
+  problem: "A 题 板凳龙"
+  scope: "problems 1-3"
+  unit_policy: "所有长度进入模型前统一换算为 m，时间统一为 s，角度统一为 rad。"
+
+common:
+  board_count:
+    symbol: "N_b"
+    value: 223
+    unit: "节"
+    meaning: "板凳总节数：第 1 节为龙头，后 221 节为龙身，最后 1 节为龙尾。"
+  handle_count:
+    symbol: "N_h"
+    value: 224
+    unit: "个"
+    meaning: "把手中心总数，记为 P_0 至 P_223。"
+  head_board_length:
+    symbol: "L_head"
+    original_value: 341
+    original_unit: "cm"
+    value: 3.41
+    unit: "m"
+    meaning: "龙头板长。"
+  body_tail_board_length:
+    symbol: "L_body"
+    original_value: 220
+    original_unit: "cm"
+    value: 2.20
+    unit: "m"
+    meaning: "龙身和龙尾板长。"
+  board_width:
+    symbol: "w"
+    original_value: 30
+    original_unit: "cm"
+    value: 0.30
+    unit: "m"
+    meaning: "所有板凳宽度。"
+  hole_diameter:
+    symbol: "d_hole"
+    original_value: 5.5
+    original_unit: "cm"
+    value: 0.055
+    unit: "m"
+    meaning: "孔径，当前平面几何模型中不直接参与矩形外形尺寸。"
+  hole_to_head:
+    symbol: "c"
+    original_value: 27.5
+    original_unit: "cm"
+    value: 0.275
+    unit: "m"
+    meaning: "孔中心距离最近板头的距离。"
+  head_hole_distance:
+    symbol: "d_0"
+    formula: "L_head - 2c"
+    value: 2.86
+    unit: "m"
+    meaning: "龙头板凳两个孔中心之间的距离。"
+  body_tail_hole_distance:
+    symbol: "d_i"
+    formula: "L_body - 2c"
+    value: 1.65
+    unit: "m"
+    index_range: "i=1,2,\…,222"
+    meaning: "龙身和龙尾板凳两个孔中心之间的距离。"
+  handle_index_rule:
+    formula: "P_0,P_1,\ldots,P_{223}"
+    meaning: "P_0 为龙头前把手，P_223 为龙尾后把手。第 i 节板凳连接 P_i 与 P_{i+1}。"
+  board_index_rule:
+    formula: "i=0,1,\ldots,222"
+    meaning: "第 0 节对应龙头板凳；第 1 至第 221 节对应龙身；第 222 节对应龙尾。"
+
+problem1:
+  pitch:
+    symbol: "p_1"
+    original_value: 55
+    original_unit: "cm"
+    value: 0.55
+    unit: "m"
+    meaning: "问题一盘入螺线螺距。"
+  spiral_coefficient:
+    symbol: "k_1"
+    formula: "p_1/(2\pi)"
+    value_expression: "0.55/(2\pi)"
+    unit: "m/rad"
+    meaning: "问题一等距螺线比例系数。"
+  initial_turns:
+    symbol: "N_0"
+    value: 16
+    unit: "圈"
+    meaning: "龙头初始位于第 16 圈。"
+  initial_angle:
+    symbol: "\theta_0(0)"
+    formula: "32\pi"
+    unit: "rad"
+    meaning: "初始角参数。"
+  head_speed:
+    symbol: "v_0"
+    value: 1.0
+    unit: "m/s"
+    meaning: "龙头前把手行进速度。"
+  output_time_range:
+    value: "0-300"
+    unit: "s"
+    step: 1
+    meaning: "result1.xlsx 输出时间范围。"
+  paper_times:
+    value: [0, 60, 120, 180, 240, 300]
+    unit: "s"
+    meaning: "论文中需要列出的关键时刻。"
+  paper_handles:
+    value:
+      - "龙头前把手 P_0"
+      - "第 1 节龙身前把手 P_1"
+      - "第 51 节龙身前把手 P_51"
+      - "第 101 节龙身前把手 P_101"
+      - "第 151 节龙身前把手 P_151"
+      - "第 201 节龙身前把手 P_201"
+      - "龙尾后把手 P_223"
+
+problem2:
+  inherited_from_problem1:
+    - "p_1=0.55 m"
+    - "P_i(t) 位置递推模型"
+    - "V_i(t) 速度递推模型"
+  collision_pair_rule:
+    formula: "|i-j|>1"
+    meaning: "相邻板凳共用把手，不作为碰撞对象；只检测非相邻板凳。"
+  rectangle_half_width:
+    symbol: "b"
+    formula: "w/2"
+    value: 0.15
+    unit: "m"
+    meaning: "矩形板凳实体半宽。"
+  rectangle_half_length:
+    symbol: "a_i"
+    formula: "d_i/2+c"
+    unit: "m"
+    meaning: "第 i 节板凳沿轴向的矩形半长。"
+  search_precision:
+    symbol: "\varepsilon_t"
+    value: 1.0e-6
+    unit: "s"
+    meaning: "终止时刻二分精修精度。"
+  known_result:
+    stop_time:
+      symbol: "t^*"
+      value: 412.473838
+      unit: "s"
+      meaning: "当前项目求得的问题二盘入终止时刻。"
+    first_collision_pair:
+      value: "\Omega_0 与 \Omega_8"
+      meaning: "当前项目求得的首次碰撞临界对象。"
+
+problem3:
+  turning_space_diameter:
+    symbol: "D"
+    value: 9.0
+    unit: "m"
+    meaning: "调头空间直径。"
+  turning_space_radius:
+    symbol: "R"
+    value: 4.5
+    unit: "m"
+    meaning: "调头空间半径。"
+  decision_variable:
+    symbol: "p"
+    unit: "m"
+    meaning: "候选螺距，问题三待优化变量。"
+  head_radius_range:
+    symbol: "\rho"
+    formula: "\rho\in[R,16p]"
+    unit: "m"
+    meaning: "龙头前把手从第 16 圈盘入到调头空间边界所需检查的半径范围。"
+  known_result:
+    min_pitch:
+      symbol: "p_{\min}"
+      value: 0.450337393
+      rounded_6: 0.450337
+      unit: "m"
+      value_cm: 45.0337393
+      meaning: "当前项目求得的问题三最小可行螺距。"
+    boundary_angle:
+      symbol: "\theta_R"
+      value: 62.784779
+      unit: "rad"
+      meaning: "最小螺距下龙头前把手到达调头空间边界时的角参数。"
+    boundary_turns:
+      symbol: "N_R"
+      value: 9.992508
+      unit: "圈"
+      meaning: "边界角参数对应圈数。"
