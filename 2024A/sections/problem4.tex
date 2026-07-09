@@ -1,0 +1,398 @@
+\section{问题四模型的建立与求解}
+
+\subsection{本问求解思路}
+
+问题四要求在调头空间内完成舞龙队由盘入到盘出的路径切换。根据 2024A 项目公式库的模型边界约束，本问沿用问题一中的把手编号、孔距定义和刚性速度投影思想，不再重复建立等距螺线的基础坐标公式、相邻把手角参数递推公式和速度递推公式；本问仅新增盘入螺线与盘出螺线的中心对称关系、两段圆弧构成的 S 形调头曲线、调头曲线唯一性证明以及统一路径弧长参数化模型。
+
+题设给定盘入螺线螺距为 $1.7\,\mathrm{m}$，盘出螺线与盘入螺线关于螺线中心呈中心对称，调头曲线由两段相切圆弧组成，且前一段圆弧半径为后一段圆弧半径的 $2$ 倍。本文首先由调头空间边界确定调头起点，由中心对称关系确定调头终点；然后根据端点切向、半径比和两圆相切条件求出两段圆弧的圆心、半径和公共切点；最后将盘入段、两段圆弧和盘出段统一写为按弧长参数化的路径 $\Gamma(s)$。在此基础上，沿统一路径调用刚性孔距递推思想求解全队位置，并由刚性速度投影约束求解各把手速度。
+
+为展示问题四的建模与求解流程，绘制求解流程图，如图~\ref{fig:p4-flow} 所示。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.86\textwidth]{figures/p4_flow.png}
+    \caption{问题四求解流程图}
+    \label{fig:p4-flow}
+\end{figure}
+
+图~\ref{fig:p4-flow} 给出了本问从调头空间与相切约束出发，构造 S 形调头曲线，再统一求解全队位置与速度的主要流程。
+
+\subsection{调头端点与端点切向确定}
+
+设问题四盘入螺距为
+\begin{equation}
+    p_4=1.7,\qquad k_4=\frac{p_4}{2\pi}.
+    \label{eq:p4-pitch}
+\end{equation}
+该式仅表示将问题一中已建立的螺距参数替换为问题四给定值，不再重复展开螺线坐标表达。
+
+调头空间半径沿用问题三记号
+\begin{equation}
+    R=4.5.
+    \label{eq:p4-turning-radius}
+\end{equation}
+记将前文螺线位置映射中的螺距参数取为 $p_4$ 后得到的位置映射为 $\bm r_{p_4}(\theta)$，对应弧长函数记为 $S_{p_4}(\theta)$。龙头前把手开始调头时位于盘入螺线与调头空间边界交点，故其角参数为
+\begin{equation}
+    \theta_B=\frac{R}{k_4}=\frac{2\pi R}{p_4}.
+    \label{eq:p4-theta-B}
+\end{equation}
+调头起点为
+\begin{equation}
+    B=\bm r_{p_4}(\theta_B).
+    \label{eq:p4-start-point}
+\end{equation}
+设 $\bm\tau_B$ 为龙头前把手沿盘入方向到达 $B$ 点时的单位切向量。由于盘出螺线由盘入螺线关于中心 $O$ 作中心对称得到，调头终点为
+\begin{equation}
+    C=-B.
+    \label{eq:p4-end-point}
+\end{equation}
+中心对称变换保持切向方向的一致性，因此盘出方向在 $C$ 点处的单位切向量满足
+\begin{equation}
+    \bm\tau_C=\bm\tau_B.
+    \label{eq:p4-end-tangent}
+\end{equation}
+由此，调头曲线的起点、终点以及两端切向均被唯一确定。
+
+\subsection{两段圆弧 S 形调头曲线模型}
+
+定义逆时针旋转 $90^\circ$ 的矩阵
+\begin{equation}
+    J=
+    \begin{bmatrix}
+        0 & -1\\
+        1 & 0
+    \end{bmatrix},
+    \label{eq:p4-J}
+\end{equation}
+则起点切向对应的左法向为
+\begin{equation}
+    \bm n_B=J\bm\tau_B.
+    \label{eq:p4-normal}
+\end{equation}
+设前一段圆弧半径为 $R_1$，后一段圆弧半径为 $R_2$。题设给出
+\begin{equation}
+    R_1=2R_2.
+    \label{eq:p4-radius-ratio}
+\end{equation}
+设第一段圆弧转向符号为 $\sigma$，其中 $\sigma=1$ 表示圆心位于运动方向左侧，$\sigma=-1$ 表示圆心位于运动方向右侧。由于调头曲线为 S 形，两段圆弧曲率方向相反，因此两圆圆心可写为
+\begin{equation}
+    O_1=B+\sigma R_1\bm n_B,
+    \qquad
+    O_2=C-\sigma R_2\bm n_B.
+    \label{eq:p4-circle-centers}
+\end{equation}
+两段圆弧在公共点相切时，两圆满足外切关系。令
+\begin{equation}
+    D=C-B,\qquad L=R_1+R_2,
+    \label{eq:p4-DL}
+\end{equation}
+则外切条件为
+\begin{equation}
+    \left\|D-\sigma L\bm n_B\right\|=L.
+    \label{eq:p4-tangent-condition}
+\end{equation}
+对式~\eqref{eq:p4-tangent-condition} 两边平方并整理，得到
+\begin{equation}
+    L=\frac{\|D\|^2}{2\sigma D^{\mathrm T}\bm n_B}.
+    \label{eq:p4-L-solution}
+\end{equation}
+为保证半径为正，应取满足
+\begin{equation}
+    \sigma D^{\mathrm T}\bm n_B>0
+    \label{eq:p4-sigma-condition}
+\end{equation}
+的转向符号。由式~\eqref{eq:p4-radius-ratio} 和式~\eqref{eq:p4-L-solution} 得
+\begin{equation}
+    R_1=\frac{2L}{3},\qquad R_2=\frac{L}{3}.
+    \label{eq:p4-radius-solution}
+\end{equation}
+公共切点 $M$ 位于 $O_1O_2$ 连线上，并按半径比例分点：
+\begin{equation}
+    M=O_1+\frac{R_1}{R_1+R_2}(O_2-O_1).
+    \label{eq:p4-tangent-point}
+\end{equation}
+至此，两段圆弧的圆心、半径和切点均由端点与端点切向唯一确定。
+
+为表示两段圆弧，定义旋转矩阵
+\begin{equation}
+    \mathcal R(\alpha)=
+    \begin{bmatrix}
+        \cos\alpha & -\sin\alpha\\
+        \sin\alpha & \cos\alpha
+    \end{bmatrix}.
+    \label{eq:p4-rotation}
+\end{equation}
+记
+\begin{equation}
+    \bm u_B=\frac{B-O_1}{R_1},\qquad
+    \bm u_M^{(1)}=\frac{M-O_1}{R_1},
+    \label{eq:p4-u1}
+\end{equation}
+\begin{equation}
+    \bm u_M^{(2)}=\frac{M-O_2}{R_2},\qquad
+    \bm u_C=\frac{C-O_2}{R_2}.
+    \label{eq:p4-u2}
+\end{equation}
+两段圆弧对应圆心角分别记为 $\varphi_1$ 和 $\varphi_2$，则两段圆弧长度为
+\begin{equation}
+    \ell_1=R_1\varphi_1,\qquad
+    \ell_2=R_2\varphi_2,\qquad
+    \ell=\ell_1+\ell_2.
+    \label{eq:p4-arc-lengths}
+\end{equation}
+
+\subsection{调头曲线不可再缩短的证明}
+
+在本问条件下，调头起点 $B$ 由盘入螺线与调头空间边界唯一确定，调头终点 $C$ 由中心对称的盘出螺线唯一确定。由于调头曲线还必须分别与盘入、盘出路径相切，端点切向 $\bm\tau_B$ 和 $\bm\tau_C$ 也随之固定。
+
+当端点与端点切向固定时，第一段圆弧圆心只能位于过 $B$ 且垂直于 $\bm\tau_B$ 的法线上，第二段圆弧圆心只能位于过 $C$ 且垂直于 $\bm\tau_C$ 的法线上。S 形要求两段圆弧曲率方向相反，因此两圆圆心只能具有式~\eqref{eq:p4-circle-centers} 的形式。半径比 $R_1=2R_2$ 又使两个半径只剩一个尺度变量 $L=R_1+R_2$。
+
+进一步，两段圆弧相切要求圆心距等于 $L$，从而必须满足式~\eqref{eq:p4-tangent-condition}。该条件给出的正半径解唯一，即式~\eqref{eq:p4-L-solution} 和式~\eqref{eq:p4-radius-solution}。公共切点 $M$ 也由式~\eqref{eq:p4-tangent-point} 唯一确定。于是两段圆弧的圆心角 $\varphi_1,\varphi_2$ 以及总长度 $\ell=R_1\varphi_1+R_2\varphi_2$ 均不再具有自由调节量。
+
+因此，在保持调头起止点不变、保持与盘入和盘出路径相切、保持两段圆弧相切且保持半径比为 $2:1$ 的条件下，S 形调头曲线由几何约束唯一确定，不能再通过调整圆弧使调头曲线变短。
+
+\subsection{统一路径弧长参数化模型}
+
+定义统一路径 $\Gamma(s)$，其中 $s$ 为以调头开始点为零点的弧长参数，路径正方向为龙头前把手运动方向。由此，$s=0$ 表示龙头前把手到达调头起点 $B$。
+
+当 $s<0$ 时，龙头前把手位于盘入段。其角参数 $\theta$ 由
+\begin{equation}
+    S_{p_4}(\theta)-S_{p_4}(\theta_B)=-s
+    \label{eq:p4-in-theta}
+\end{equation}
+确定，对应路径点为
+\begin{equation}
+    \Gamma(s)=\bm r_{p_4}(\theta),\qquad s<0.
+    \label{eq:p4-path-in}
+\end{equation}
+当 $0\le s\le\ell_1$ 时，路径位于第一段圆弧：
+\begin{equation}
+    \Gamma(s)=O_1+R_1\mathcal R\!\left(\sigma\frac{s}{R_1}\right)\bm u_B.
+    \label{eq:p4-path-arc1}
+\end{equation}
+当 $\ell_1<s\le\ell$ 时，路径位于第二段圆弧：
+\begin{equation}
+    \Gamma(s)=O_2+R_2\mathcal R\!\left(-\sigma\frac{s-\ell_1}{R_2}\right)\bm u_M^{(2)}.
+    \label{eq:p4-path-arc2}
+\end{equation}
+当 $s>\ell$ 时，龙头前把手进入中心对称的盘出段。其角参数由
+\begin{equation}
+    S_{p_4}(\theta)-S_{p_4}(\theta_B)=s-\ell
+    \label{eq:p4-out-theta}
+\end{equation}
+确定，对应路径点为
+\begin{equation}
+    \Gamma(s)=-\bm r_{p_4}(\theta),\qquad s>\ell.
+    \label{eq:p4-path-out}
+\end{equation}
+路径切向单位向量定义为
+\begin{equation}
+    \bm\tau(s)=\frac{\mathrm d\Gamma(s)}{\mathrm ds},\qquad \|\bm\tau(s)\|=1.
+    \label{eq:p4-path-tangent}
+\end{equation}
+
+\subsection{全队把手位置与速度递推}
+
+龙头前把手速度保持为 $1\,\mathrm{m/s}$，且以调头开始时间为零时刻，因此
+\begin{equation}
+    s_0(t)=t,\qquad P_0(t)=\Gamma(s_0(t)).
+    \label{eq:p4-head-s}
+\end{equation}
+设第 $i$ 个把手对应的路径弧长参数为 $s_i(t)$，则
+\begin{equation}
+    P_i(t)=\Gamma(s_i(t)),\qquad i=0,1,\ldots,223.
+    \label{eq:p4-handle-position}
+\end{equation}
+沿用问题一孔距定义式~\eqref{eq:p1-distance}，相邻把手满足
+\begin{equation}
+    \left\|\Gamma(s_{i+1}(t))-\Gamma(s_i(t))\right\|=d_i,
+    \qquad i=0,1,\ldots,222.
+    \label{eq:p4-distance-constraint}
+\end{equation}
+由于后一个把手始终位于前一个把手之后，递推时取
+\begin{equation}
+    s_{i+1}(t)<s_i(t),
+    \label{eq:p4-order}
+\end{equation}
+并选择距离 $s_i(t)$ 最近的后向根作为 $s_{i+1}(t)$。
+
+设
+\begin{equation}
+    q_i(t)=\dot s_i(t),\qquad \bm\tau_i(t)=\bm\tau(s_i(t)).
+    \label{eq:p4-qi-taui}
+\end{equation}
+则第 $i$ 个把手速度向量为
+\begin{equation}
+    V_i(t)=q_i(t)\bm\tau_i(t).
+    \label{eq:p4-velocity-vector}
+\end{equation}
+由龙头速度条件可知
+\begin{equation}
+    q_0(t)=1.
+    \label{eq:p4-q0}
+\end{equation}
+沿用问题一的刚性速度投影约束式~\eqref{eq:p1-rigid-velocity-constraint}，可得统一路径下的弧长速度递推关系：
+\begin{equation}
+    q_{i+1}(t)=
+    \frac{B_i^{\mathrm T}(t)\bm\tau_i(t)}
+    {B_i^{\mathrm T}(t)\bm\tau_{i+1}(t)}q_i(t),
+    \qquad i=0,1,\ldots,222,
+    \label{eq:p4-speed-recursion}
+\end{equation}
+其中
+\begin{equation}
+    B_i(t)=P_{i+1}(t)-P_i(t).
+    \label{eq:p4-board-vector}
+\end{equation}
+由于 $\Gamma(s)$ 采用弧长参数化，第 $i$ 个把手速度大小为
+\begin{equation}
+    v_i(t)=|q_i(t)|.
+    \label{eq:p4-speed-size}
+\end{equation}
+
+\subsection{数值求解方法}
+
+对每个待计算时刻 $t\in\{-100,-99,\ldots,100\}$，先由式~\eqref{eq:p4-head-s} 得到龙头前把手弧长参数 $s_0(t)$。随后利用式~\eqref{eq:p4-distance-constraint} 逐节递推求解 $s_1(t),s_2(t),\ldots,s_{223}(t)$，并由式~\eqref{eq:p4-handle-position} 得到全部把手位置。最后由式~\eqref{eq:p4-speed-recursion} 递推得到全部把手速度。
+
+\begin{algorithm}[H]
+    \caption{问题四全队位置与速度求解算法}
+    \label{alg:p4-solve}
+    \begin{algorithmic}[1]
+        \Require 统一路径 $\Gamma(s)$，切向量 $\bm\tau(s)$，孔距 $d_i$，时刻集合 $\mathcal T=\{-100,-99,\ldots,100\}$
+        \Ensure 各时刻全部把手位置 $P_i(t)$ 与速度 $v_i(t)$
+        \For{$t\in\mathcal T$}
+            \State 令 $s_0(t)=t$，计算 $P_0(t)=\Gamma(s_0(t))$
+            \For{$i=0,1,\ldots,222$}
+                \State 在 $s<s_i(t)$ 的方向寻找式~\eqref{eq:p4-distance-constraint} 的最近后向根 $s_{i+1}(t)$
+                \State 计算 $P_{i+1}(t)=\Gamma(s_{i+1}(t))$
+            \EndFor
+            \State 令 $q_0(t)=1$
+            \For{$i=0,1,\ldots,222$}
+                \State 由式~\eqref{eq:p4-speed-recursion} 递推 $q_{i+1}(t)$
+            \EndFor
+            \State 令 $v_i(t)=|q_i(t)|$，输出结果
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{求解结果与分析}
+
+根据上述模型计算得到，调头起点角参数为
+\begin{equation}
+    \theta_B=16.631961\,\mathrm{rad}.
+    \label{eq:p4-theta-result}
+\end{equation}
+调头起点与终点分别为
+\begin{equation}
+    B=(-2.711856,\,-3.591078),
+    \qquad
+    C=(2.711856,\,3.591078).
+    \label{eq:p4-BC-result}
+\end{equation}
+两段圆弧的几何参数如表~\ref{tab:p4-arc-params} 所示。
+
+\begin{table}[H]
+    \centering
+    \caption{问题四 S 形调头曲线几何参数}
+    \label{tab:p4-arc-params}
+    \begin{tabular}{c c}
+        \toprule
+        参数 & 数值 \\
+        \midrule
+        第一段圆弧半径 $R_1/\mathrm{m}$ & 3.005418 \\
+        第二段圆弧半径 $R_2/\mathrm{m}$ & 1.502709 \\
+        第一段圆弧圆心 $O_1$ & $(-0.760009,\,-1.305726)$ \\
+        第二段圆弧圆心 $O_2$ & $(1.735932,\,2.448402)$ \\
+        两圆公共切点 $M$ & $(0.903952,\,1.197026)$ \\
+        第一段圆弧圆心角 $\varphi_1/\mathrm{rad}$ & 3.021487 \\
+        第二段圆弧圆心角 $\varphi_2/\mathrm{rad}$ & 3.021487 \\
+        调头曲线总长度 $\ell/\mathrm{m}$ & 13.621245 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+题目要求给出的关键时刻位置结果如表~\ref{tab:p4-position-result} 所示。
+
+\begin{table}[H]
+    \centering
+    \caption{问题四关键时刻把手位置结果}
+    \label{tab:p4-position-result}
+    \begin{tabular}{c r r r r r}
+        \toprule
+        位置 & $-100\,\mathrm{s}$ & $-50\,\mathrm{s}$ & $0\,\mathrm{s}$ & $50\,\mathrm{s}$ & $100\,\mathrm{s}$ \\
+        \midrule
+        龙头 $x/\mathrm{m}$ & 7.778034 & 6.608301 & -2.711856 & 1.332696 & -3.157229 \\
+        龙头 $y/\mathrm{m}$ & 3.717164 & 1.898865 & -3.591078 & 6.175324 & 7.548511 \\
+        第 $1$ 节龙身 $x/\mathrm{m}$ & 6.209273 & 5.366911 & -0.063534 & 3.862265 & -0.346890 \\
+        第 $1$ 节龙身 $y/\mathrm{m}$ & 6.108521 & 4.475403 & -4.670888 & 4.840828 & 8.079166 \\
+        第 $51$ 节龙身 $x/\mathrm{m}$ & -10.608038 & -3.629945 & 2.459962 & -1.671385 & 2.095033 \\
+        第 $51$ 节龙身 $y/\mathrm{m}$ & 2.831491 & -8.963800 & -7.778145 & -6.076713 & 4.033787 \\
+        第 $101$ 节龙身 $x/\mathrm{m}$ & -11.922761 & 10.125787 & 3.008493 & -7.591816 & -7.288774 \\
+        第 $101$ 节龙身 $y/\mathrm{m}$ & -4.802378 & -5.972247 & 10.108539 & 5.175487 & 2.063875 \\
+        第 $151$ 节龙身 $x/\mathrm{m}$ & -14.351032 & 12.974784 & -7.002789 & -4.605165 & 9.462513 \\
+        第 $151$ 节龙身 $y/\mathrm{m}$ & -1.980993 & -3.810357 & 10.337482 & -10.386988 & -3.540357 \\
+        第 $201$ 节龙身 $x/\mathrm{m}$ & -11.952942 & 10.522509 & -6.872842 & 0.336952 & 8.524374 \\
+        第 $201$ 节龙身 $y/\mathrm{m}$ & 10.566998 & -10.807425 & 12.382609 & -13.177610 & 8.606933 \\
+        龙尾（后）$x/\mathrm{m}$ & -1.011059 & 0.189809 & -1.933627 & 5.859094 & -10.980157 \\
+        龙尾（后）$y/\mathrm{m}$ & -16.527573 & 15.720588 & -14.713128 & 12.612894 & -6.770006 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+题目要求给出的关键时刻速度结果如表~\ref{tab:p4-speed-result} 所示。
+
+\begin{table}[H]
+    \centering
+    \caption{问题四关键时刻把手速度结果}
+    \label{tab:p4-speed-result}
+    \begin{tabular}{c r r r r r}
+        \toprule
+        把手 & $-100\,\mathrm{s}$ & $-50\,\mathrm{s}$ & $0\,\mathrm{s}$ & $50\,\mathrm{s}$ & $100\,\mathrm{s}$ \\
+        \midrule
+        龙头 & 1.000000 & 1.000000 & 1.000000 & 1.000000 & 1.000000 \\
+        第 $1$ 节龙身 & 0.999904 & 0.999762 & 0.998687 & 1.000363 & 1.000124 \\
+        第 $51$ 节龙身 & 0.999346 & 0.998642 & 0.995134 & 0.949935 & 1.003966 \\
+        第 $101$ 节龙身 & 0.999091 & 0.998248 & 0.994448 & 0.948482 & 1.096263 \\
+        第 $151$ 节龙身 & 0.998944 & 0.998047 & 0.994156 & 0.948038 & 1.095306 \\
+        第 $201$ 节龙身 & 0.998849 & 0.997925 & 0.993994 & 0.947823 & 1.094933 \\
+        龙尾（后） & 0.998817 & 0.997885 & 0.993944 & 0.947760 & 1.094833 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{可靠性检验}
+
+\subsubsection{相切与半径比检验}
+
+由表~\ref{tab:p4-arc-params} 可得
+\[
+    \frac{R_1}{R_2}=2.000000.
+\]
+同时有
+\[
+    \|O_2-O_1\|=4.508127\,\mathrm{m},\qquad R_1+R_2=4.508127\,\mathrm{m}.
+\]
+因此，两圆满足外切条件，且半径比满足题设要求。
+
+\subsubsection{孔距约束残差检验}
+
+对 $t=-100,-50,0,50,100$ 五个关键时刻，计算所有相邻把手距离残差：
+\begin{equation}
+    \varepsilon_d=
+    \max_t\max_{0\le i\le222}
+    \left|\|P_{i+1}(t)-P_i(t)\|-d_i\right|.
+    \label{eq:p4-distance-error}
+\end{equation}
+计算得到
+\[
+    \varepsilon_d=2.13\times10^{-13}\,\mathrm{m}.
+\]
+该误差远小于 $10^{-6}\,\mathrm{m}$，说明全队位置递推结果满足刚性孔距约束。
+
+\subsubsection{速度连续性检验}
+
+在 $[-100,100]\,\mathrm{s}$ 的逐秒计算结果中，各把手速度随时间连续变化，未在盘入段、圆弧段和盘出段连接处出现异常跳变。这说明统一路径 $\Gamma(s)$ 在连接处满足切向连续条件，速度递推过程稳定。
+
+\subsection{模型评价}
+
+本问在前文基础运动模型之上，仅新增调头路径几何模型和统一弧长路径模型，避免了重复建立螺线坐标方程和原始速度递推公式。模型能够证明题设相切与半径比条件下的调头曲线唯一性，并能直接服务于 $[-100,100]\,\mathrm{s}$ 全队位置与速度计算。模型不足在于仍采用二维刚性平面假设，未考虑实际舞龙人员操作误差、板凳弹性变形和把手连接间隙，因此所得结果是题设理想条件下的几何运动解。
