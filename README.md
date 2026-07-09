@@ -5,10 +5,15 @@ A math-modeling agent skill repository.
 ## 当前 Skill
 
 - `skills/math_modeling/SKILL.md`：数学建模写作与求解规范。
-- `skills/math_modeling/FORMULA_REUSE_PROTOCOL.md`：公式库、模型边界与重复公式审查协议，是数学建模 Skill 的补充约束。
-- `skills/math_modeling/registry/model_contracts.yaml`：各问题的模型边界规则库，定义必须引用、禁止重复定义和允许新增的模型。
-- `skills/math_modeling/registry/formulas.yaml`：公式登记库，记录已经建立过的公式、首次出现位置和复用规则。
-- `skills/math_modeling/checks/check_formula_reuse.py`：公式重复定义审查脚本。
+- `skills/math_modeling/FORMULA_REUSE_PROTOCOL.md`：公式复用与模型边界审查协议，仅定义通用流程和约束。
+- `skills/math_modeling/checks/check_formula_reuse.py`：通用公式重复定义审查脚本。
+
+## 项目库
+
+- `2024A/`：2024 高教社杯 A 题《板凳龙》项目库。
+- `2024A/registry/parameters.yaml`：问题一至问题三参数库。
+- `2024A/registry/formulas.yaml`：问题一至问题三公式库。
+- `2024A/registry/model_contracts.yaml`：2024A 项目专用模型边界规则。
 
 ## 核心写作要求
 
@@ -20,12 +25,13 @@ A math-modeling agent skill repository.
 
 ## 公式复用与模型边界要求
 
-为避免后续问题重复定义前文已经建立的公式，新增以下强制流程：
+通用数模 Skill 只保存规则和审查脚本，不保存具体赛题的公式库、参数库或项目模型数据。具体项目的公式、参数和模型边界应放在对应项目目录下，例如 `2024A/registry/`。
 
-1. 写新问题前，先检查 `registry/formulas.yaml` 中已经登记的公式；
-2. 再检查 `registry/model_contracts.yaml` 中该问题的模型边界；
-3. 已有模型只能用“沿用”“调用式号”“参数替换”等方式引用；
-4. 本问只新增解决当前问题所必需的变量、约束、目标函数、判定函数和算法；
-5. 输出前使用 `checks/check_formula_reuse.py` 审查是否出现重复定义。
+写新问题前的强制流程：
 
-板凳龙项目中，基础螺线模型只在问题一完整建立，板凳实体与碰撞判定只在问题二完整建立，问题三以后原则上只引用前文模型并建立本问新增优化或路径模型。
+1. 先检查项目目录中的 `registry/parameters.yaml`；
+2. 再检查项目目录中的 `registry/formulas.yaml`；
+3. 再检查项目目录中的 `registry/model_contracts.yaml`；
+4. 已有模型只能用“沿用”“调用式号”“参数替换”等方式引用；
+5. 本问只新增解决当前问题所必需的变量、约束、目标函数、判定函数和算法；
+6. 输出前使用 `skills/math_modeling/checks/check_formula_reuse.py` 审查是否出现重复定义。
