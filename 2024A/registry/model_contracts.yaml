@@ -1,0 +1,129 @@
+# 2024A《板凳龙》模型边界规则库
+# 用途：本文件属于 2024A 项目库，不属于通用数模 Skill。
+# 写问题三、四、五等后续章节前，先读取本文件，明确哪些公式必须引用、哪些模型禁止重复定义。
+
+metadata:
+  project: "2024A 板凳龙"
+  scope: "project-specific model contracts"
+  storage_policy: "项目公式和参数存放在 2024A/registry；skills/math_modeling 仅存放通用规则和审查脚本。"
+
+global_rules:
+  must_do_before_writing:
+    - "读取 2024A/registry/parameters.yaml"
+    - "读取 2024A/registry/formulas.yaml"
+    - "确认本问 must_reference、allowed_new_models、forbidden_redefine"
+    - "已有公式只引用，不重复推导"
+    - "输出前使用通用审查脚本检查重复定义"
+  preferred_reuse_phrases:
+    - "沿用问题一中的……模型"
+    - "调用式~\\eqref{...}"
+    - "将前文模型中的参数替换为……"
+    - "不再重复推导……"
+    - "仅针对本问新增变量建立……"
+
+problem1:
+  role: "基础运动模型"
+  allowed_new_models:
+    - "等距螺线极坐标方程"
+    - "等距螺线直角坐标表示"
+    - "螺线弧长函数"
+    - "龙头前把手运动模型"
+    - "相邻把手位置递推模型"
+    - "把手速度递推模型"
+  forbidden_redefine: []
+
+problem2:
+  role: "实体碰撞与终止时刻"
+  must_reference:
+    - "eq:p1-head-theta"
+    - "eq:p1-theta-recursion"
+    - "eq:p1-speed-recursion"
+  allowed_new_models:
+    - "板凳矩形实体模型"
+    - "非相邻板凳碰撞判定模型"
+    - "终止时刻搜索模型"
+  forbidden_redefine:
+    - "eq:p1-spiral-polar"
+    - "eq:p1-spiral-cartesian"
+    - "eq:p1-arc-length"
+    - "eq:p1-head-position"
+    - "等距螺线的极坐标方程为"
+    - "直角坐标系下表示为"
+    - "螺线弧长函数为"
+  required_boundary_sentence: "本问沿用问题一中的龙头运动模型、位置递推模型和速度递推模型，不再重复建立等距螺线基础方程，仅新增板凳实体表示和碰撞判定模型。"
+
+problem3:
+  role: "最小螺距可行性搜索"
+  must_reference:
+    - "eq:p1-theta-recursion"
+    - "eq:p2-simple-rectangle"
+    - "eq:p2-simple-pair-margin"
+    - "eq:p2-simple-global-margin"
+  allowed_new_models:
+    - "候选螺距 p"
+    - "龙头半径区间 rho in [R,16p]"
+    - "构型全局安全裕度 H(rho,p)"
+    - "候选螺距最小安全裕度 F(p)"
+    - "最小螺距优化模型 p_min"
+    - "外层螺距二分与内层安全裕度搜索"
+  forbidden_redefine:
+    - "eq:p1-spiral-polar"
+    - "eq:p1-spiral-cartesian"
+    - "eq:p1-arc-length"
+    - "eq:p1-head-position"
+    - "eq:p1-distance-constraint"
+    - "eq:p1-delta-equation"
+    - "eq:p1-theta-recursion"
+    - "eq:p2-simple-rectangle"
+    - "eq:p2-simple-axis"
+    - "eq:p2-simple-pair-margin"
+    - "eq:p2-simple-global-margin"
+    - "等距螺线的极坐标方程为"
+    - "直角坐标系下表示为"
+    - "螺线弧长函数为"
+    - "第 i 节板凳的矩形区域"
+    - "候选分离轴集合"
+  required_boundary_sentence: "本问不再重复建立螺线位置模型，而是将问题一中已有模型的螺距参数替换为候选值 p，并沿用问题二中的安全裕度判定模型判断可行性。"
+
+problem4:
+  role: "S 形调头路径与统一路径参数化"
+  must_reference:
+    - "eq:p1-distance"
+    - "eq:p1-rigid-velocity-constraint"
+    - "problem1 位置递推思想"
+  allowed_new_models:
+    - "盘出螺线与盘入螺线的中心对称关系"
+    - "两段圆弧 S 形调头曲线"
+    - "相切条件"
+    - "半径比约束"
+    - "调头曲线唯一性证明"
+    - "统一路径弧长参数化"
+  forbidden_redefine:
+    - "eq:p1-spiral-cartesian"
+    - "eq:p1-theta-recursion"
+    - "eq:p1-speed-recursion"
+    - "eq:p2-simple-global-margin"
+
+problem5:
+  role: "最大龙头速度"
+  must_reference:
+    - "problem4 统一路径模型"
+    - "problem4 速度递推关系"
+  allowed_new_models:
+    - "单位龙头速度下的速度放大系数"
+    - "全路径最大速度放大系数"
+    - "龙头最大速度计算公式"
+    - "临界时刻与最坏把手识别"
+  forbidden_redefine:
+    - "problem4 路径几何模型"
+    - "problem4 S 形圆弧推导"
+    - "problem4 完整位置递推"
+    - "problem4 完整速度递推来源"
+
+review_before_output:
+  - "是否读取 2024A/registry/formulas.yaml"
+  - "是否读取 2024A/registry/parameters.yaml"
+  - "是否只新增当前问题允许新增的模型"
+  - "是否将已有公式改为式号引用"
+  - "是否避免在问题三重复出现问题一、问题二模型公式"
+  - "公式标签是否与 formulas.yaml 冲突"
