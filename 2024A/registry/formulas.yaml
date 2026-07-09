@@ -1,0 +1,516 @@
+# 2024 高教社杯 A 题《板凳龙》公式库
+# 范围：问题一至问题三
+# 原则：已经登记的公式后续只引用，不重复推导；每条公式记录首次定义位置、复用规则和是否禁止重复定义。
+
+metadata:
+  contest: "2024 高教社杯全国大学生数学建模竞赛"
+  problem: "A 题 板凳龙"
+  scope: "problems 1-3"
+  notation_policy: "公式标签以 p1/p2/p3 区分问题，后续章节引用标签，不重复展开。"
+
+problem1:
+  p1_handle_sequence:
+    label: "eq:p1-handle-sequence"
+    name: "把手编号"
+    latex: "P_0(t),P_1(t),\ldots,P_{223}(t)"
+    meaning: "整条板凳龙共有 224 个把手中心。"
+    first_defined_in: "problem1"
+    reuse_rule: "全文通用编号，后续直接引用。"
+    forbidden_redefine: true
+
+  p1_hole_distance:
+    label: "eq:p1-distance"
+    name: "孔距分段定义"
+    latex: "d_i=\begin{cases}2.86,&i=0,\\1.65,&i=1,2,\ldots,222.\end{cases}"
+    meaning: "第 i 节板凳两个孔中心之间的距离。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续位置递推、实体矩形和速度递推直接引用。"
+    forbidden_redefine: true
+
+  p1_spiral_polar:
+    label: "eq:p1-spiral-polar"
+    name: "等距螺线极坐标方程"
+    latex: "r=k\theta,\quad k=\frac{p}{2\pi}"
+    meaning: "建立等距螺线的极径与角参数关系。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题二至问题五不得重复推导；若螺距变化，只写参数替换。"
+    forbidden_redefine: true
+
+  p1_spiral_cartesian:
+    label: "eq:p1-spiral-cartesian"
+    name: "等距螺线直角坐标表示"
+    latex: "\bm r(\theta)=\begin{bmatrix}k\theta\cos\theta\\k\theta\sin\theta\end{bmatrix}"
+    meaning: "由角参数得到平面直角坐标。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只引用，不重复写坐标展开。"
+    forbidden_redefine: true
+
+  p1_pitch_value:
+    label: "eq:p1-pitch-value"
+    name: "问题一螺距"
+    latex: "p=0.55,\quad k=\frac{0.55}{2\pi}"
+    meaning: "问题一固定螺距。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题二继承；问题三改为候选 p 时只说明替换。"
+    forbidden_redefine: true
+
+  p1_initial_angle:
+    label: "eq:p1-initial-angle"
+    name: "初始角参数"
+    latex: "\theta_0(0)=32\pi"
+    meaning: "第 16 圈与 x 轴正向交点。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续若需要初始圈数，直接引用。"
+    forbidden_redefine: true
+
+  p1_spiral_derivative:
+    label: "eq:p1-spiral-derivative"
+    name: "螺线切向量及模长"
+    latex: "\bm r'(\theta)=\begin{bmatrix}k\cos\theta-k\theta\sin\theta\\k\sin\theta+k\theta\cos\theta\end{bmatrix},\quad \|\bm r'(\theta)\|=k\sqrt{1+\theta^2}"
+    meaning: "用于弧长微元和速度递推。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只引用。"
+    forbidden_redefine: true
+
+  p1_arc_element:
+    label: "eq:p1-arc-element"
+    name: "螺线弧长微元"
+    latex: "\mathrm ds=k\sqrt{1+\theta^2}\,\mathrm d\theta"
+    meaning: "由切向量模长得到弧长微元。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续不重复积分推导。"
+    forbidden_redefine: true
+
+  p1_arc_length:
+    label: "eq:p1-arc-length"
+    name: "螺线弧长函数"
+    latex: "S(\theta)=\frac{k}{2}\left[\theta\sqrt{1+\theta^2}+\ln\!\left(\theta+\sqrt{1+\theta^2}\right)\right]"
+    meaning: "从极点到角参数 theta 处的螺线弧长。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只调用，不重复推导。"
+    forbidden_redefine: true
+
+  p1_head_theta:
+    label: "eq:p1-head-theta"
+    name: "龙头角参数运动约束"
+    latex: "S(32\pi)-S\bigl(\theta_0(t)\bigr)=t"
+    meaning: "龙头前把手以 1 m/s 顺时针盘入。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题二继承；后续若路径改变，不再重复该式。"
+    forbidden_redefine: true
+
+  p1_head_position:
+    label: "eq:p1-head-position"
+    name: "龙头前把手位置"
+    latex: "P_0(t)=\bm r\bigl(\theta_0(t)\bigr)"
+    meaning: "由角参数得到龙头前把手坐标。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只引用或说明沿用。"
+    forbidden_redefine: true
+
+  p1_handle_position:
+    label: "eq:p1-handle-position"
+    name: "一般把手位置"
+    latex: "P_i(t)=\bm r\bigl(\theta_i(t)\bigr),\quad i=0,1,\ldots,223"
+    meaning: "所有把手均位于同一条等距螺线上。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题三只说明替换螺距参数，不重复展开坐标。"
+    forbidden_redefine: true
+
+  p1_distance_constraint:
+    label: "eq:p1-distance-constraint"
+    name: "相邻把手刚性孔距约束"
+    latex: "\left\|\bm r(\theta_{i+1}(t))-\bm r(\theta_i(t))\right\|=d_i"
+    meaning: "相邻两个把手中心距离等于对应板凳孔距。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续直接调用。"
+    forbidden_redefine: true
+
+  p1_delta_definition:
+    label: "eq:p1-delta-definition"
+    name: "角参数增量"
+    latex: "\Delta_i(t)=\theta_{i+1}(t)-\theta_i(t),\quad \Delta_i(t)>0"
+    meaning: "后一把手相对前一把手沿螺线外侧的角参数差。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p1_delta_equation:
+    label: "eq:p1-delta-equation"
+    name: "角参数增量方程"
+    latex: "k^2\!\left[\theta_i^2+(\theta_i+\Delta_i)^2-2\theta_i(\theta_i+\Delta_i)\cos\Delta_i\right]=d_i^2"
+    meaning: "由相邻把手距离约束得到的单步求根方程。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题三只调用该递推方程，不重复由坐标展开。"
+    forbidden_redefine: true
+
+  p1_delta_range:
+    label: "eq:p1-delta-range"
+    name: "唯一根选取区间"
+    latex: "0<\Delta_i(t)<\pi"
+    meaning: "保证后一把手取沿螺线向外方向首先遇到的位置。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续递推唯一性直接引用。"
+    forbidden_redefine: true
+
+  p1_theta_recursion:
+    label: "eq:p1-theta-recursion"
+    name: "相邻把手角参数递推"
+    latex: "\theta_{i+1}(t)=\theta_i(t)+\Delta_i(t)"
+    meaning: "依次求出全部把手角参数。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题三必须直接调用，不得重复建立。"
+    forbidden_redefine: true
+
+  p1_head_velocity_vector:
+    label: "eq:p1-head-velocity-vector"
+    name: "龙头速度向量"
+    latex: "V_0(t)=\bm r'\bigl(\theta_0(t)\bigr)\dot\theta_0(t)"
+    meaning: "龙头位置对时间求导。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只引用。"
+    forbidden_redefine: true
+
+  p1_head_angular_speed:
+    label: "eq:p1-head-angular-speed"
+    name: "龙头角速度"
+    latex: "\dot\theta_0(t)=-\frac{1}{k\sqrt{1+\theta_0^2(t)}}"
+    meaning: "龙头以 1 m/s 顺时针盘入。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续只引用。"
+    forbidden_redefine: true
+
+  p1_general_velocity:
+    label: "eq:p1-general-velocity"
+    name: "一般把手速度向量"
+    latex: "V_i(t)=\bm r'\bigl(\theta_i(t)\bigr)\dot\theta_i(t)"
+    meaning: "第 i 个把手速度表达式。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续速度递推只引用。"
+    forbidden_redefine: true
+
+  p1_board_vector:
+    label: "eq:p1-board-vector"
+    name: "板凳刚性方向向量"
+    latex: "B_i(t)=P_{i+1}(t)-P_i(t)"
+    meaning: "第 i 节板凳两孔中心连线向量。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题二实体模型可复用。"
+    forbidden_redefine: true
+
+  p1_rigid_velocity_constraint:
+    label: "eq:p1-rigid-velocity-constraint"
+    name: "刚性板凳速度约束"
+    latex: "B_i(t)\cdot\left[V_{i+1}(t)-V_i(t)\right]=0"
+    meaning: "板凳长度不变导致相对速度在板凳方向上的投影为零。"
+    first_defined_in: "problem1"
+    reuse_rule: "问题四、五只引用递推思想。"
+    forbidden_redefine: true
+
+  p1_speed_recursion:
+    label: "eq:p1-speed-recursion"
+    name: "角速度递推公式"
+    latex: "\dot\theta_{i+1}(t)=\frac{B_i(t)\cdot\bm r'(\theta_i(t))}{B_i(t)\cdot\bm r'(\theta_{i+1}(t))}\dot\theta_i(t)"
+    meaning: "由前一把手角速度递推后一把手角速度。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续不得重复推导完整来源。"
+    forbidden_redefine: true
+
+  p1_speed_size:
+    label: "eq:p1-speed-size"
+    name: "把手速度大小"
+    latex: "v_i(t)=k\sqrt{1+\theta_i^2(t)}\,|\dot\theta_i(t)|"
+    meaning: "由角速度得到速度大小。"
+    first_defined_in: "problem1"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+problem2:
+  p2_axis_vector:
+    label: "eq:p2-axis-vector"
+    name: "板凳轴向单位向量"
+    latex: "\bm e_i(t)=\frac{P_{i+1}(t)-P_i(t)}{d_i}"
+    meaning: "第 i 节板凳沿两孔中心连线方向的单位向量。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续实体模型直接引用。"
+    forbidden_redefine: true
+
+  p2_normal_vector:
+    label: "eq:p2-normal-vector"
+    name: "板凳法向单位向量"
+    latex: "\bm n_i(t)=\begin{bmatrix}-e_{iy}(t)\\e_{ix}(t)\end{bmatrix}"
+    meaning: "与板凳轴向垂直的单位向量。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p2_rectangle_center:
+    label: "eq:p2-simple-center"
+    name: "板凳矩形中心"
+    latex: "M_i(t)=\frac{P_i(t)+P_{i+1}(t)}{2}"
+    meaning: "第 i 节板凳实体矩形中心。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续实体安全判定直接引用。"
+    forbidden_redefine: true
+
+  p2_rectangle_halfsize:
+    label: "eq:p2-simple-halfsize"
+    name: "矩形半长与半宽"
+    latex: "a_i=\frac{d_i}{2}+c,\quad b=\frac{w}{2}"
+    meaning: "第 i 节板凳实体矩形的半长、半宽。"
+    first_defined_in: "problem2"
+    reuse_rule: "问题三直接引用。"
+    forbidden_redefine: true
+
+  p2_rectangle_region:
+    label: "eq:p2-simple-rectangle"
+    name: "矩形板凳实体区域"
+    latex: "\Omega_i(t)=\{M_i(t)+\xi\bm e_i(t)+\eta\bm n_i(t)\mid |\xi|\le a_i,\ |\eta|\le b\}"
+    meaning: "简洁表示第 i 节板凳占据的平面矩形区域。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续只引用，不重复构造端点顶点。"
+    forbidden_redefine: true
+
+  p2_nonadjacent_rule:
+    label: "eq:p2-simple-nonadjacent"
+    name: "非相邻板凳对"
+    latex: "|i-j|>1"
+    meaning: "只检测非相邻板凳对。"
+    first_defined_in: "problem2"
+    reuse_rule: "全文涉及碰撞时直接引用。"
+    forbidden_redefine: true
+
+  p2_candidate_axes:
+    label: "eq:p2-simple-axis"
+    name: "候选分离轴集合"
+    latex: "\mathcal A_{ij}(t)=\{\bm e_i(t),\bm n_i(t),\bm e_j(t),\bm n_j(t)\}"
+    meaning: "矩形分离轴判定所需候选方向。"
+    first_defined_in: "problem2"
+    reuse_rule: "问题三直接引用。"
+    forbidden_redefine: true
+
+  p2_projection_radius:
+    label: "eq:p2-simple-projection-radius"
+    name: "投影半径"
+    latex: "\rho_i(\bm a,t)=a_i|\bm a^\mathrm T\bm e_i(t)|+b|\bm a^\mathrm T\bm n_i(t)|"
+    meaning: "矩形在候选轴方向上的投影半径。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续不重复解释 SAT 细节。"
+    forbidden_redefine: true
+
+  p2_center_projection_distance:
+    label: "eq:p2-simple-center-distance"
+    name: "中心投影距离"
+    latex: "D_{ij}(\bm a,t)=|\bm a^\mathrm T(M_j(t)-M_i(t))|"
+    meaning: "两矩形中心在候选轴上的投影距离。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p2_axis_gap:
+    label: "eq:p2-simple-gap"
+    name: "单轴分离量"
+    latex: "g_{ij}(\bm a,t)=D_{ij}(\bm a,t)-\rho_i(\bm a,t)-\rho_j(\bm a,t)"
+    meaning: "若某轴分离量为正，则该对板凳在该轴方向分离。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p2_pair_margin:
+    label: "eq:p2-simple-pair-margin"
+    name: "板凳对安全分离裕度"
+    latex: "G_{ij}(t)=\max_{\bm a\in\mathcal A_{ij}(t)}g_{ij}(\bm a,t)"
+    meaning: "某一非相邻板凳对是否分离的判定裕度。"
+    first_defined_in: "problem2"
+    reuse_rule: "问题三安全裕度直接调用。"
+    forbidden_redefine: true
+
+  p2_collision_rule:
+    label: "eq:p2-simple-collision-rule"
+    name: "碰撞判定准则"
+    latex: "G_{ij}(t)>0\Rightarrow\Omega_i\cap\Omega_j=\varnothing,\quad G_{ij}(t)\le0\Rightarrow\Omega_i\cap\Omega_j\ne\varnothing"
+    meaning: "非相邻矩形板凳分离、相切或碰撞的判定。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续只引用准则。"
+    forbidden_redefine: true
+
+  p2_global_margin:
+    label: "eq:p2-simple-global-margin"
+    name: "全队整体安全裕度"
+    latex: "G(t)=\min_{0\le i<j\le222,\ |i-j|>1}G_{ij}(t)"
+    meaning: "全队所有非相邻板凳的最小安全裕度。"
+    first_defined_in: "problem2"
+    reuse_rule: "问题三可替换变量为 rho,p 后直接调用。"
+    forbidden_redefine: true
+
+  p2_stop_time:
+    label: "eq:p2-simple-stop-time"
+    name: "盘入终止时刻"
+    latex: "t^*=\inf\{t\ge0\mid G(t)\le0\}"
+    meaning: "首次出现非相邻板凳相切或碰撞的临界时刻。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续引用结果，不重复建立。"
+    forbidden_redefine: true
+
+  p2_distance_error:
+    label: "eq:p2-distance-error"
+    name: "终止时刻孔距残差"
+    latex: "\varepsilon_d=\max_{0\le i\le222}\left|\|P_{i+1}(t^*)-P_i(t^*)\|-d_i\right|"
+    meaning: "检验终止时刻位置递推结果是否满足刚性孔距约束。"
+    first_defined_in: "problem2"
+    reuse_rule: "后续误差检验可引用形式。"
+    forbidden_redefine: false
+
+problem3:
+  p3_turning_radius:
+    label: "eq:p3-turning-radius"
+    name: "调头空间半径"
+    latex: "R=4.5"
+    meaning: "调头空间直径为 9 m。"
+    first_defined_in: "problem3"
+    reuse_rule: "问题四继续引用 R。"
+    forbidden_redefine: true
+
+  p3_rho_max:
+    label: "eq:p3-rho-max"
+    name: "候选螺距下初始半径"
+    latex: "\rho_{\max}(p)=16p"
+    meaning: "龙头前把手位于第 16 圈时的半径。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续若讨论问题三可行区间，直接引用。"
+    forbidden_redefine: true
+
+  p3_rho_min:
+    label: "eq:p3-rho-min"
+    name: "调头边界半径"
+    latex: "\rho_{\min}=R=4.5"
+    meaning: "龙头前把手到达调头空间边界。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p3_rho_range:
+    label: "eq:p3-rho-range"
+    name: "问题三半径搜索区间"
+    latex: "\rho\in[R,16p]"
+    meaning: "候选螺距可行性需要检查的全过程半径范围。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p3_head_theta:
+    label: "eq:p3-head-theta"
+    name: "候选螺距下龙头角参数"
+    latex: "\theta_0(\rho,p)=\frac{2\pi\rho}{p}"
+    meaning: "由问题一极径关系在候选螺距下直接确定；不重新建立坐标模型。"
+    first_defined_in: "problem3"
+    reuse_rule: "允许作为问题三新增参数关系使用。"
+    forbidden_redefine: false
+
+  p3_all_theta:
+    label: "eq:p3-all-theta"
+    name: "候选螺距下全部把手角参数"
+    latex: "\theta_1(\rho,p),\theta_2(\rho,p),\ldots,\theta_{223}(\rho,p)"
+    meaning: "调用问题一递推模型得到全部把手角参数。"
+    first_defined_in: "problem3"
+    reuse_rule: "只表示调用结果，不展开递推来源。"
+    forbidden_redefine: false
+
+  p3_all_position:
+    label: "eq:p3-all-position"
+    name: "候选螺距下全部把手位置"
+    latex: "P_i(\rho,p),\quad i=0,1,\ldots,223"
+    meaning: "调用问题一位置模型并替换螺距参数后得到的位置。"
+    first_defined_in: "problem3"
+    reuse_rule: "不得在问题三重复写直角坐标表达。"
+    forbidden_redefine: false
+
+  p3_board_region:
+    label: "eq:p3-board-region"
+    name: "候选构型下板凳实体区域"
+    latex: "\Omega_i(\rho,p),\quad i=0,1,\ldots,222"
+    meaning: "调用问题二矩形实体模型得到。"
+    first_defined_in: "problem3"
+    reuse_rule: "不得重复构造矩形顶点或矩形区域公式。"
+    forbidden_redefine: false
+
+  p3_pair_margin:
+    label: "eq:p3-pair-margin"
+    name: "候选构型下非相邻板凳安全分离裕度"
+    latex: "G_{ij}(\rho,p),\quad |i-j|>1"
+    meaning: "调用问题二碰撞判定模型并将时间变量替换为构型变量 rho,p。"
+    first_defined_in: "problem3"
+    reuse_rule: "不得重复推导分离轴判定。"
+    forbidden_redefine: false
+
+  p3_global_margin:
+    label: "eq:p3-global-margin"
+    name: "候选构型全局安全裕度"
+    latex: "H(\rho,p)=\min_{0\le i<j\le222,\ |i-j|>1}G_{ij}(\rho,p)"
+    meaning: "给定 rho,p 时整条舞龙队的最小安全裕度。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续若讨论问题三可行性，直接引用。"
+    forbidden_redefine: true
+
+  p3_pitch_margin:
+    label: "eq:p3-pitch-margin"
+    name: "候选螺距最小安全裕度"
+    latex: "F(p)=\min_{\rho\in[R,16p]}H(\rho,p)"
+    meaning: "候选螺距在整个盘入区间内的最小安全裕度。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续引用，不重复构造。"
+    forbidden_redefine: true
+
+  p3_pitch_feasibility:
+    label: "eq:p3-pitch-feasibility"
+    name: "候选螺距可行性判定"
+    latex: "F(p)>0\Rightarrow p\text{ 可行},\quad F(p)\le0\Rightarrow p\text{ 不可行}"
+    meaning: "判断候选螺距能否安全盘入到调头空间边界。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: true
+
+  p3_min_pitch:
+    label: "eq:p3-min-pitch"
+    name: "最小螺距优化模型"
+    latex: "p_{\min}=\inf\{p>0\mid F(p)\ge0\}"
+    meaning: "问题三目标模型。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续引用结果，不重复建立优化问题。"
+    forbidden_redefine: true
+
+  p3_result_pitch:
+    label: "eq:p3-result-pitch"
+    name: "最小螺距结果"
+    latex: "p_{\min}=0.450337393\,\mathrm m=45.0337393\,\mathrm{cm}"
+    meaning: "问题三最小螺距求解结果。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用数值。"
+    forbidden_redefine: false
+
+  p3_result_pitch_six:
+    label: "eq:p3-result-pitch-six"
+    name: "最小螺距六位小数"
+    latex: "p_{\min}=0.450337\,\mathrm m"
+    meaning: "按题目结果精度保留。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: false
+
+  p3_result_theta:
+    label: "eq:p3-result-theta"
+    name: "边界处角参数"
+    latex: "\theta_R=\frac{2\pi R}{p_{\min}}=62.784779\,\mathrm{rad}"
+    meaning: "最小螺距下到达调头空间边界的角参数。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续问题四若需要边界角参数可引用。"
+    forbidden_redefine: false
+
+  p3_result_turns:
+    label: "eq:p3-result-turns"
+    name: "边界处圈数"
+    latex: "N_R=\frac{\theta_R}{2\pi}=9.992508"
+    meaning: "边界角参数对应圈数。"
+    first_defined_in: "problem3"
+    reuse_rule: "后续直接引用。"
+    forbidden_redefine: false
