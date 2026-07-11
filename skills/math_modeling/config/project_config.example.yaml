@@ -1,0 +1,109 @@
+schema_version: 1
+
+project:
+  id: example_project
+  title: "数学建模项目"
+  competition: "CUMCM|MCM|ICM|other"
+  language: zh-CN
+  timezone: Asia/Shanghai
+  root: "<project>/"
+
+paths:
+  problem_statement: "<project>/inputs/problem.pdf"
+  attachments: "<project>/inputs/"
+  registry:
+    parameters: "<project>/registry/parameters.yaml"
+    formulas: "<project>/registry/formulas.yaml"
+    model_contracts: "<project>/registry/model_contracts.yaml"
+  modeling_artifacts: "<project>/artifacts/modeling/"
+  architecture_artifacts: "<project>/artifacts/architecture/"
+  paper_sections: "<project>/sections/"
+  results: "<project>/results/"
+  figures: "<project>/figures/"
+
+units:
+  system: SI
+  length: m
+  time: s
+  speed: m/s
+  angle: rad
+  conversion_required_before_modeling: true
+
+workflow:
+  default_entry: router
+  require_modeling_packet: true
+  require_paper_blueprint: true
+  allow_direct_paper_writing: false
+  require_innovation_explorer: true
+  require_registry_update: true
+  require_validation_before_writing: true
+
+modeling:
+  stable_formula_ids: true
+  final_equation_numbers: false
+  minimum_candidate_routes: 3
+  validation_required:
+    - residual_or_constraint_check
+    - stability_or_sensitivity_check
+  allow_partial_result: true
+  partial_result_must_be_labeled: true
+
+innovation:
+  goal: problem_specific_and_verifiable
+  forbid_unverified_originality_claims: true
+  require_baseline_comparison: true
+  require_user_decision_record: true
+
+paper_architecture:
+  equation_numbering: global
+  figure_numbering: chapter
+  table_numbering: chapter
+  one_owner_per_formula: true
+  one_owner_per_model: true
+  common_assumptions_once: true
+  common_symbol_table_once: true
+  formula_reuse_policy: reference_only
+  page_limit: null
+
+paper_writing:
+  style: formal_academic
+  final_formats:
+    - latex
+  include_tool_process_in_body: false
+  include_failed_routes_in_body: false
+  result_explanation_level: concise
+  figure_caption_position: below
+  table_caption_position: above
+  editable_equations_required: true
+
+context_budget:
+  read_entire_repository: false
+  load_only:
+    - project_config
+    - current_problem_inputs
+    - project_registries
+    - direct_dependencies
+    - current_layer_skill
+  prefer_registry_over_previous_full_text: true
+
+compatibility:
+  formula_reuse_protocol: "skills/math_modeling/FORMULA_REUSE_PROTOCOL.md"
+  formula_reuse_checker: "skills/math_modeling/checks/check_formula_reuse.py"
+  preserve_existing_project_directories: true
+
+quality_gates:
+  modeling_to_architecture:
+    - outputs_covered
+    - reproducible_model_and_algorithm
+    - quantitative_validation
+    - constraints_separated_from_writing
+  architecture_to_writing:
+    - unique_model_ownership
+    - unique_formula_labels
+    - inheritance_and_new_content_defined
+    - no_open_critical_issues
+  writing_to_delivery:
+    - no_redefinition
+    - no_number_conflict
+    - result_attachment_consistency
+    - required_outputs_present
