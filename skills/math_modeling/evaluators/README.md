@@ -65,17 +65,34 @@ right = D t / (1 - s t)
 
 A non-positive denominator is rejected as singular beam/terrain geometry.
 
+## 3. Route curvature feasibility
+
+`route_feasibility.py` evaluates the exact geometry of a precomputed survey-line plan. It does not generate connectors, fit splines or smooth corners.
+
+```bash
+python skills/math_modeling/evaluators/route_feasibility.py \
+  --candidate tests/case001/run/problem4_candidates/generated/P4-CAND-C.json \
+  --output tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+```
+
+A nonzero heading change at an interior polyline vertex is treated as a hard failure because following the exact polyline would require an instantaneous heading change and unbounded curvature. An optional positive `--minimum-turn-radius-m` may be supplied only after that operational limit has been frozen explicitly.
+
+The command returns exit code `0` on pass and `2` on geometric failure. For case001, failure of candidate C triggers the recorded fallback to candidate A. Implicitly smoothing C is forbidden because a smoothed path is a different route and must be sent through the spatial evaluator again.
+
+The current check is limited to within-line geometry. Connecting turns between separate survey lines remain outside the committed candidate artifacts.
+
 ## Tests
 
 ```bash
 python -m unittest discover -s tests/evaluators -p 'test_*.py' -v
 ```
 
-The suite covers analytic coverage/overlap/boundary cases, grid interpolation, singular geometry, external terrain bundles, XLSX parsing, unit conversion and malformed/missing workbook data.
+The suite covers analytic coverage/overlap/boundary cases, grid interpolation, singular geometry, external terrain bundles, XLSX parsing, unit conversion, malformed/missing workbook data, straight-line feasibility, hard polyline corners and optional minimum-radius diagnostics.
 
 ## Remaining limits
 
 - Coverage area is a cell-centre raster estimate; every final result must include grid sensitivity.
 - Overlap length is an along-line/cross-track sampling estimate controlled by `along_step_m` and `cross_track_samples`.
-- The evaluator accepts precomputed plans only and must remain independent from Route Explorer.
+- The evaluators accept precomputed plans only and must remain independent from Route Explorer.
 - A real attachment smoke test validates ingestion and runtime, not route quality.
+- Curvature validation does not infer or invent vessel-specific turning limits.
