@@ -1,0 +1,39 @@
+schema_version: 1
+case_id: case001
+purpose: "Independent deterministic baseline for W2-W4 regression; not copied from reference papers."
+
+problem1:
+  offsets_m: [-800, -600, -400, -200, 0, 200, 400, 600, 800]
+  depth_m_rounded_2dp: [90.95, 85.71, 80.47, 75.24, 70.00, 64.76, 59.53, 54.29, 49.05]
+  coverage_width_m_rounded_2dp: [315.81, 297.63, 279.44, 261.26, 243.07, 224.88, 206.70, 188.51, 170.33]
+  overlap_percent_rounded_2dp: [null, 35.70, 31.51, 26.74, 21.26, 14.89, 7.41, -1.53, -12.36]
+  first_missed_coverage_offset_m: 600
+  acceptance:
+    max_abs_depth_difference_m: 0.01
+    max_abs_coverage_difference_m: 0.01
+    max_abs_overlap_difference_percentage_point: 0.01
+
+problem2:
+  beta_degree: [0, 45, 90, 135, 180, 225, 270, 315]
+  distance_nautical_mile: [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1]
+  coverage_width_m_rounded_3dp:
+    - [415.692, 466.091, 516.490, 566.889, 617.288, 667.686, 718.085, 768.484]
+    - [416.192, 451.872, 487.552, 523.232, 558.912, 594.592, 630.273, 665.953]
+    - [416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692]
+    - [416.192, 380.511, 344.831, 309.151, 273.471, 237.791, 202.110, 166.430]
+    - [415.692, 365.293, 314.894, 264.496, 214.097, 163.698, 113.299, 62.900]
+    - [416.192, 380.511, 344.831, 309.151, 273.471, 237.791, 202.110, 166.430]
+    - [416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692]
+    - [416.192, 451.872, 487.552, 523.232, 558.912, 594.592, 630.273, 665.953]
+  acceptance:
+    max_abs_difference_m: 0.001
+    required_symmetries:
+      - beta_45_equals_beta_315
+      - beta_135_equals_beta_225
+      - beta_90_and_270_constant_over_distance
+
+reference_warning:
+  cell: "problem2 beta=135 degree, distance=2.1 NM"
+  independent_value_m: 166.430
+  conflicting_reference_value_m: 116.430
+  status: rejected_as_ground_truth
