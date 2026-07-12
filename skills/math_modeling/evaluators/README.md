@@ -1,10 +1,12 @@
-# Independent multibeam evaluators
+# Independent mathematical-modeling evaluators
 
-This directory contains deterministic tools that evaluate already-created data or line plans. They contain no route generation, optimization, terrain fitting or candidate scoring logic.
+This directory contains deterministic tools for evaluating already-created data, models or route plans. The tools do not choose a final modeling route and do not encode a competition-specific fallback decision.
+
+Case-specific acceptance rules belong in `tests/caseXXX/`; reusable evaluator behavior belongs here.
 
 ## 1. Workbook adapter
 
-`xlsx_depth_grid.py` reads the official depth workbook directly from the XLSX ZIP/XML package using only Python's standard library. It validates the expected coordinate/depth matrix, converts nautical miles to metres and writes a normalized terrain bundle.
+`xlsx_depth_grid.py` reads a rectangular coordinate/depth matrix directly from an XLSX ZIP/XML package using only Python's standard library. It validates the matrix, converts nautical miles to metres when configured and writes a normalized terrain bundle.
 
 ```bash
 python skills/math_modeling/evaluators/xlsx_depth_grid.py \
@@ -12,19 +14,17 @@ python skills/math_modeling/evaluators/xlsx_depth_grid.py \
   --output tests/case001/local/generated/attachment_terrain.json
 ```
 
-The adapter fails on missing depth cells, nonuniform or non-increasing axes, non-positive depths, unexpected headings, malformed XLSX relationships or non-finite values. It does not smooth, interpolate beyond the source grid, fit surfaces or generate routes.
+The adapter fails on missing cells, malformed relationships, non-increasing axes, non-positive depths and non-finite values. It does not generate routes or fit a surface beyond the declared source grid.
 
 ## 2. Spatial evaluator
 
-`spatial_coverage.py` evaluates a precomputed multibeam line plan. Its JSON config contains:
+`spatial_coverage.py` evaluates a precomputed line plan. Its input declares:
 
-- an axis-aligned rectangular region in metres;
-- either an inline plane/grid terrain or `terrain_file` pointing to an adapter bundle;
-- a transducer opening angle;
-- one or more precomputed survey polylines;
-- raster, along-track and cross-track sampling settings.
-
-The regular grid uses positive-down depth and `depth[j][i]` ordering for `y[j], x[i]`. Coordinates must be strictly increasing.
+- a rectangular region;
+- an inline or external terrain bundle;
+- an instrument opening angle;
+- precomputed route geometry;
+- sampling and overlap policy.
 
 ```bash
 python skills/math_modeling/evaluators/spatial_coverage.py \
@@ -32,54 +32,50 @@ python skills/math_modeling/evaluators/spatial_coverage.py \
   --output /tmp/spatial_report.json
 ```
 
-It reports:
+The report includes:
 
-- total survey-line length;
-- rasterized uncovered-area percentage;
-- rasterized multiply-covered-area percentage;
-- excessive-overlap centerline length;
-- line length outside the target rectangle;
+- total line length;
+- sampled uncovered-area percentage;
+- sampled multiply-covered-area percentage;
+- excessive-overlap centreline length;
+- line length outside the region;
 - grid-resolution sensitivity;
 - an explicit independence contract.
 
-## Frozen problem-4 overlap convention
+Overlap semantics are injected by the case contract. For example, case001 uses `ordered_previous_line`; that convention is not a universal rule of the evaluator.
 
-The case001 reporting policy is `ordered_previous_line`:
+## 3. Explicit route geometry
 
-1. input lines must be ordered by spatial adjacency of survey strips;
-2. the first line contributes zero excessive-overlap length;
-3. for each later line, sample its centreline;
-4. at each sample, compute the fraction of that line's local swath covered by the immediately preceding line;
-5. count the sampled centreline interval once when that fraction is greater than 20%.
+`skills/math_modeling/geometry/route_geometry.py` provides versioned straight and cubic Bézier segments with deterministic length, tangent, curvature and sampling operations.
 
-This avoids counting one physical adjacent-pair overlap on both lines and matches the ordered phrase “与前一条测线”. The older `per_line` policy remains available only for compatibility and may double-count.
+The geometry layer exists so that a route can be represented as an explicit finite-curvature object rather than an implicitly smoothed polyline.
 
-## Geometry
+## 4. Route feasibility evaluator
 
-At a sampled line point, the terrain is locally approximated by its depth gradient. In the vertical plane normal to the line, with signed slope `s` and half-opening tangent `t`, horizontal half-swaths are:
-
-```text
-left  = D t / (1 + s t)
-right = D t / (1 - s t)
-```
-
-A non-positive denominator is rejected as singular beam/terrain geometry.
-
-## 3. Route curvature feasibility
-
-`route_feasibility.py` evaluates the exact geometry of a precomputed survey-line plan. It does not generate connectors, fit splines or smooth corners.
+`route_feasibility.py` evaluates a precomputed route for tangent continuity and finite-curvature properties.
 
 ```bash
 python skills/math_modeling/evaluators/route_feasibility.py \
-  --candidate tests/case001/run/problem4_candidates/generated/P4-CAND-C.json \
-  --output tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+  --candidate <candidate.json> \
+  --output <feasibility.json>
 ```
 
-A nonzero heading change at an interior polyline vertex is treated as a hard failure because following the exact polyline would require an instantaneous heading change and unbounded curvature. An optional positive `--minimum-turn-radius-m` may be supplied only after that operational limit has been frozen explicitly.
+For a raw polyline, a nonzero heading change at an interior vertex is reported as an exact-geometry failure. That finding applies to the supplied geometry only. It does not reject the underlying route family and does not select a fallback candidate.
 
-The command returns exit code `0` on pass and `2` on geometric failure. For case001, failure of candidate C triggers the recorded fallback to candidate A. Implicitly smoothing C is forbidden because a smoothed path is a different route and must be sent through the spatial evaluator again.
+For explicit straight/Bézier geometry, the evaluator reports route length, hard-corner count and minimum curvature radius. A minimum operational turning radius is applied only when the case supplies and freezes one.
 
-The current check is limited to within-line geometry. Connecting turns between separate survey lines remain outside the committed candidate artifacts.
+A failed route may be refined into a new versioned candidate, but the new geometry must be independently re-evaluated for coverage, overlap, boundary compliance and crossings.
+
+## Independence rules
+
+Reusable evaluators must:
+
+- accept precomputed candidates;
+- avoid route generation and winner selection;
+- expose mathematical and sampling semantics;
+- return detectable failure states;
+- avoid inventing missing physical constraints;
+- remain usable without importing a case directory.
 
 ## Tests
 
@@ -87,12 +83,12 @@ The current check is limited to within-line geometry. Connecting turns between s
 python -m unittest discover -s tests/evaluators -p 'test_*.py' -v
 ```
 
-The suite covers analytic coverage/overlap/boundary cases, grid interpolation, singular geometry, external terrain bundles, XLSX parsing, unit conversion, malformed/missing workbook data, straight-line feasibility, hard polyline corners and optional minimum-radius diagnostics.
+The suite covers analytic coverage, overlap, boundary behavior, terrain interpolation, XLSX parsing, explicit route geometry, straight-line feasibility, hard polyline corners and optional turning-radius diagnostics.
 
 ## Remaining limits
 
-- Coverage area is a cell-centre raster estimate; every final result must include grid sensitivity.
-- Overlap length is an along-line/cross-track sampling estimate controlled by `along_step_m` and `cross_track_samples`.
-- The evaluators accept precomputed plans only and must remain independent from Route Explorer.
-- A real attachment smoke test validates ingestion and runtime, not route quality.
-- Curvature validation does not infer or invent vessel-specific turning limits.
+- Raster coverage is a sampling estimate unless a separate continuous proof is provided.
+- Overlap length is controlled by along-track and cross-track sampling.
+- Case-specific acceptance thresholds must be declared outside the evaluator.
+- Inter-line transit connectors require a separate route-planning contract.
+- Passing an evaluator does not prove global optimality or justify a final human decision.
