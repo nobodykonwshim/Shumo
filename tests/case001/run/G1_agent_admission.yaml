@@ -2,38 +2,28 @@ schema_version: 1
 case_id: case001
 stage: G1
 status: verified
-rule: "Agent admission decisions are based on original sources, error detectability and reference-isolation status."
+rule: "Agent admission decisions are based on original sources, error detectability, executable contracts and reference-isolation status."
 
 reference_isolation:
   protocol: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
   exposure_status: contaminated_for_blind_claim
   blind_claim_allowed: false
-  implication: "Current case may test provenance and quarantined reconstruction, but cannot prove unknown-problem independence."
+  implication: "This case tests provenance and bounded execution, not unknown-problem independence."
 
 decisions:
   problem1:
     proposed_role: none
     decision: workflow
-    ambiguity:
-      decision_tree_enumerable: true
-      evidence: "Fixed planar geometry, fixed parameters, fixed table and deterministic limit checks."
-    value:
-      impact: medium
-      expected_gain_from_agent: low
+    reason: fixed planar geometry, fixed parameters, fixed output table and deterministic checks
     error_control:
       checks: [flat_seabed_limit, dimensional_check, monotonic_depth_check, table_recalculation]
       silent_failure_risk: low
-    approval_required: false
+    completion: pass
 
   problem2:
     proposed_role: none
     decision: workflow
-    ambiguity:
-      decision_tree_enumerable: true
-      evidence: "Coordinate geometry and special-angle tests fully specify the calculation."
-    value:
-      impact: medium
-      expected_gain_from_agent: low
+    reason: coordinate geometry and special-angle tests fully specify the calculation
     error_control:
       checks:
         - beta_0_180_depth_direction_check
@@ -42,7 +32,7 @@ decisions:
         - beta_90_270_constant_width
         - nautical_mile_conversion_check
       silent_failure_risk: low
-    approval_required: false
+    completion: pass
 
   problem3:
     proposed_role: none_during_phase_R1
@@ -52,17 +42,9 @@ decisions:
       approved_by: user
       selected_process: two_phase_independent_then_reference_comparison
       record: tests/case001/run/H1_problem3_route_decision.yaml
-    ambiguity:
-      decision_tree_enumerable: mostly
-      evidence: "Orientation, boundary placement, recursive spacing and verification can be handled by a bounded deterministic search after problem1 and problem2 are fixed."
     reference_control:
-      phase_R1:
-        reference_files_readable: false
-        same_problem_web_search: forbidden
-        route_explorer_allowed: false
-      phase_R2:
-        reference_files_readable: true_after_human_release
-        purpose: comparison_only
+      phase_R1: quarantined
+      phase_R2: comparison_only_after_release
     error_control:
       checks:
         - complete_rectangle_coverage
@@ -77,62 +59,70 @@ decisions:
 
   problem4:
     proposed_role: route_explorer
-    decision: blocked
+    decision: bounded_agent
     ambiguity:
       decision_tree_enumerable: false
-      evidence: "Terrain representation, partition, line geometry and multi-objective priority admit materially different routes."
+      evidence: terrain representation, orientation, route geometry and multi-objective priorities admit materially different routes
     value:
       impact: high
-      expected_gain_from_agent: potentially_high
+      expected_gain_from_agent: compare_a_small_set_of_executable_route_families
     capability:
       completed:
-        - original_attachment_inspected
-        - coordinate_grid_and_depth_range_verified
-        - deterministic_attachment_xlsx_adapter_implemented
-        - independent_spatial_coverage_evaluator_implemented
-        - excessive_overlap_length_evaluator_implemented
-        - ordered_previous_line_overlap_semantics_frozen
-        - analytic_regression_tests_pass
-        - real_251x201_grid_runtime_test_pass
-        - grid_resolution_stability_test_pass
-      remaining:
-        - candidate_route_environment_and_tool_contracts_not_defined
-        - executable_agent_admission_gate_not_implemented
-        - route_explorer_reference_isolation_state_not_frozen
+        - deterministic_attachment_xlsx_adapter
+        - independent_spatial_coverage_evaluator
+        - frozen_ordered_previous_line_overlap_semantics
+        - analytic_and_adapter_tests
+        - real_251x201_grid_runtime_and_resolution_tests
+        - candidate_route_environment_tool_and_prompt_contracts
+        - executable_agent_admission_gate
+        - quarantined_reference_access_state
+        - hash_bound_gate_token
+      evidence:
+        evaluator_phase2: tests/case001/run/problem4_evaluator_phase2_status.yaml
+        admission: tests/case001/run/problem4_agent_admission.json
+        gate_token: tests/case001/run/problem4_agent_gate_token.json
+        contracts: tests/case001/run/problem4_contracts/
+        gate_ci: pass
+    scope:
+      allowed_actions:
+        - generate_at_most_three_executable_candidates
+        - request_independent_evaluation
+        - submit_candidate_set_without_selecting_winner
+      forbidden_actions:
+        - reference_access
+        - same_problem_web_search
+        - final_route_selection
+        - evaluator_or_metric_changes
+        - registry_paper_or_pr_mutation
+    budget:
+      max_iterations: 3
+      max_tool_calls: 8
+      max_candidate_routes: 3
+      used_iterations: 1
+      used_tool_calls: 8
+      used_candidate_routes: 3
     error_control:
-      detectable_failures:
-        - uncovered_grid_or_polygon_cells
-        - excessive_overlap_length
-        - line_outside_region
-        - inconsistent_length_recomputation
-        - grid_resolution_instability
-      independent_evaluator:
-        path: skills/math_modeling/evaluators/spatial_coverage.py
-        route_generation_code_present: false
-        candidate_scoring_imported: false
-      attachment_adapter:
-        path: skills/math_modeling/evaluators/xlsx_depth_grid.py
-        source_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
-      frozen_overlap_policy:
-        policy: ordered_previous_line
-        threshold: 0.20
-        double_counting: prohibited
-      real_grid_evidence:
-        report: tests/case001/run/problem4_real_grid_smoke_report.json
-        runtime_seconds: 5.66
-        resolution_range_percentage_points: 0.6666666666666643
+      validators:
+        - independent_spatial_evaluator
+        - grid_resolution_sensitivity
+        - boundary_violation_check
+        - content_and_report_hashes
       silent_failure_risk: medium
-    unblock_conditions:
-      - define_candidate_route_environment_and_tool_contracts
-      - implement_executable_agent_admission_gate
-      - freeze_route_explorer_reference_isolation_state
-    intended_future_decision: bounded_agent
-    approval_required: true
-    route_explorer_started: false
+    run:
+      record: tests/case001/run/problem4_agent_run.yaml
+      candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+      status: completed_budget_exhausted
+      route_explorer_started: true
+      route_explorer_finished: true
+      winner_selected: false
+    next_stage:
+      type: human_checkpoint
+      record: tests/case001/run/H3_problem4_candidate_selection.yaml
+      status: awaiting_user_selection
 
 summary:
-  workflow: [problem1, problem2, problem3_phase_R1]
-  completed: [problem1, problem2, problem3, problem4_evaluator_phase2]
-  blocked: [problem4_route_explorer]
-  bounded_agent_now: []
-  rationale: "Problem4 now has an independent evaluator and real-grid ingestion, but Agent execution remains blocked until contracts and an executable admission gate prevent unauthorized or contaminated runs."
+  workflow_completed: [problem1, problem2, problem3]
+  bounded_agent_completed: [problem4_route_explorer]
+  human_checkpoint_pending: [problem4_candidate_selection]
+  blocked: []
+  rationale: "Problem4 Agent execution was permitted only after independent evaluation, real-grid testing, contracts, reference quarantine and an executable hash-bound admission gate were all verified."
