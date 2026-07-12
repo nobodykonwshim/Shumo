@@ -1,0 +1,106 @@
+schema_version: 1
+problem_id: problem3
+status: solved
+objective: design the shortest validated parallel-line survey plan that fully covers the 2 NM by 4 NM planar-slope region while keeping adjacent overlap between 10 and 20 percent
+
+dependencies:
+  models_reused:
+    - problem1_planar_swath_geometry
+    - problem2_directional_geometry
+  formulas_reused:
+    - F-P1-DEPTH
+    - F-P1-DEEP-HALF
+    - F-P1-SHALLOW-HALF
+    - F-P1-OVERLAP
+
+inputs:
+  north_south_length_m: 3704
+  east_west_width_m: 7408
+  center_depth_m: 110
+  west_is_deeper_than_east: true
+  slope_degree: 1.5
+  opening_angle_degree: 120
+  overlap_range: [0.10, 0.20]
+
+route_decision:
+  selected_route: contour_parallel_straight_lines_with_recursive_spacing
+  accepted_reasons:
+    - constant depth along each line
+    - one-dimensional overlap control
+    - each line uses the shorter rectangle dimension
+    - deterministic boundary and feasibility checks
+  rejected_routes:
+    - unconstrained_agent_route_exploration
+    - arbitrary_curved_or_nonparallel_lines
+  rejected_reasons:
+    - not required for the declared deterministic baseline
+    - global spatial evaluator for arbitrary routes is not yet available
+  decided_by: user_and_workflow
+
+model_components:
+  - id: M-P3-CONTOUR-LINE-FAMILY
+    purpose: choose north-south lines parallel to depth contours
+  - id: M-P3-WEST-BOUNDARY-PLACEMENT
+    purpose: place first line without western boundary waste
+  - id: M-P3-MAX-SPACING-RECURRENCE
+    purpose: maximize each spacing at eta=0.10
+  - id: M-P3-EAST-TERMINATION
+    purpose: stop at first complete eastern-boundary coverage
+
+new_formula_candidates:
+  - id: F-P3-FIRST-LINE
+    expression: x_1-L_deep(D(x_1))*cos(alpha)=x_west
+  - id: F-P3-SPACING-RECURRENCE
+    expression: eta_i(x_{i-1},x_i)=0.10
+  - id: F-P3-TERMINATION
+    expression: x_n+L_shallow(D(x_n))*cos(alpha)>=x_east
+  - id: F-P3-TOTAL-LENGTH
+    expression: L_total=n*3704
+
+algorithm:
+  method: bracketed_scalar_root_sequence
+  deterministic: true
+  random_seed_required: false
+  output_schedule: tests/case001/run/problem3_independent_baseline.yaml
+
+results:
+  line_count: 34
+  total_line_length_m: 125936
+  total_line_length_nm: 68
+  first_line_x_m: -3345.478207
+  last_line_x_m: 3697.574833
+  eastern_overshoot_m: 15.405496
+
+validation:
+  - check: full_rectangle_coverage
+    status: pass
+  - check: every_adjacent_overlap_between_10_and_20_percent
+    status: pass
+  - check: 33_line_best_case_infeasible
+    status: pass
+    evidence: eastern_shortfall_25.756620_m
+  - check: 34_line_solution_feasible
+    status: pass
+  - check: total_length_recalculation
+    status: pass
+
+reference_provenance:
+  exposure_status: contaminated_for_blind_claim
+  baseline_execution: reference_quarantined
+  baseline_hash: 19b1b4e4401876288426e66ace523dfab13aae02979c3481bae7ba282dc0a1d6
+  comparison_artifact: tests/case001/review/problem3_reference_comparison.yaml
+  baseline_changed_after_comparison: false
+
+writing_notes:
+  essential_claims:
+    - lines are parallel to depth contours
+    - first line is boundary tangent
+    - each spacing uses the 10 percent lower overlap bound
+    - 33 lines are insufficient within the declared route family
+    - 34 lines give total length 125936 m
+  omit_from_paper:
+    - reference quarantine mechanics
+    - Git hashes and workflow stage names
+    - prior reference exposure discussion
+  claim_limit:
+    - do not claim global optimality over arbitrary curved or nonparallel routes
