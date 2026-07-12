@@ -3,7 +3,7 @@ case_id: case001
 problem_id: problem4
 task_id: A-P4-ROUTE-01
 admission_id: ADM-P4-ROUTE-001
-status: evaluated_pending_human_selection
+status: evaluated_and_h3_resolved
 honest_label: reference_aware_assisted_pilot
 
 reference_access:
@@ -24,6 +24,8 @@ source:
 reproduction:
   generator: tests/case001/run/problem4_candidates/generate_candidates.py
   evaluator: skills/math_modeling/evaluators/spatial_coverage.py
+  feasibility_validator: skills/math_modeling/evaluators/route_feasibility.py
+  selection_resolver: tests/case001/run/problem4_candidates/resolve_candidate_selection.py
   expanded_plans_and_full_reports: local_generated_not_committed
   command: >-
     python tests/case001/run/problem4_candidates/generate_candidates.py
@@ -67,6 +69,9 @@ candidates:
       outside_region_line_length_m: 0.0
       boundary_violation: false
     grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
+    feasibility:
+      status: pass
+      exact_polyline_hard_corner_count: 0
     limitations:
       - conservative whole-line spacing causes large overlap in locally deep regions
       - continuous extrema between placement samples are not proven
@@ -110,20 +115,31 @@ candidates:
       outside_region_line_length_m: 0.0
       boundary_violation: false
     grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
+    feasibility:
+      status: fail
+      exact_polyline_hard_corner_count: 548
+      minimum_three_point_circumradius_m: 2397.1959212741776
+      failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
     limitations:
-      - vessel turning radius and allowable curvature are not modeled
-      - interpolation can create local route artifacts between stations
+      - exact piecewise-linear geometry contains heading discontinuities
+      - implicit smoothing would create a new route requiring full spatial re-evaluation
       - global optimality is not claimed
 
 comparison:
-  winner_selected: false
+  winner_selected: true
+  selected_candidate: P4-CAND-A
+  selection_basis:
+    - user conditionally selected candidate C for feasibility validation
+    - candidate C failed the frozen exact-geometry curvature gate
+    - fallback candidate A passed the same within-line feasibility gate
+    - candidate A spatial metrics were independently reconfirmed
   deterministic_observations:
     - all three candidates have zero sampled uncovered area and no boundary violation
-    - candidate C has the lowest evaluated length and excessive-overlap length
+    - candidate C has the lowest evaluated length and excessive-overlap length but is infeasible as an exact polyline
     - candidate B has the greatest evaluated length and overlap burden
     - every candidate still has material multiply-covered area and excessive-overlap length
-  why_no_automatic_selection:
-    - candidate C vessel feasibility and curvature constraints are not evaluated
-    - the competition objectives have no frozen scalar weighting
-    - sampled zero uncovered area is not a mathematical proof of continuous coverage
-  next_stage: H3_problem4_candidate_selection
+  claims:
+    global_optimality: false
+    continuous_coverage_proof: false
+  resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+  next_stage: freeze_candidate_A_problem4_baseline
