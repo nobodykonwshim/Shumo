@@ -7,7 +7,7 @@ status: complete
 scope:
   purpose: verify the frozen candidate-A decision is consistently represented and reproducible before formal review
   merge_authorized: false
-  keep_pr_draft: true
+  pr_state: ready_for_review
 
 baseline_consistency:
   selected_candidate: P4-CAND-A
@@ -22,16 +22,16 @@ baseline_consistency:
 
 validation:
   clean_checkout_proxy: github_actions_fresh_runner_checkout
-  head_sha_checked: 4e6afe1d19aaff9cff53fc1878d8f056aaac28a9
+  head_sha_checked: 7a50653ff8f76a6907758286c93e6e3cacad7fbd
   workflow_runs:
     problem4_candidate_feasibility_resolution:
-      run_id: 29193246911
+      run_id: 29193465828
       conclusion: success
     spatial_evaluator_tests:
-      run_id: 29193246932
+      run_id: 29193465822
       conclusion: success
     agent_admission_gate_tests:
-      run_id: 29193246910
+      run_id: 29193465823
       conclusion: success
   open_review_threads: 0
 
@@ -58,5 +58,9 @@ review_readiness:
   technical_blockers: []
   documentation_blockers: []
   ready_for_human_review: true
-  pr_transition_performed: false
-  reason_pr_remains_draft: explicit user instruction to avoid merge and prior frozen PR policy
+  pr_transition_performed: true
+  pr_state: ready_for_review
+  transition_requested_by: user
+  transition_timestamp_utc: 2026-07-12T13:04:08Z
+  merge_authorized: false
+  merge_performed: false
