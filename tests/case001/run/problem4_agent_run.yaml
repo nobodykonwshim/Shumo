@@ -1,0 +1,57 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+run_id: RUN-P4-ROUTE-001
+task_id: A-P4-ROUTE-01
+agent_type: route_explorer
+status: completed_budget_exhausted_pending_human_selection
+honest_label: reference_aware_assisted_pilot
+
+admission:
+  admission_id: ADM-P4-ROUTE-001
+  admission_path: tests/case001/run/problem4_agent_admission.json
+  gate_token_path: tests/case001/run/problem4_agent_gate_token.json
+  gate_token_sha256: fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c
+  executable_gate_ci: pass
+
+reference_access:
+  state: quarantined
+  same_problem_web_search: forbidden
+  external_reference_paths_readable: false
+  reference_files_used: []
+
+contracts:
+  environment: tests/case001/run/problem4_contracts/environment_manifest.json
+  tools: tests/case001/run/problem4_contracts/tool_contracts.json
+  prompt: tests/case001/run/problem4_contracts/prompt_contract.json
+
+budget:
+  max_iterations: 3
+  max_tool_calls: 8
+  max_candidate_routes: 3
+  iterations_used: 1
+  tool_calls_used: 8
+  candidate_routes_used: 3
+
+bounded_actions:
+  - read normalized authoritative terrain bundle
+  - generate P4-CAND-A
+  - independently evaluate P4-CAND-A
+  - generate P4-CAND-B
+  - independently evaluate P4-CAND-B
+  - generate P4-CAND-C
+  - independently evaluate P4-CAND-C
+  - submit candidate-set manifest
+
+outputs:
+  generator: tests/case001/run/problem4_candidates/generate_candidates.py
+  candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+  candidates: [P4-CAND-A, P4-CAND-B, P4-CAND-C]
+  winner_selected: false
+
+stop:
+  condition: budget_exhausted
+  behavior: returned_evaluated_candidate_set_without_selecting_route
+
+rollback_point: tests/case001/run/problem4_evaluator_phase2_status.yaml
+next_stage: H3_problem4_candidate_selection
