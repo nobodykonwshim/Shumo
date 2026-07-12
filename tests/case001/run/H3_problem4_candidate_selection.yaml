@@ -2,81 +2,67 @@ schema_version: 1
 case_id: case001
 problem_id: problem4
 stage: H3
-status: resolved_fallback_candidate_a
+status: candidate_c_retained_for_refinement
 
 candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
 selection_authority: user
 agent_may_select: false
 resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
-
-candidates:
-  P4-CAND-A:
-    family: global_north_south_conservative_adaptive
-    total_length_m: 620420.0
-    uncovered_area_percent: 0.0
-    excess_overlap_length_m: 369055.8064516127
-    principal_risk: conservative_global_spacing_creates_large_local_overlap
-
-  P4-CAND-B:
-    family: global_east_west_conservative_adaptive
-    total_length_m: 703760.0
-    uncovered_area_percent: 0.0
-    excess_overlap_length_m: 452776.95999999956
-    principal_risk: longest_and_highest_overlap_burden_of_tested_candidates
-
-  P4-CAND-C:
-    family: terrain_responsive_curved_north_south
-    total_length_m: 576755.7023466643
-    uncovered_area_percent: 0.0
-    excess_overlap_length_m: 339673.0975448946
-    principal_risk: exact_polylines_contain_hard_heading_discontinuities
+refinement_plan: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
 
 human_decision:
-  selected_candidate_for_validation: P4-CAND-C
-  selection_was_conditional: true
-  fallback_candidate_on_validation_failure: P4-CAND-A
+  primary_route_family: P4-CAND-C
+  decision: retain_and_improve
+  reason: >-
+    Problem 4 prioritizes short total survey-line length. Failure of the exact
+    piecewise-linear realization establishes that the current geometry needs
+    refinement; it does not justify rejecting the terrain-responsive route family.
+  conservative_reference_candidate: P4-CAND-A
+  final_selection_deferred: true
 
-feasibility_resolution:
-  workflow_run_id: 29193104720
-  workflow_conclusion: success
-  candidate_c_status: fail
-  candidate_c_hard_corner_count: 548
-  candidate_c_failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+candidate_c_status:
+  original_geometry_id: P4-CAND-C
+  original_exact_polyline_status: fails_hard_corner_gate
+  hard_corner_count: 548
+  route_family_status: active_refinement_primary
   implicit_smoothing_allowed: false
-  fallback_candidate_a_status: pass
-  final_selected_candidate: P4-CAND-A
+  explicit_new_geometry_required: true
+  required_follow_up:
+    - construct a finite-curvature C-derived route as a new versioned candidate
+    - independently re-evaluate length, coverage, overlap, boundary compliance and line crossings
+    - compare refined C against candidate A under the same evaluator settings
 
-selected_baseline:
+candidate_a_status:
   candidate_id: P4-CAND-A
+  role: conservative_reference_and_fallback_only
   survey_line_count: 67
   total_survey_line_length_m: 620420.0
   uncovered_area_percent: 0.0
   excess_overlap_length_m: 369055.8064516127
   boundary_violation: false
-  state: frozen
+  baseline_state: reference_not_final
 
-selection_rule_application:
-  - candidate C was not selected from length metrics alone
-  - exact-geometry curvature feasibility was evaluated on hash-verified regenerated coordinates
-  - candidate C failed because 548 interior vertices require instantaneous heading changes
-  - candidate A passed the same within-line geometry gate
-  - candidate C was not implicitly smoothed because smoothing would create a new unevaluated route
-  - no numerical vessel turning-radius limit was invented
-  - no candidate is described as globally optimal
+selection_principles:
+  primary_objective: minimize_total_survey_line_length
+  constraints:
+    - sampled_uncovered_area_percent_must_equal_zero_at_frozen_settings
+    - boundary_violation_must_be_false
+    - route_geometry_must_have_no_instantaneous_heading_changes
+    - adjacent_survey_lines_must_not_cross
+  secondary_objectives:
+    - reduce_excess_overlap_length
+    - reduce_multiply_covered_area
+  claims:
+    global_optimality: false
+    continuous_coverage_proof: false
 
-remaining_scope_limit:
-  inter_line_connectors_checked: false
-  explanation: >-
-    The competition reports survey-line length and provides no vessel-specific
-    turning-radius or connector-boundary constraint. Connecting transit turns
-    remain outside the frozen reported route metrics.
-
-handoff_after_resolution:
-  - build problem4.model.yaml from the frozen candidate-A baseline
-  - optionally open reference-comparison phase
+handoff:
+  - execute candidate-C refinement plan
+  - generate one or more versioned C-derived finite-curvature candidates
+  - run full spatial and curvature evaluation
+  - return to H3 only after comparative evidence is available
 
 pr_policy:
-  ready_for_review: true
-  keep_draft: false
+  ready_for_review: false
+  keep_draft: true
   merge_allowed: false
-  transition_authority: user
