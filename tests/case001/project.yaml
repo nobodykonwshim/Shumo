@@ -23,6 +23,7 @@ paths:
   results: "tests/case001/results/"
   figures: "tests/case001/figures/"
   sections: "tests/case001/sections/"
+  spatial_evaluator: "skills/math_modeling/evaluators/spatial_coverage.py"
 
 units:
   system: SI
@@ -134,6 +135,29 @@ modeling:
   allow_partial_result: true
   partial_result_must_be_labeled: true
 
+problem4_evaluation:
+  phase: 1
+  evaluator_status: analytic_tests_pass
+  route_generator_independent: true
+  metric_policy:
+    uncovered_area: raster_cell_center
+    excessive_overlap_length: per_line
+    excessive_overlap_threshold: 0.20
+  implemented:
+    - total_line_length
+    - uncovered_area_percentage
+    - multiply_covered_area_percentage
+    - excessive_overlap_length
+    - outside_region_length
+    - grid_resolution_sensitivity
+  remaining_before_agent:
+    - attachment_xlsx_adapter
+    - real_grid_runtime_and_resolution_test
+    - overlap_length_semantics_approval
+    - candidate_route_tool_contracts
+    - executable_agent_gate
+  route_explorer_allowed: false
+
 paper_architecture:
   equation_numbering: global
   figure_numbering: chapter
@@ -168,6 +192,18 @@ quality_gates:
     - independent_baseline_frozen
     - baseline_hash_recorded
     - human_reference_release_approved
+  problem4_evaluator_phase1:
+    - route_generator_independence_declared
+    - analytic_flat_plane_tests_pass
+    - analytic_sloped_plane_test_pass
+    - boundary_violation_test_pass
+    - grid_sensitivity_reported
+  problem4_evaluator_to_agent:
+    - attachment_grid_adapter_verified
+    - real_grid_resolution_stable
+    - excessive_overlap_metric_frozen
+    - candidate_route_tool_contracts_defined
+    - executable_agent_gate_passed
   modeling_to_architecture:
     - outputs_covered
     - route_decision_recorded
@@ -188,7 +224,7 @@ quality_gates:
     - required_outputs_present
 
 status:
-  current_stage: H1_problem3_reference_isolation
-  state: approved_process_pending_W2
-  blocker: null
-  note: "Problem3 will run as a reference-quarantined reconstruction, not as a true blind claim; a fresh case is required for genuine unknown-problem validation."
+  current_stage: problem4_evaluator_phase1_complete
+  state: agent_blocked_pending_real_grid_integration
+  blocker: "Problem4 Route Explorer remains blocked until attachment-grid integration, real-grid stability, overlap metric semantics and executable Agent contracts are verified."
+  note: "Problem1-3 are complete. The phase-one evaluator is analytically tested and independent, but it is not yet sufficient to authorize problem4 Agent exploration."
