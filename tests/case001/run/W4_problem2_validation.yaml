@@ -1,0 +1,56 @@
+schema_version: 1
+case_id: case001
+stage: W4
+problem_id: problem2
+status: pass
+
+checks:
+  source_parameter_match:
+    status: pass
+    evidence: "theta=120 deg, alpha=1.5 deg, D0=120 m, beta list and distance list match B题.pdf page 3."
+  beta_0_and_180:
+    status: pass
+    evidence: "Cross-track slope is zero; width changes only through depth along the route."
+  beta_90_and_270:
+    status: pass
+    evidence: "Depth is constant along the survey line and all eight widths are 416.692 m after rounding."
+  symmetry_45_315:
+    status: pass
+    max_abs_difference_m: 0.0
+  symmetry_135_225:
+    status: pass
+    max_abs_difference_m: 0.0
+  center_distance:
+    status: pass
+    evidence: "At l=0, beta pairs with equal |sin(beta)| have equal coverage."
+  nautical_mile_conversion:
+    status: pass
+    evidence: "0.3 NM is converted to 555.6 m before depth calculation."
+  template_schema:
+    status: pass
+    input_range: A1:J10
+    output_range: A1:J10
+    field_order_changed: false
+  formula_error_scan:
+    status: pass
+    matched_errors: 0
+
+negative_regression_test:
+  injected_error: "Treat 0.3 nautical mile as 0.3 metre."
+  expected_detection: "beta=0 width increment becomes approximately 0.027 m instead of about 50.399 m."
+  detected_by:
+    - unit_conversion_check
+    - special_angle_increment_check
+  status: pass
+
+reference_review:
+  suspicious_value:
+    cell: "beta=135, distance=2.1 NM"
+    independent_result_m: 166.430
+    conflicting_report_m: 116.430
+    resolution: "Independent model and beta=225 symmetry support 166.430; conflicting value is flagged as a reference typo or transcription error."
+
+handoff:
+  problem1_and_problem2_W2_W4_complete: true
+  critical_open_findings: 0
+  next_required_stage: problem3_human_checkpoint
