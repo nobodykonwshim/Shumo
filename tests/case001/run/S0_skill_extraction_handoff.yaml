@@ -32,6 +32,10 @@ reusable_capabilities_extracted:
     validator: skills/math_modeling/validation/model_spec_validator.py
     case_demonstration: tests/case001/artifacts/modeling/problem3.model.v2.yaml
     status: validated
+  - capability_id: capability_registry_validation
+    owner_path: skills/math_modeling/specs/capability_registry.schema.json
+    validator: skills/math_modeling/validation/capability_registry_validator.py
+    status: validated
   - capability_id: agent_admission
     owner_path: skills/math_modeling/orchestration/agent_gate.py
   - capability_id: reference_isolation
@@ -51,6 +55,7 @@ promotion_evidence:
   capability_registry: skills/math_modeling/CAPABILITY_REGISTRY.yaml
   generic_tests:
     - tests/specs/test_model_spec_validator.py
+    - tests/specs/test_capability_registry_validator.py
     - tests/evaluators/test_xlsx_depth_grid.py
     - tests/evaluators/test_spatial_coverage.py
     - tests/evaluators/test_route_geometry.py
@@ -69,9 +74,14 @@ completed_skill_backlog:
       Added a model-family-neutral JSON Schema, YAML/JSON validator, semantic
       reference checks, evidence-path checks, regression tests and a migrated
       real-case demonstration.
+  - capability_id: capability_registry_validator
+    completed_at: 2026-07-12
+    result: >-
+      Added a registry schema, structural and semantic validator, ownership and
+      evidence-path checks, backlog consistency checks, regression tests and a
+      reusable CI gate.
 
 next_skill_backlog:
-  - capability_registry_validator
   - generic_sensitivity_policy
   - paper_blueprint_validator
 
