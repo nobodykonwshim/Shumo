@@ -2,7 +2,7 @@ schema_version: 1
 case_id: case001
 problem_id: problem4
 stage: H3_candidate_feasibility_resolution
-status: resolved
+status: superseded_by_human_review
 
 workflow:
   name: Problem4 candidate feasibility resolution
@@ -18,43 +18,44 @@ source_verification:
   candidate_a_sha256: adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4
   all_hash_checks_passed: true
 
-conditional_primary:
+original_candidate_c_result:
   candidate_id: P4-CAND-C
-  feasibility_status: fail
+  exact_polyline_feasibility_status: fail
   hard_corner_count: 548
   minimum_three_point_circumradius_m: 2397.1959212741776
   failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
   interpretation: >-
-    The exact candidate-C polylines contain interior heading discontinuities.
-    Their finite three-point diagnostic radii do not repair the fact that the
-    exact piecewise-linear path requires instantaneous heading changes at its
-    vertices. Implicit smoothing is not allowed because it would create a new
-    route requiring full spatial re-evaluation.
+    The exact piecewise-linear realization is not directly executable. This is a
+    geometry-version failure, not a rejection of the terrain-responsive route family.
 
-fallback:
+candidate_a_reference:
   candidate_id: P4-CAND-A
-  feasibility_status: pass
-  selected: true
-  selection_reason: candidate C failed the frozen exact-geometry curvature gate
-
-selected_route_metrics:
+  exact_polyline_feasibility_status: pass
+  role: conservative_reference_and_fallback_only
   survey_line_count: 67
   total_survey_line_length_m: 620420.0
   uncovered_area_percent: 0.0
   excess_overlap_length_m: 369055.8064516127
   boundary_violation: false
 
-scope_and_limits:
-  within_line_curvature_checked: true
-  inter_line_connectors_checked: false
-  connector_note: >-
-    The competition reports survey-line length and supplies no vessel-specific
-    turning-radius or off-line connector constraints. Connecting transit turns
-    therefore remain outside the frozen reported route metrics.
-  vessel_specific_minimum_turn_radius_m: null
-  global_optimality_claimed: false
+human_review_override:
+  date_utc: 2026-07-12
+  decision: do_not_freeze_candidate_a_as_final
+  retain_candidate_c_route_family: true
+  reason: >-
+    The problem's central objective is short total survey-line length. Candidate C
+    remains the shortest tested family, so it must be explicitly refined rather than
+    discarded solely because its first polyline representation contains hard corners.
+  next_record: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
 
-final_decision:
-  selected_candidate: P4-CAND-A
-  problem4_baseline_state: frozen
+current_decision:
+  final_selected_candidate: null
+  candidate_c_route_family_state: active_refinement_primary
+  candidate_a_state: reference_not_final
+  problem4_baseline_state: reopened
   merge_pr: false
+
+scope_and_limits:
+  vessel_specific_minimum_turn_radius_m: null
+  inter_line_connectors_checked: false
+  global_optimality_claimed: false
