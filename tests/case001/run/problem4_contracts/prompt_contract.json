@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "task_id": "A-P4-ROUTE-01",
+  "agent_type": "route_explorer",
+  "status": "verified",
+  "objective": "Generate at most three substantively different, executable survey-line candidate families for problem 4 and submit them for independent evaluation without selecting a winner.",
+  "known_facts": [
+    "Official region is 4 NM east-west by 5 NM north-south.",
+    "The normalized official grid has 201 x-coordinates and 251 y-coordinates at 0.02 NM spacing.",
+    "Depth is positive-down and ranges from 20.0 m to 197.2 m.",
+    "The multibeam opening angle is 120 degrees.",
+    "The independent evaluator and ordered_previous_line overlap convention are frozen."
+  ],
+  "known_unknowns": [
+    "Which terrain representation is most useful for route generation.",
+    "Whether one global orientation or regional orientations are preferable.",
+    "How to prioritize coverage, overlap and length before human selection."
+  ],
+  "allowed_actions": [
+    "inspect authoritative terrain data and source profile",
+    "propose no more than three candidate route families",
+    "write candidate JSON under the allowed directory",
+    "request independent evaluation",
+    "revise a candidate within the fixed budget after a failed evaluation"
+  ],
+  "forbidden_actions": [
+    "read B477, B226, B311 or reference benchmark files",
+    "search the web for same-problem solutions",
+    "claim global optimality",
+    "select the final route",
+    "modify project registries, frozen baselines or paper text",
+    "change evaluator code, metric semantics or evaluation settings"
+  ],
+  "success_criteria": [
+    "one to three candidates are substantively different",
+    "every candidate is executable and independently evaluated",
+    "all assumptions and limitations are explicit",
+    "no candidate has an unreported boundary violation",
+    "candidate-set manifest contains content and report hashes"
+  ],
+  "output_schema": {
+    "candidate_id": "string",
+    "route_family": "string",
+    "lines": "ordered polyline list in metres",
+    "assumptions": "list",
+    "expected_tradeoffs": "list",
+    "limitations": "list",
+    "evaluation_report": "path and SHA-256"
+  },
+  "budget": {"max_iterations": 3, "max_tool_calls": 8, "max_candidate_routes": 3},
+  "stop_conditions": [
+    "budget exhausted",
+    "two consecutive attempts add no substantively new route family",
+    "candidate cannot be expressed as executable polylines",
+    "independent evaluator reports singular or invalid geometry",
+    "task requires reference access or final value judgment"
+  ],
+  "escalation": "Return current evidence and stop; do not relax constraints."
+}
