@@ -28,10 +28,10 @@ capabilities:
     name: generic executable mathematical model specification
     status: validated
     owner_path: skills/math_modeling/specs/model_spec.schema.json
+    validator: skills/math_modeling/validation/model_spec_validator.py
     contract:
       inputs: objective_inputs_symbols_assumptions_components_formulas_constraints_algorithm_outputs_and_validation
       outputs: machine_validated_model_specification_with_provenance_limits_and_human_checkpoints
-    validator: skills/math_modeling/validation/model_spec_validator.py
     generic_tests:
       - tests/specs/test_model_spec_validator.py
     demonstrated_by:
@@ -41,6 +41,23 @@ capabilities:
       - YAML authoring requires PyYAML while JSON is directly supported
       - status remains validated until the contract is exercised on a second unrelated real case
       - mathematical correctness still depends on the declared validation evidence, not schema conformance alone
+
+  - capability_id: capability_registry_validation
+    name: capability registry structure and evidence-path validation
+    status: validated
+    owner_path: skills/math_modeling/specs/capability_registry.schema.json
+    validator: skills/math_modeling/validation/capability_registry_validator.py
+    contract:
+      inputs: capability_registry_status_contract_tests_demonstrations_limits_and_backlog
+      outputs: machine_report_for_structure_ids_statuses_ownership_backlog_and_repository_paths
+    generic_tests:
+      - tests/specs/test_capability_registry_validator.py
+    demonstrated_by:
+      - skills/math_modeling/CAPABILITY_REGISTRY.yaml
+    limits:
+      - validation proves registry consistency but not that a capability deserves promotion
+      - missing generic tests on legacy validated capabilities are warnings until migrated
+      - promotion from validated to reusable remains a human governance decision
 
   - capability_id: agent_admission
     name: bounded agent admission and runtime token
@@ -141,9 +158,6 @@ capabilities:
       - the promotion decision still requires human judgment
 
 backlog:
-  - capability_id: capability_registry_validator
-    priority: high
-    reason: registry and evidence paths should be machine-checked
   - capability_id: generic_sensitivity_policy
     priority: medium
     reason: cases need a reusable way to declare mandatory sensitivity grids and acceptance rules
