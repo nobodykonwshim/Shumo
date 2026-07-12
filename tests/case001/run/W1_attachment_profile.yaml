@@ -1,0 +1,63 @@
+schema_version: 1
+case_id: case001
+stage: W1
+artifact: attachment_profile
+source:
+  filename: "附件.xlsx"
+  sha256: "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a"
+  sheet: Sheet1
+  used_range: "A1:GU253"
+
+coordinates:
+  x:
+    meaning: west_to_east
+    unit: nautical_mile
+    count: 201
+    minimum: 0.0
+    maximum: 4.0
+    step: 0.02
+    strictly_increasing: true
+    duplicates: 0
+  y:
+    meaning: south_to_north
+    unit: nautical_mile
+    count: 251
+    minimum: 0.0
+    maximum: 5.0
+    step: 0.02
+    strictly_increasing: true
+    duplicates: 0
+
+depth_grid:
+  unit: m
+  shape: [251, 201]
+  cell_count: 50451
+  missing_values: 0
+  minimum_m: 20.0
+  minimum_location_nm: [0.5, 0.48]
+  maximum_m: 197.2
+  maximum_location_nm: [4.0, 0.0]
+  mean_m: 62.5386846643
+  finite_difference_gradient:
+    unit: m_per_nautical_mile
+    maximum: 109.1169097803
+    mean: 26.8888025969
+    maximum_equivalent_slope_degree: 3.3718785906
+
+quality_checks:
+  rectangular_grid: pass
+  expected_region_dimensions_4_by_5_nm: pass
+  header_units_match_problem_statement: pass
+  no_missing_depths: pass
+  no_duplicate_coordinates: pass
+  depth_values_positive: pass
+
+interpretation:
+  depth_is_positive_downward: true
+  direct_global_plane_assumption_supported: false
+  reason: "Depth range and spatial gradient vary materially; problem4 requires terrain representation and independent spatial evaluation."
+
+handoff:
+  terrain_exploration_data_available: true
+  route_agent_admitted: false
+  blocker: independent_spatial_evaluator_missing
