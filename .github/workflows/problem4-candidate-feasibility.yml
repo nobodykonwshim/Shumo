@@ -66,6 +66,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Candidate manifests intentionally preserve the original local-only relative
+          # terrain reference. Recreate that exact expected location for independent recheck.
+          mkdir -p tests/case001/run/local/generated
+          cp tests/case001/local/generated/attachment_terrain.json \
+            tests/case001/run/local/generated/attachment_terrain.json
           SELECTED=$(python - <<'PY'
           import json
           from pathlib import Path
@@ -85,13 +90,20 @@ jobs:
           results = spatial["results"]
           assert results["uncovered_area_percent"] == 0.0
           assert results["boundary_violation"] is False
-          print(json.dumps({
+          summary = {
               "selected_candidate": selected,
+              "resolution": resolution["resolution"],
+              "primary_hard_corner_count": resolution["primary_feasibility"]["results"]["hard_corner_count"],
               "total_survey_line_length_m": results["total_survey_line_length_m"],
               "uncovered_area_percent": results["uncovered_area_percent"],
               "excess_overlap_length_m": results["excess_overlap_length_m"],
               "boundary_violation": results["boundary_violation"],
-          }, indent=2))
+          }
+          Path("tests/case001/run/problem4_candidates/generated/problem4_selection_summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(summary, indent=2))
           PY
 
       - name: Upload resolution evidence
@@ -102,5 +114,6 @@ jobs:
             tests/case001/run/problem4_candidates/generated/P4-CAND-A.json
             tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
             tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
+            tests/case001/run/problem4_candidates/generated/problem4_selection_summary.json
             tests/case001/run/problem4_candidates/generated/*_spatial_recheck.json
           if-no-files-found: error
