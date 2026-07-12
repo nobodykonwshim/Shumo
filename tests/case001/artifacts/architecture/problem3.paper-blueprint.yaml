@@ -1,0 +1,167 @@
+schema_version: "1.0"
+blueprint_id: PAPER-CASE001-P3-DEMO
+project_id: case001
+title: Problem 3 architecture demonstration
+status: draft
+
+source_specs:
+  - spec_id: MODEL-CASE001-P3
+    path: tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    role: primary
+    required_for_writing: true
+
+numbering_policy:
+  equations: global
+  figures: chapter
+  tables: chapter
+  algorithms: chapter
+  locked_before_writing: true
+
+sections:
+  - id: SEC-P3-ASSUMPTIONS
+    title: Problem 3 assumptions and notation
+    order: 1
+    purpose: State the planar-slope and route-family boundary once.
+    content_blocks:
+      - id: BLOCK-P3-ASSUMPTIONS
+        type: assumptions
+        source_ids: [A-P3-PLANAR-SLOPE, A-P3-CONTOUR-PARALLEL]
+        disposition: body
+      - id: BLOCK-P3-SYMBOLS
+        type: symbol_table
+        source_ids: [VAR-P3-LINE-POSITIONS, VAR-P3-LINE-COUNT, VAR-P3-TOTAL-LENGTH]
+        disposition: body
+  - id: SEC-P3-MODEL
+    title: Contour-parallel survey-line model
+    order: 2
+    purpose: Define the selected route family, recurrence and termination once.
+    content_blocks:
+      - id: BLOCK-P3-MODELS
+        type: model_definition
+        source_ids: [M-P3-CONTOUR-FAMILY, M-P3-BOUNDARY-PLACEMENT, M-P3-SPACING-RECURRENCE, M-P3-TERMINATION]
+        disposition: body
+      - id: BLOCK-P3-FORMULAS
+        type: formula
+        source_ids: [F-P3-FIRST-LINE, F-P3-SPACING, F-P3-TERMINATION, F-P3-TOTAL-LENGTH]
+        disposition: body
+      - id: BLOCK-P3-ALGORITHM
+        type: algorithm
+        source_ids: [STEP-P3-FIRST, STEP-P3-RECUR, STEP-P3-STOP, STEP-P3-LENGTH]
+        disposition: body
+  - id: SEC-P3-RESULTS
+    title: Feasibility, minimum count and total length
+    order: 3
+    purpose: Present validated outputs and their evidence without recomputation.
+    content_blocks:
+      - id: BLOCK-P3-RESULTS
+        type: result
+        source_ids: [OUT-P3-LINE-COUNT, OUT-P3-LENGTH, OUT-P3-SCHEDULE]
+        disposition: body
+      - id: BLOCK-P3-VALIDATION
+        type: validation
+        source_ids: [V-P3-COVERAGE, V-P3-OVERLAP, V-P3-MINIMUM-COUNT, V-P3-LENGTH]
+        disposition: body
+  - id: SEC-P3-LIMITS
+    title: Route-family limitation
+    order: 4
+    purpose: Prevent a route-family optimum from being stated as a global optimum.
+    content_blocks:
+      - id: BLOCK-P3-LIMITS
+        type: limitation
+        source_ids: []
+        disposition: body
+
+model_placements:
+  - model_id: M-P3-CONTOUR-FAMILY
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+  - model_id: M-P3-BOUNDARY-PLACEMENT
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+  - model_id: M-P3-SPACING-RECURRENCE
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+  - model_id: M-P3-TERMINATION
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+
+formula_placements:
+  - formula_id: F-P3-FIRST-LINE
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+    label: eq:p3-first-line
+  - formula_id: F-P3-SPACING
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+    label: eq:p3-spacing
+  - formula_id: F-P3-TERMINATION
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+    label: eq:p3-termination
+  - formula_id: F-P3-TOTAL-LENGTH
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-MODEL
+    mode: define
+    label: eq:p3-total-length
+
+output_placements:
+  - output_id: OUT-P3-LINE-COUNT
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-RESULTS
+    representation: text
+    precision_policy: Report as an integer.
+  - output_id: OUT-P3-LENGTH
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-RESULTS
+    representation: text
+    precision_policy: Report in metres with no invented precision.
+  - output_id: OUT-P3-SCHEDULE
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-RESULTS
+    representation: appendix
+    label: tab:p3-line-schedule
+    precision_policy: Preserve the validated schedule precision.
+
+claims:
+  - id: CLAIM-P3-34-FEASIBLE
+    text: Thirty-four contour-parallel lines are feasible within the declared route family.
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-RESULTS
+    status: allowed
+  - id: CLAIM-P3-33-INFEASIBLE
+    text: Thirty-three lines are insufficient within the declared route family.
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-RESULTS
+    status: allowed
+  - id: CLAIM-P3-NOT-GLOBAL
+    text: The route is globally shortest among every possible survey geometry.
+    source_spec_id: MODEL-CASE001-P3
+    owner_section_id: SEC-P3-LIMITS
+    status: forbidden
+
+writing_constraints:
+  new_modeling_content_forbidden: true
+  recomputation_forbidden: true
+  renumbering_forbidden: true
+  unverified_claims_forbidden: true
+  duplicate_definition_forbidden: true
+
+human_checkpoints:
+  - id: H-P3-PAPER-BLUEPRINT
+    decision: Approve the problem-3 section ownership and final labels before writing.
+    authority: user
+    status: pending
+
+evidence_paths:
+  - tests/case001/run/H1_problem3_route_decision.yaml
+  - tests/case001/run/problem3_independent_baseline.yaml
+
+limitations:
+  - This draft demonstrates architecture validation and is not authorization to write or merge a final paper.
