@@ -1,0 +1,129 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+task_id: A-P4-ROUTE-01
+admission_id: ADM-P4-ROUTE-001
+status: evaluated_pending_human_selection
+honest_label: reference_aware_assisted_pilot
+
+reference_access:
+  state: quarantined
+  same_problem_web_search: forbidden
+  external_reference_paths_readable: false
+  reference_files_used: []
+
+gate:
+  token_path: tests/case001/run/problem4_agent_gate_token.json
+  token_sha256: fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c
+
+source:
+  attachment_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
+  grid_shape_y_by_x: [251, 201]
+  terrain_bundle: tests/case001/local/generated/attachment_terrain.json
+
+reproduction:
+  generator: tests/case001/run/problem4_candidates/generate_candidates.py
+  evaluator: skills/math_modeling/evaluators/spatial_coverage.py
+  expanded_plans_and_full_reports: local_generated_not_committed
+  command: >-
+    python tests/case001/run/problem4_candidates/generate_candidates.py
+    --terrain tests/case001/local/generated/attachment_terrain.json
+    --evaluator skills/math_modeling/evaluators/spatial_coverage.py
+    --output-dir tests/case001/run/problem4_candidates/generated
+    --gate-token fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c
+
+evaluation_settings:
+  opening_angle_degree: 120.0
+  grid_nx: 50
+  grid_ny: 60
+  along_step_m: 150.0
+  cross_track_samples: 31
+  overlap_threshold: 0.20
+  overlap_length_policy: ordered_previous_line
+  sensitivity_grid_sizes: [30, 50, 70]
+
+budget:
+  max_iterations: 3
+  max_tool_calls: 8
+  max_candidate_routes: 3
+  candidate_routes_used: 3
+  tool_calls_used: 8
+  stop_reason: budget_exhausted_after_candidate_set_submission
+
+candidates:
+  - candidate_id: P4-CAND-A
+    route_family: global_north_south_conservative_adaptive
+    construction: >-
+      Full-height north-south straight lines, placed west-to-east at the largest
+      spacing whose minimum sampled ordered overlap is 10% over the whole line.
+    expanded_plan_sha256: adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4
+    evaluation_report_sha256: 600befb3075c835c3a78f3e794703ab4d492f1ff528717ba0429a2e07189a7b8
+    metrics:
+      survey_line_count: 67
+      total_survey_line_length_m: 620420.0
+      uncovered_area_percent: 0.0
+      multiply_covered_area_percent: 45.8
+      excess_overlap_length_m: 369055.8064516127
+      outside_region_line_length_m: 0.0
+      boundary_violation: false
+    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
+    limitations:
+      - conservative whole-line spacing causes large overlap in locally deep regions
+      - continuous extrema between placement samples are not proven
+      - global optimality is not claimed
+
+  - candidate_id: P4-CAND-B
+    route_family: global_east_west_conservative_adaptive
+    construction: >-
+      Full-width east-west straight lines, placed south-to-north at the largest
+      spacing whose minimum sampled ordered overlap is 10% over the whole line.
+    expanded_plan_sha256: 3e3fd85b23c2bd8423e052531ebdc807c846f9be2152a653e67b0043f72c821a
+    evaluation_report_sha256: 50e0cfd6db5a810892a3111c44141b5802d6d4eee395e306fb1b8fad83bd9e9e
+    metrics:
+      survey_line_count: 95
+      total_survey_line_length_m: 703760.0
+      uncovered_area_percent: 0.0
+      multiply_covered_area_percent: 58.36666666666667
+      excess_overlap_length_m: 452776.95999999956
+      outside_region_line_length_m: 0.0
+      boundary_violation: false
+    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
+    limitations:
+      - conservative whole-line spacing causes large overlap in locally deep regions
+      - continuous extrema between placement samples are not proven
+      - global optimality is not claimed
+
+  - candidate_id: P4-CAND-C
+    route_family: terrain_responsive_curved_north_south
+    construction: >-
+      At eleven north-south stations, construct local west-to-east line positions
+      with 10% ordered overlap; interpolate normalized line indices to form 61
+      non-crossing curved polylines.
+    expanded_plan_sha256: 1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189
+    evaluation_report_sha256: 953ba95d3a1567b7d96f4ceca96e4aaeb4131ac758b1a78209ca8783538e2942
+    metrics:
+      survey_line_count: 61
+      total_survey_line_length_m: 576755.7023466643
+      uncovered_area_percent: 0.0
+      multiply_covered_area_percent: 47.733333333333334
+      excess_overlap_length_m: 339673.0975448946
+      outside_region_line_length_m: 0.0
+      boundary_violation: false
+    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
+    limitations:
+      - vessel turning radius and allowable curvature are not modeled
+      - interpolation can create local route artifacts between stations
+      - global optimality is not claimed
+
+comparison:
+  winner_selected: false
+  deterministic_observations:
+    - all three candidates have zero sampled uncovered area and no boundary violation
+    - candidate C has the lowest evaluated length and excessive-overlap length
+    - candidate B has the greatest evaluated length and overlap burden
+    - every candidate still has material multiply-covered area and excessive-overlap length
+  why_no_automatic_selection:
+    - candidate C vessel feasibility and curvature constraints are not evaluated
+    - the competition objectives have no frozen scalar weighting
+    - sampled zero uncovered area is not a mathematical proof of continuous coverage
+  next_stage: H3_problem4_candidate_selection
