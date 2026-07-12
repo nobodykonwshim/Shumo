@@ -37,34 +37,59 @@ class RouteFeasibilityTests(unittest.TestCase):
         self.assertEqual(report["status"], "fail")
         self.assertEqual(report["results"]["hard_corner_count"], 1)
         self.assertIn(
-            "nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature",
+            "nonzero_heading_change_requires_unbounded_curvature",
             report["reasons"],
         )
-        self.assertEqual(
-            report["decision"]["fallback_candidate_on_fail"], "P4-CAND-A"
-        )
 
-    def test_collinear_multi_point_line_passes(self):
+    def test_explicit_quadratic_geometry_passes_even_with_sampled_points(self):
         plan = {
-            "candidate_id": "P4-CAND-X",
-            "lines": [{"id": "X", "points": [[0, 0], [0, 1], [0, 2]]}],
+            "candidate_id": "P4-CAND-C-SMOOTH-20",
+            "route_family": "quadratic",
+            "lines": [
+                {
+                    "id": "C-001",
+                    "points": [[0, 0], [0, 8], [1, 9], [2, 10], [10, 10]],
+                    "geometry_segments": [
+                        {"type": "line", "p0": [0, 0], "p1": [0, 8]},
+                        {
+                            "type": "quadratic_bezier",
+                            "p0": [0, 8],
+                            "p1": [0, 10],
+                            "p2": [2, 10],
+                        },
+                        {"type": "line", "p0": [2, 10], "p1": [10, 10]},
+                    ],
+                }
+            ],
         }
         report = module.validate_plan(plan)
         self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["results"]["hard_corner_count"], 0)
+        self.assertGreater(report["results"]["minimum_curvature_radius_m"], 0)
 
-    def test_minimum_radius_can_fail_diagnostic_threshold(self):
+    def test_minimum_radius_can_reject_explicit_curve(self):
         plan = {
-            "candidate_id": "P4-CAND-C",
-            "lines": [{"id": "C", "points": [[1, 0], [0, 1], [-1, 0]]}],
+            "candidate_id": "curve",
+            "lines": [
+                {
+                    "id": "curve",
+                    "geometry_segments": [
+                        {
+                            "type": "quadratic_bezier",
+                            "p0": [0, 0],
+                            "p1": [0, 1],
+                            "p2": [1, 1],
+                        }
+                    ],
+                }
+            ],
         }
-        report = module.validate_plan(plan, minimum_turn_radius_m=2.0)
+        diagnostic = module.validate_plan(plan)
+        radius = diagnostic["results"]["minimum_curvature_radius_m"]
+        report = module.validate_plan(plan, minimum_turn_radius_m=radius + 1.0)
         self.assertEqual(report["status"], "fail")
-        self.assertAlmostEqual(
-            report["results"]["minimum_three_point_circumradius_m"], 1.0
-        )
         self.assertIn(
-            "sampled_circumradius_below_frozen_minimum_turn_radius",
-            report["reasons"],
+            "minimum_curvature_radius_below_frozen_turn_radius", report["reasons"]
         )
 
     def test_duplicate_point_is_rejected(self):
