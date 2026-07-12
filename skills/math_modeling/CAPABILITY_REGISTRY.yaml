@@ -24,6 +24,24 @@ capabilities:
     limits:
       - workflow quality still depends on explicit artifact schemas
 
+  - capability_id: generic_model_spec_schema
+    name: generic executable mathematical model specification
+    status: validated
+    owner_path: skills/math_modeling/specs/model_spec.schema.json
+    contract:
+      inputs: objective_inputs_symbols_assumptions_components_formulas_constraints_algorithm_outputs_and_validation
+      outputs: machine_validated_model_specification_with_provenance_limits_and_human_checkpoints
+    validator: skills/math_modeling/validation/model_spec_validator.py
+    generic_tests:
+      - tests/specs/test_model_spec_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/model_spec.example.yaml
+      - tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    limits:
+      - YAML authoring requires PyYAML while JSON is directly supported
+      - status remains validated until the contract is exercised on a second unrelated real case
+      - mathematical correctness still depends on the declared validation evidence, not schema conformance alone
+
   - capability_id: agent_admission
     name: bounded agent admission and runtime token
     status: reusable
@@ -123,9 +141,6 @@ capabilities:
       - the promotion decision still requires human judgment
 
 backlog:
-  - capability_id: generic_model_spec_schema
-    priority: high
-    reason: model specifications are currently demonstrated but not yet enforced by one generic schema
   - capability_id: capability_registry_validator
     priority: high
     reason: registry and evidence paths should be machine-checked
