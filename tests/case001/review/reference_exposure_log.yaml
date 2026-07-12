@@ -1,0 +1,68 @@
+schema_version: 1
+case_id: case001
+purpose: "记录参考论文和外部解法的读取时机，判断能否声称盲态独立建模"
+
+source_classes:
+  authoritative_A:
+    - B题.pdf
+    - 附件.xlsx
+    - result1.xlsx
+    - result2.xlsx
+  project_evidence_B:
+    - run/W1_problem_intake.yaml
+    - run/W2_problem1_model_spec.yaml
+    - run/W2_problem2_model_spec.yaml
+    - run/W4_problem1_validation.yaml
+    - run/W4_problem2_validation.yaml
+  external_reference_C:
+    - B477.pdf
+    - B226.pdf
+    - B311.pdf
+    - expected/reference_benchmarks.yaml
+
+exposures:
+  - exposure_id: EXP-001
+    occurred_before_problem3_independent_baseline: true
+    source: [B477.pdf, B226.pdf, B311.pdf]
+    exposed_information:
+      - common contour_parallel_route_for_problem3
+      - reported_34_lines
+      - reported_total_length_68_nautical_miles
+      - problem4_method_and_result_disagreements
+    purpose_at_time: "构建测试基准和比较矩阵"
+    controlled: false
+    reason: "参考隔离协议尚未建立，参考论文在问题三独立基线冻结前已被读取。"
+
+  - exposure_id: EXP-002
+    occurred_before_problem3_independent_baseline: true
+    source: expected/reference_benchmarks.yaml
+    exposed_information:
+      - benchmark_ranges
+      - method_consensus
+      - suspected_reference_typo
+    purpose_at_time: "W0/W1 实战验证与异常检测"
+    controlled: false
+
+web_search_exposure:
+  same_problem_solution_search_performed: false
+  external_solution_pages_loaded: false
+  note: "当前污染来自用户提供的三篇参考论文，而不是联网同题检索。"
+
+current_status: contaminated_for_blind_claim
+blind_claim_allowed: false
+reasoning:
+  - "问题三路线和已知结果在独立模型冻结前已进入当前对话和测试产物。"
+  - "仅要求模型忽略已知信息不能恢复真正的 blind 状态。"
+
+allowed_current_use:
+  - "将 case001 作为 reference-aware / assisted pilot 继续测试 Workflow、验证器和来源追踪。"
+  - "执行 reference-quarantined reconstruction，但必须明确它不是盲态独立证明。"
+
+required_for_true_blind_validation:
+  - "使用一个未向执行 Agent 暴露参考解法的新题目，或在全新隔离会话中运行。"
+  - "在环境 readable_paths 中排除参考论文和 benchmark 文件。"
+  - "冻结 independent_baseline.yaml 后才允许开放参考资料。"
+
+next_checkpoint:
+  file: tests/case001/run/H1_problem3_route_decision.yaml
+  decision_required: "采用双阶段流程，并诚实保留 contaminated_for_blind_claim 标签。"
