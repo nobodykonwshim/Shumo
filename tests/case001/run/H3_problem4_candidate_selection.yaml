@@ -76,5 +76,7 @@ handoff_after_resolution:
   - optionally open reference-comparison phase
 
 pr_policy:
-  keep_draft: true
+  ready_for_review: true
+  keep_draft: false
   merge_allowed: false
+  transition_authority: user
