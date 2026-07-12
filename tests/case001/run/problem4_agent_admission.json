@@ -42,7 +42,7 @@
     "environment_manifest": {
       "status": "verified",
       "path": "tests/case001/run/problem4_contracts/environment_manifest.json",
-      "sha256": "5e69d2cf75dca49320c993205160b7c000e8bdfa2ad21aacb2fe3789068f344d"
+      "sha256": "f968e868e6d790cff008a884e87b659f06eb1c8e45a59f2223297993930857c4"
     },
     "tool_contracts": {
       "status": "verified",
