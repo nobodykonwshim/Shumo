@@ -91,15 +91,29 @@ class AgentGateTests(unittest.TestCase):
             root = Path(tmp)
             path = root / "admission.json"
             token_path = root / "token.json"
-            blocked = valid_admission()
+            rollback = root / "problem4_pre_agent"
+            rollback.write_text("ready", encoding="utf-8")
+            admission = valid_admission()
+            for contract in admission["contracts"].values():
+                contract_path = root / contract["path"]
+                contract_path.write_text(contract["path"], encoding="utf-8")
+                contract["sha256"] = gate._file_sha256(contract_path)
+            blocked = json.loads(json.dumps(admission))
             blocked["decision"] = "blocked"
             path.write_text(json.dumps(blocked), encoding="utf-8")
-            self.assertEqual(gate.main(["--admission", str(path), "--agent", "route_explorer"]), 2)
-            path.write_text(json.dumps(valid_admission()), encoding="utf-8")
             self.assertEqual(
                 gate.main([
                     "--admission", str(path), "--agent", "route_explorer",
-                    "--task", "A-P4-ROUTE-01", "--output", str(token_path)
+                    "--repo-root", str(root)
+                ]),
+                2,
+            )
+            path.write_text(json.dumps(admission), encoding="utf-8")
+            self.assertEqual(
+                gate.main([
+                    "--admission", str(path), "--agent", "route_explorer",
+                    "--task", "A-P4-ROUTE-01", "--output", str(token_path),
+                    "--repo-root", str(root)
                 ]),
                 0,
             )
