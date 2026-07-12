@@ -1,0 +1,165 @@
+schema_version: 2
+
+project:
+  id: case001
+  title: "多波束测线问题实战验证"
+  competition: "CUMCM-2023-B"
+  language: zh-CN
+  timezone: Asia/Shanghai
+  root: "tests/case001/"
+  purpose: "验证 workflow-first、agent-gated 三层架构的真实可执行性"
+
+paths:
+  source_manifest: "tests/case001/problem/source_manifest.yaml"
+  local_problem_archive: "tests/case001/local/problem/B题.rar"
+  local_reference_papers: "tests/case001/local/references/"
+  expected:
+    acceptance: "tests/case001/expected/acceptance.yaml"
+    reference_benchmarks: "tests/case001/expected/reference_benchmarks.yaml"
+  run_artifacts: "tests/case001/run/"
+  review_artifacts: "tests/case001/review/"
+  modeling_artifacts: "tests/case001/artifacts/modeling/"
+  architecture_artifacts: "tests/case001/artifacts/architecture/"
+  results: "tests/case001/results/"
+  figures: "tests/case001/figures/"
+  sections: "tests/case001/sections/"
+
+units:
+  system: SI
+  length: m
+  area: m2
+  angle: rad
+  nautical_mile_to_m: 1852
+  source_angle_unit: degree
+  conversion_required_before_modeling: true
+
+orchestration:
+  mode: workflow_first
+  workflow_map: "skills/math_modeling/workflows/README.md"
+  default_entry: router
+  allowed_agent_slots:
+    - route_explorer
+    - diagnostic_agent
+    - solution_reviewer
+  forbid_unregistered_agent_types: true
+  require_human_route_decision: true
+  require_modeling_packet: true
+  require_paper_blueprint: true
+  allow_direct_paper_writing: false
+  require_registry_update: true
+  require_validation_before_writing: true
+
+agent_policy:
+  admission_gate: "skills/math_modeling/support/AGENT_ADMISSION_GATE.md"
+  runtime_contract: "skills/math_modeling/support/AGENT_RUNTIME_CONTRACT.md"
+  require_admission_record: true
+  require_environment_manifest: true
+  require_tool_contracts: true
+  require_prompt_contract: true
+  require_rollback_point: true
+  require_error_detection: true
+  default_decision: workflow
+  silent_failure_risk_allowed: low
+  global_budget:
+    max_iterations: 6
+    max_tool_calls: 12
+    max_candidate_routes: 4
+  stop_conditions:
+    - budget_exhausted
+    - two_iterations_without_new_evidence
+    - unverifiable_critical_assumption
+    - tool_state_conflict
+    - global_artifact_contamination_risk
+    - human_value_judgment_required
+
+workflow_policy:
+  deterministic_steps_required_for:
+    - project_initialization
+    - problem_intake
+    - unit_conversion
+    - parameter_registration
+    - model_specification
+    - standard_implementation
+    - result_validation
+    - registry_updates
+    - paper_architecture
+    - paper_writing
+    - delivery_checks
+  validation_rules_predefined_when_possible: true
+  fixed_failure_tree_before_diagnostic_agent: true
+  stop_on_unreadable_original_problem: true
+  stop_on_unreadable_required_attachment: true
+
+case_policy:
+  reference_papers_are_ground_truth: false
+  reference_papers_are_comparison_baselines: true
+  require_original_problem_verification: true
+  require_attachment_schema_inspection: true
+  require_reference_disagreement_report: true
+  forbid_copying_reference_prose: true
+  binary_materials_commit_policy: local_only
+
+modeling:
+  stable_formula_ids: true
+  final_equation_numbers: false
+  minimum_candidate_routes: 2
+  maximum_candidate_routes: 4
+  validation_required:
+    - residual_or_constraint_check
+    - boundary_or_hand_check
+    - stability_or_sensitivity_check
+    - result_file_integrity_check
+  allow_partial_result: true
+  partial_result_must_be_labeled: true
+
+paper_architecture:
+  equation_numbering: global
+  figure_numbering: chapter
+  table_numbering: chapter
+  one_owner_per_formula: true
+  one_owner_per_model: true
+  common_assumptions_once: true
+  common_symbol_table_once: true
+  formula_reuse_policy: reference_only
+
+paper_writing:
+  style: formal_academic
+  final_formats:
+    - latex
+  include_tool_process_in_body: false
+  include_failed_routes_in_body: false
+  result_explanation_level: concise
+  editable_equations_required: true
+  exploration_agents_forbidden: true
+
+quality_gates:
+  source_to_intake:
+    - original_problem_readable
+    - required_attachments_readable
+    - source_hashes_recorded
+  intake_to_modeling:
+    - all_questions_identified
+    - outputs_and_constraints_verified
+    - missing_information_resolved_or_blocked
+  modeling_to_architecture:
+    - outputs_covered
+    - route_decision_recorded
+    - reproducible_model_and_algorithm
+    - quantitative_validation
+    - agent_actions_auditable
+    - no_open_critical_review_findings
+  architecture_to_writing:
+    - unique_model_ownership
+    - unique_formula_labels
+    - inheritance_and_new_content_defined
+    - no_open_critical_issues
+  writing_to_delivery:
+    - no_redefinition
+    - no_number_conflict
+    - result_attachment_consistency
+    - required_outputs_present
+
+status:
+  current_stage: W1
+  state: partial
+  blocker: "RAR archive contents listed but original problem PDF and Excel attachments are not yet extracted in the current runtime"
