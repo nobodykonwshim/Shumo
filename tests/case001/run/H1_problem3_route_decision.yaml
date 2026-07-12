@@ -2,80 +2,50 @@ schema_version: 1
 case_id: case001
 stage: H1
 problem_id: problem3
-status: approved_process_pending_model
+status: completed
 
 human_decision:
   approved_by: user
-  approval_basis: "User instructed GitHub execution to follow the proposed independent-first, reference-second process."
+  approval_basis: "User approved the independent-first, reference-second process and later authorized all planned follow-up operations."
   selected_process: two_phase_independent_then_reference_comparison
-  final_mathematical_route_selected: false
+  selected_mathematical_route: contour_parallel_straight_lines_with_recursive_spacing
+  final_route_confirmed: true
 
 reference_isolation:
   protocol: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
-  current_exposure_status: contaminated_for_blind_claim
+  exposure_status: contaminated_for_blind_claim
   blind_claim_allowed: false
-  reason: "B477, B226 and B311 methods and problem3 benchmark results were read before this checkpoint."
-  treatment: reference_quarantined_reconstruction
   honest_label: reference_aware_assisted_pilot
+  baseline_execution: reference_quarantined
+  baseline_frozen: true
+  baseline_artifact: tests/case001/run/problem3_independent_baseline.yaml
+  baseline_sha256: 19b1b4e4401876288426e66ace523dfab13aae02979c3481bae7ba282dc0a1d6
+  reference_release_record: tests/case001/run/H2_problem3_reference_release.yaml
+  reference_comparison: tests/case001/review/problem3_reference_comparison.yaml
 
-phase_1_reconstruction:
-  objective: "Using only authoritative inputs and verified project artifacts, reconstruct and verify a problem3 baseline without consulting reference files during execution."
-  allowed_inputs:
-    - tests/case001/problem/source_manifest.yaml
-    - tests/case001/run/W1_problem_intake.yaml
-    - tests/case001/run/W2_problem1_model_spec.yaml
-    - tests/case001/run/W4_problem1_validation.yaml
-    - tests/case001/run/W2_problem2_model_spec.yaml
-    - tests/case001/run/W4_problem2_validation.yaml
-    - B题.pdf
-  forbidden_inputs:
-    - B477.pdf
-    - B226.pdf
-    - B311.pdf
-    - tests/case001/expected/reference_benchmarks.yaml
-    - same_problem_web_solutions
-  execution_mode: deterministic_workflow
-  route_explorer_allowed: false
-  required_outputs:
-    - tests/case001/run/W2_problem3_model_spec.yaml
-    - tests/case001/run/W3_problem3_execution.yaml
-    - tests/case001/run/W4_problem3_validation.yaml
-    - tests/case001/run/problem3_independent_baseline.yaml
-  required_checks:
-    - complete_rectangle_coverage
-    - every_adjacent_overlap_between_10_and_20_percent
-    - boundary_coverage
-    - total_length_recalculation
-    - unit_conversion
-  freeze_before_reference_release: true
+route_result:
+  line_direction: north_south_parallel_to_depth_contours
+  line_count: 34
+  total_length_m: 125936
+  total_length_nm: 68
+  target_overlap: 0.10
+  line_33_infeasible_within_scope: true
+  line_34_feasible: true
 
-phase_2_reference_comparison:
-  enabled_only_after_baseline_freeze: true
-  requires_new_human_checkpoint: true
-  allowed_reference_sets:
-    - B477.pdf
-    - B226.pdf
-    - B311.pdf
-    - tests/case001/expected/reference_benchmarks.yaml
-  allowed_purposes:
-    - compare_methods
-    - investigate_disagreement
-    - add_validation
-    - identify_possible_errors
-  forbidden_purposes:
-    - copy_reference_prose
-    - overwrite_baseline_without_evidence
-    - accept_34_lines_or_68_nautical_miles_as_ground_truth
-  required_output:
-    - tests/case001/review/problem3_reference_comparison.yaml
+validation:
+  complete_rectangle_coverage: pass
+  every_adjacent_overlap_between_10_and_20_percent: pass
+  boundary_coverage: pass
+  total_length_recalculation: pass
+  critical_findings: []
 
 agent_decision:
+  route_explorer_used: false
   current_decision: workflow
-  route_explorer_now: prohibited
-  future_route_explorer:
-    allowed: false
-    rationale: "The immediate task is to test whether deterministic modeling can produce a defensible baseline before external comparison."
+  rationale: deterministic geometry and validation were sufficient
 
-next_action:
-  stage: W2_problem3
-  instruction: "Build the model specification under the quarantined input set and keep the contamination label visible."
+handoff:
+  modeling_packet: tests/case001/artifacts/modeling/problem3.model.yaml
+  allowed_to_W5: true
+  allowed_to_paper_architecture_for_problems_1_to_3: true
+  problem4_status: blocked_pending_independent_spatial_evaluator
