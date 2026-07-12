@@ -24,6 +24,25 @@ capabilities:
     limits:
       - workflow quality still depends on explicit artifact schemas
 
+  - capability_id: modeling_decision_system
+    name: pre-implementation problem classification and model-route decision
+    status: validated
+    owner_path: skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md
+    validator: skills/math_modeling/validation/modeling_decision_validator.py
+    contract:
+      inputs: problem_profile_candidate_routes_comparison_criteria_evidence_and_human_authority
+      outputs: machine_validated_modeling_route_recommendation_decision_record_and_stop_rule
+    generic_tests:
+      - tests/specs/test_modeling_decision_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/modeling_decision.example.yaml
+      - tests/case001/artifacts/modeling/problem3.model-decision.yaml
+    limits:
+      - the validator checks decision completeness and consistency but cannot determine the objectively best model family
+      - candidate generation quality still depends on model knowledge and problem understanding
+      - status remains validated until the contract is exercised on a second materially different real case
+      - primary objective assumptions accepted risk and final model choice remain human decisions
+
   - capability_id: generic_model_spec_schema
     name: generic executable mathematical model specification
     status: validated
