@@ -1,0 +1,57 @@
+schema_version: "1.0"
+policy_id: SENS-DEMO-TRANSPORT-01
+problem_id: demo_transport
+model:
+  artifact_id: MODEL-DEMO-TRANSPORT-01
+  artifact_path: skills/math_modeling/specs/model_spec.example.yaml
+  artifact_kind: model_spec
+status: draft
+
+governance:
+  declared_before_final_result: true
+  thresholds_are_case_specific: true
+  default_thresholds_used: false
+  declared_at_stage: W2
+  decision_authority: team
+  rationale: >-
+    The Skill defines how sensitivity must be declared and audited, while this
+    transport case chooses its own perturbation magnitudes and acceptance rules.
+
+scope:
+  perturbations:
+    - id: PERT-COST
+      target_id: PAR-COST
+      target_type: parameter
+      method: relative_values
+      values: [-0.05, 0.05]
+      unit: ratio
+      one_at_a_time: true
+      rationale: Test whether modest case-specific cost uncertainty changes the allocation.
+  metrics:
+    - id: SENS-METRIC-COST
+      target_id: OUT-TOTAL-COST
+      statistic: relative_change
+      aggregation: maximum absolute relative change over declared perturbations
+      unit: ratio
+      rationale: Quantify objective sensitivity without imposing a universal bound.
+    - id: SENS-METRIC-PATTERN
+      target_id: OUT-ALLOCATION
+      statistic: custom
+      aggregation: whether the set of positive allocation cells changes
+      unit: null
+      rationale: Detect structural changes that a scalar objective metric can hide.
+  acceptance_rules:
+    - id: SENS-RULE-REPORT
+      metric_ids: [SENS-METRIC-COST, SENS-METRIC-PATTERN]
+      rule: Report both metrics for every declared perturbation; do not suppress adverse cases.
+      threshold_source: team_decision
+      required: true
+
+execution:
+  status: planned
+  evidence_paths: []
+  results: []
+
+limitations:
+  - The demonstration perturbation size is illustrative for this case and is not a Skill default.
+  - Passing this policy would not establish robustness to every possible cost distribution.
