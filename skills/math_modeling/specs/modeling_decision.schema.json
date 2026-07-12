@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shumo.local/schemas/modeling_decision.schema.json",
+  "title": "Shumo Modeling Decision Record",
+  "description": "Pre-implementation contract for problem classification, candidate modeling routes, comparison, recommendation and human selection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "decision_id", "project_id", "problem_id", "status",
+    "declared_before_implementation", "problem_profile", "candidate_routes",
+    "comparison_criteria", "comparison_matrix", "recommendation",
+    "human_checkpoint", "provenance", "stop_rule"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "decision_id": {"$ref": "#/$defs/id"},
+    "project_id": {"$ref": "#/$defs/id"},
+    "problem_id": {"$ref": "#/$defs/id"},
+    "status": {"enum": ["draft", "frozen", "blocked", "deprecated"]},
+    "declared_before_implementation": {"type": "boolean"},
+    "problem_profile": {"$ref": "#/$defs/problemProfile"},
+    "candidate_routes": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/candidateRoute"}
+    },
+    "comparison_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/criterion"}
+    },
+    "comparison_matrix": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/comparisonRow"}
+    },
+    "recommendation": {"$ref": "#/$defs/recommendation"},
+    "human_checkpoint": {"$ref": "#/$defs/checkpoint"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "stop_rule": {"$ref": "#/$defs/stopRule"},
+    "limitations": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+    "extensions": {"type": "object"}
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]*$",
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "nonempty": {"type": "string", "minLength": 1},
+    "problemProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_types", "objective", "hard_constraints", "required_outputs",
+        "data_profile", "evaluation_metrics", "decision_uncertainties"
+      ],
+      "properties": {
+        "task_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "prediction", "classification", "estimation", "evaluation",
+              "optimization", "mechanism", "simulation", "decision", "mixed"
+            ]
+          }
+        },
+        "objective": {"$ref": "#/$defs/nonempty"},
+        "hard_constraints": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "required_outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "data_profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["availability", "structure", "sample_size", "temporal_ordering", "spatial_structure", "uncertainty"],
+          "properties": {
+            "availability": {"enum": ["complete", "partial", "missing", "external_dependency"]},
+            "structure": {"enum": ["none", "tabular", "timeseries", "spatial", "network", "text", "image", "mixed"]},
+            "sample_size": {"enum": ["none", "small", "medium", "large", "unknown"]},
+            "temporal_ordering": {"type": "boolean"},
+            "spatial_structure": {"type": "boolean"},
+            "labels_available": {"type": ["boolean", "null"]},
+            "missingness": {"$ref": "#/$defs/nonempty"},
+            "uncertainty": {"$ref": "#/$defs/nonempty"}
+          }
+        },
+        "evaluation_metrics": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "decision_uncertainties": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    },
+    "candidateRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "model_family", "status", "rationale",
+        "applicability_conditions", "assumptions", "strengths", "risks",
+        "computational_cost", "novelty_role", "validation_plan"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"$ref": "#/$defs/nonempty"},
+        "model_family": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["candidate", "shortlisted", "selected", "rejected", "deferred", "blocked"]},
+        "rationale": {"$ref": "#/$defs/nonempty"},
+        "applicability_conditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "required_data": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "assumptions": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "strengths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "risks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "computational_cost": {"enum": ["low", "medium", "high", "unknown"]},
+        "novelty_role": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "description"],
+          "properties": {
+            "required": {"type": "boolean"},
+            "description": {"$ref": "#/$defs/nonempty"}
+          }
+        },
+        "validation_plan": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "rejection_reason": {"type": "string"},
+        "blockers": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "kind", "direction", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "kind": {"enum": ["hard", "soft", "diagnostic"]},
+        "direction": {"enum": ["maximize", "minimize", "satisfy", "inform"]},
+        "authority": {"enum": ["problem_statement", "data", "domain_standard", "human_decision", "skill_diagnostic"]},
+        "weight": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "comparisonRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "assessments"],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/id"},
+        "assessments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterion_id", "rating", "justification"],
+            "properties": {
+              "criterion_id": {"$ref": "#/$defs/id"},
+              "rating": {"enum": ["pass", "fail", "strong", "moderate", "weak", "unknown", "not_applicable"]},
+              "value": {},
+              "justification": {"$ref": "#/$defs/nonempty"},
+              "evidence": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected_candidate_id", "rationale", "unresolved_risks", "requires_human_decision"],
+      "properties": {
+        "selected_candidate_id": {"type": ["string", "null"], "pattern": "^[A-Za-z][A-Za-z0-9._:-]*$"},
+        "rationale": {"$ref": "#/$defs/nonempty"},
+        "unresolved_risks": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "requires_human_decision": {"type": "boolean"},
+        "fallback_candidate_id": {"type": ["string", "null"], "pattern": "^[A-Za-z][A-Za-z0-9._:-]*$"}
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "authority", "status"],
+      "properties": {
+        "decision": {"$ref": "#/$defs/nonempty"},
+        "authority": {"enum": ["user", "team", "domain_expert", "judge_rule"]},
+        "status": {"enum": ["pending", "approved", "rejected", "blocked"]},
+        "record": {"type": "string"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_paths", "evidence_paths", "reference_exposure_status"],
+      "properties": {
+        "source_paths": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "evidence_paths": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "reference_exposure_status": {
+          "enum": ["independent", "reference_quarantined", "reference_released", "assisted", "contaminated_for_blind_claim", "not_applicable"]
+        }
+      }
+    },
+    "stopRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_work_stops_when", "reopen_requires"],
+      "properties": {
+        "case_work_stops_when": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
+        "reopen_requires": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    }
+  }
+}
