@@ -1,0 +1,48 @@
+schema_version: 1
+case_id: case001
+problem_id: problem3
+review_type: framework_iteration_feedback
+status: complete
+
+positive_findings:
+  - deterministic Workflow solved the route without Route Explorer
+  - boundary and overlap rules produced auditable numerical evidence
+  - baseline freeze prevented reference comparison from silently rewriting the result
+  - reference consensus was treated as corroboration rather than ground truth
+  - the claim scope was limited to the evaluated route family
+
+exposed_defects:
+  - id: P3-F-001
+    severity: major
+    category: enforcement
+    observation: reference quarantine is currently documented and manually followed, not enforced by tool permissions
+    recommended_fix: executable_reference_access_gate
+  - id: P3-F-002
+    severity: major
+    category: workflow
+    observation: root solving, artifact writing, hashing and stage transitions were manually orchestrated
+    recommended_fix: deterministic_case_runner
+  - id: P3-F-003
+    severity: major
+    category: validation_scope
+    observation: the baseline proves minimum count only within parallel contour-aligned straight lines
+    recommended_fix: require_explicit_claim_scope_in_every_validation_artifact
+  - id: P3-F-004
+    severity: minor
+    category: provenance
+    observation: prior reference exposure makes case001 unsuitable for a true blind-independence claim
+    recommended_fix: add_fresh_case002_without_reference_mounting
+
+architecture_decisions:
+  keep_workflow_first: true
+  add_route_explorer_for_problem3: false
+  keep_reference_isolation_protocol: true
+  require_baseline_hash_before_reference_release: true
+  require_claim_scope_field: true
+
+regression_tests_proposed:
+  - blocked_reference_path_cannot_be_read_before_release
+  - modifying_frozen_baseline_changes_hash_and_fails_gate
+  - 33_line_fixture_fails_eastern_boundary_check
+  - 34_line_fixture_passes_all_overlap_and_boundary_checks
+  - same_problem_reference_result_cannot_become_acceptance_target_automatically
