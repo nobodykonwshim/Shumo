@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shumo.local/schemas/project_status.schema.json",
+  "title": "Shumo project status contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "status_record_id", "project_id", "cycle_id", "scope",
+    "declared_goal", "expected_status", "problem_bundles", "supporting_artifacts",
+    "lifecycle", "external_dependencies", "next_actions", "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status_record_id": {"$ref": "#/$defs/id"},
+    "project_id": {"$ref": "#/$defs/id"},
+    "cycle_id": {"$ref": "#/$defs/id"},
+    "scope": {"enum": ["problem", "development_cycle", "full_project"]},
+    "declared_goal": {"$ref": "#/$defs/nonempty"},
+    "expected_status": {"$ref": "#/$defs/status"},
+    "problem_bundles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/problemBundle"}
+    },
+    "supporting_artifacts": {"$ref": "#/$defs/supportingArtifacts"},
+    "lifecycle": {"$ref": "#/$defs/lifecycle"},
+    "external_dependencies": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/externalDependency"}
+    },
+    "next_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/nextAction"}
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/nonempty"}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]*$",
+      "minLength": 2,
+      "maxLength": 160
+    },
+    "nonempty": {"type": "string", "minLength": 1},
+    "path": {"type": "string", "minLength": 1},
+    "nullablePath": {"type": ["string", "null"], "minLength": 1},
+    "status": {
+      "enum": [
+        "needs_model_candidates", "waiting_for_human_decision",
+        "ready_for_implementation", "ready_for_validation", "ready_for_paper",
+        "blocked", "demonstration_complete"
+      ]
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected_candidate_id", "model_component_ids"],
+      "properties": {
+        "selected_candidate_id": {"$ref": "#/$defs/id"},
+        "model_component_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "problemBundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "problem_id", "required_for_cycle", "modeling_decision_path",
+        "model_spec_path", "sensitivity_policy_paths", "paper_blueprint_path",
+        "evidence_paths"
+      ],
+      "properties": {
+        "problem_id": {"$ref": "#/$defs/id"},
+        "required_for_cycle": {"type": "boolean"},
+        "modeling_decision_path": {"$ref": "#/$defs/nullablePath"},
+        "model_spec_path": {"$ref": "#/$defs/nullablePath"},
+        "sensitivity_policy_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/path"}
+        },
+        "paper_blueprint_path": {"$ref": "#/$defs/nullablePath"},
+        "traceability": {"$ref": "#/$defs/traceability"},
+        "evidence_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/path"}
+        }
+      }
+    },
+    "supportingArtifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sensitivity_policy_paths", "evidence_paths"],
+      "properties": {
+        "sensitivity_policy_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/path"}
+        },
+        "evidence_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/path"}
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stop_record_path", "stop_status", "reopen_requires"],
+      "properties": {
+        "stop_record_path": {"$ref": "#/$defs/nullablePath"},
+        "stop_status": {"type": ["string", "null"], "enum": ["demonstration_complete", "partial", "blocked", null]},
+        "reopen_requires": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/nonempty"}
+        }
+      }
+    },
+    "externalDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "status", "blocks_current_cycle"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["waiting", "available", "not_required"]},
+        "blocks_current_cycle": {"type": "boolean"}
+      }
+    },
+    "nextAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "when_status", "description", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "when_status": {"$ref": "#/$defs/status"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "authority": {"enum": ["system", "user", "team", "external"]}
+      }
+    }
+  }
+}
