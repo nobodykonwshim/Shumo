@@ -2,21 +2,22 @@ schema_version: 1
 case_id: case001
 problem_id: problem4
 stage: H3_candidate_feasibility
-status: completed_failed_primary_fallback_selected
+status: original_candidate_c_geometry_failed_refinement_required
 
-primary_candidate: P4-CAND-C
-fallback_candidate: P4-CAND-A
+primary_route_family: P4-CAND-C
+reference_candidate: P4-CAND-A
 validator: skills/math_modeling/evaluators/route_feasibility.py
-resolver: tests/case001/run/problem4_candidates/resolve_candidate_selection.py
 resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+refinement_plan: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
 
 frozen_checks:
   exact_polyline_requires_c1_continuity: true
   heading_tolerance_deg: 0.000001
   minimum_turn_radius_m: null
   minimum_turn_radius_policy: >-
-    No numerical vessel turning-radius limit appears in the problem statement or
-    the current repository contracts, so no value was invented.
+    No numerical vessel-turning radius appears in the problem statement or current
+    contracts, so no operational radius is invented. Refined candidates must still
+    remove instantaneous heading changes and report curvature diagnostics.
   inter_line_connectors_checked: false
 
 verified_execution:
@@ -25,28 +26,35 @@ verified_execution:
   official_attachment_hash_verified: true
   regenerated_candidate_hashes_verified: true
 
-result:
-  primary_candidate_status: fail
-  primary_hard_corner_count: 548
-  primary_minimum_three_point_circumradius_m: 2397.1959212741776
-  primary_failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
-  fallback_candidate_status: pass
-  selected_candidate: P4-CAND-A
+original_geometry_result:
+  candidate_id: P4-CAND-C
+  status: fail
+  hard_corner_count: 548
+  minimum_three_point_circumradius_m: 2397.1959212741776
+  failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  conclusion_scope: exact_piecewise_linear_geometry_only
 
-failure_semantics:
-  - any nonzero interior heading change in the exact polyline is a hard corner
-  - an exact hard corner requires an instantaneous heading change and unbounded curvature
-  - a finite three-point circumradius is diagnostic only and does not remove the vertex discontinuity
-  - implicit smoothing is forbidden because it changes the evaluated route geometry
-  - reconsidering C requires an explicit finite-radius smoothed route followed by full spatial re-evaluation
+route_family_interpretation:
+  status: retained_for_explicit_refinement
+  rationale:
+    - candidate C has the shortest tested survey-line length
+    - hard-corner failure identifies a geometry defect that may be repaired by constructing a new smooth route
+    - a smoothed route is a new candidate and must be independently re-evaluated
+  forbidden_shortcut: silently_treating_polyline_vertices_as_smoothed
 
-selected_route_recheck:
-  total_survey_line_length_m: 620420.0
-  uncovered_area_percent: 0.0
-  excess_overlap_length_m: 369055.8064516127
-  boundary_violation: false
+refined_candidate_requirements:
+  - use explicit finite-curvature geometry rather than an unlabelled polyline approximation
+  - preserve line ordering and prevent adjacent-line crossings
+  - rerun full spatial coverage, boundary and overlap evaluation
+  - recompute total survey-line length after smoothing
+  - compare refined-C length against the 620420.0 m candidate-A reference
+  - record minimum curvature-radius diagnostics without inventing a vessel limit
+
+candidate_a_reference:
+  status: pass_exact_straight_geometry
+  role: conservative_reference_and_fallback_only
+  final_selected: false
 
 limitations:
-  - this check validates within-line curvature only
-  - connecting turns between separate survey lines remain outside the reported survey-line metrics
+  - connecting turns between separate survey lines remain outside current reported metrics
   - no global optimality claim is permitted
