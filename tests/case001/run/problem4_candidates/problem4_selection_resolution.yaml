@@ -1,0 +1,60 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3_candidate_feasibility_resolution
+status: resolved
+
+workflow:
+  name: Problem4 candidate feasibility resolution
+  run_id: 29193104720
+  head_sha: 2bd846b6ffb216798135db010bdf1150837be987
+  conclusion: success
+  artifact_id: 8260127103
+  artifact_digest: sha256:9a1ab410a79e4e3307a48905a48d74442d0f8b41be3fde0c3736f53d2ffc0c12
+
+source_verification:
+  attachment_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
+  candidate_c_sha256: 1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189
+  candidate_a_sha256: adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4
+  all_hash_checks_passed: true
+
+conditional_primary:
+  candidate_id: P4-CAND-C
+  feasibility_status: fail
+  hard_corner_count: 548
+  minimum_three_point_circumradius_m: 2397.1959212741776
+  failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  interpretation: >-
+    The exact candidate-C polylines contain interior heading discontinuities.
+    Their finite three-point diagnostic radii do not repair the fact that the
+    exact piecewise-linear path requires instantaneous heading changes at its
+    vertices. Implicit smoothing is not allowed because it would create a new
+    route requiring full spatial re-evaluation.
+
+fallback:
+  candidate_id: P4-CAND-A
+  feasibility_status: pass
+  selected: true
+  selection_reason: candidate C failed the frozen exact-geometry curvature gate
+
+selected_route_metrics:
+  survey_line_count: 67
+  total_survey_line_length_m: 620420.0
+  uncovered_area_percent: 0.0
+  excess_overlap_length_m: 369055.8064516127
+  boundary_violation: false
+
+scope_and_limits:
+  within_line_curvature_checked: true
+  inter_line_connectors_checked: false
+  connector_note: >-
+    The competition reports survey-line length and supplies no vessel-specific
+    turning-radius or off-line connector constraints. Connecting transit turns
+    therefore remain outside the frozen reported route metrics.
+  vessel_specific_minimum_turn_radius_m: null
+  global_optimality_claimed: false
+
+final_decision:
+  selected_candidate: P4-CAND-A
+  problem4_baseline_state: ready_to_freeze
+  merge_pr: false
