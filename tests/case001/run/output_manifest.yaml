@@ -1,0 +1,28 @@
+schema_version: 1
+case_id: case001
+artifact_policy: "Generated workbook binaries remain local; Git records their hashes, schemas and numerical contents."
+
+outputs:
+  - filename: case001_result1_validated.xlsx
+    local_path: "/mnt/data/case001_result1_validated.xlsx"
+    sha256: "6300a1d1f663ae640236070baddec12a1b62ea78fc13daba306c80900ffe60b8"
+    size_bytes: 6516
+    source_template: result1.xlsx
+    source_template_sha256: "9a86f9f4b9755447bda0ab9c3d8f4123561a0bfa735ede7d0c08b1c457ae83bd"
+    sheets: [Sheet1, Calculation]
+    official_sheet_schema_preserved: true
+    validation_status: pass
+  - filename: case001_result2_validated.xlsx
+    local_path: "/mnt/data/case001_result2_validated.xlsx"
+    sha256: "79908378b230e6be1298e2fee2749e623992291d2601bd266d8cee81dea35677"
+    size_bytes: 6929
+    source_template: result2.xlsx
+    source_template_sha256: "426941a7da69da8694d73be68ba82b976af675f57618154f4b4fc11d19f6dbd8"
+    sheets: [Sheet1, Calculation]
+    official_sheet_schema_preserved: true
+    validation_status: pass
+
+reproduction_notes:
+  - "Sheet1 contains rounded submission values."
+  - "Calculation contains parameter definitions, formulas and audit notes."
+  - "The repository text artifacts contain full numeric tables for binary-independent review."
