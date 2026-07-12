@@ -1,16 +1,11 @@
 name: Case001 problem4 legacy feasibility demonstration
 
 # This is an expensive case-study evidence workflow, not a reusable Skill gate.
-# Generic evaluator changes are validated by spatial-evaluator.yml. Refresh this
-# case evidence only when the case-specific candidate pipeline changes or when
-# a maintainer dispatches it explicitly.
+# Pull-request triggers are intentionally disabled because GitHub evaluates path
+# filters against the whole PR diff and would rerun this case on unrelated Skill work.
+# Refresh evidence manually or when the case-specific pipeline itself is pushed.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "tests/case001/run/problem4_candidates/generate_candidates.py"
-      - "tests/case001/run/problem4_candidates/resolve_candidate_selection.py"
-      - ".github/workflows/problem4-candidate-feasibility.yml"
   push:
     paths:
       - "tests/case001/run/problem4_candidates/generate_candidates.py"
