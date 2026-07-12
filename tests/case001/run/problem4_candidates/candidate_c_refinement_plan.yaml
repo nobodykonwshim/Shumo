@@ -1,0 +1,112 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: W3_candidate_c_refinement
+status: approved_for_execution
+
+human_direction:
+  retain_route_family: P4-CAND-C
+  reject_immediate_family_rejection: true
+  core_reason: shortest_total_survey_line_length_remains_the_primary_problem_objective
+  reference_candidate: P4-CAND-A
+  merge_allowed: false
+
+problem_statement_interpretation:
+  primary_objective: minimize_total_survey_line_length
+  hard_constraints:
+    - sampled_uncovered_area_percent_equals_zero_at_frozen_settings
+    - boundary_violation_is_false
+    - no_instantaneous_heading_change_in_explicit_route_geometry
+    - adjacent_survey_lines_do_not_cross
+  secondary_metrics:
+    - excess_overlap_length_m
+    - multiply_covered_area_percent
+  excluded_claims:
+    - global_optimality
+    - continuous_coverage_proof
+    - vessel_specific_operational_feasibility_without_vessel_data
+
+starting_point:
+  source_candidate: P4-CAND-C
+  source_line_count: 61
+  source_total_survey_line_length_m: 576755.7023466643
+  source_uncovered_area_percent: 0.0
+  source_excess_overlap_length_m: 339673.0975448946
+  source_boundary_violation: false
+  source_exact_polyline_hard_corner_count: 548
+  interpretation: >-
+    Preserve the terrain-responsive line placement and ordering information, while
+    replacing the hard-corner polyline realization with explicit finite-curvature
+    geometry. The replacement is a new versioned candidate, not a silent edit.
+
+reference_thresholds:
+  candidate_a_total_survey_line_length_m: 620420.0
+  candidate_a_excess_overlap_length_m: 369055.8064516127
+  preferred_result: refined_C_remains_shorter_than_candidate_A
+
+geometry_strategy:
+  representation:
+    - explicit_straight_segments
+    - explicit_quadratic_or_cubic_bezier_transition_segments
+  initial_method: local_corner_rounding
+  construction: >-
+    At each original interior station, trim a bounded fraction from the incoming
+    and outgoing segments and join the trimmed points with an explicit Bezier
+    transition tangent to both segments. This removes instantaneous heading
+    changes while retaining the original terrain-responsive corridor.
+  parameter_sweep:
+    corner_trim_fraction: [0.03, 0.05, 0.08, 0.12, 0.18]
+  safeguards:
+    - do_not_move_first_or_last_point_of_each_survey_line
+    - keep_every_curve_inside_the_survey_region
+    - reject_any_adjacent_line_crossing
+    - reject_degenerate_or_self_intersecting_curves
+    - record_minimum_curvature_radius_as_a_diagnostic
+  vessel_radius_policy: >-
+    Do not invent a minimum vessel-turning radius. Generate a finite-curvature
+    Pareto set and report radius diagnostics so an operational limit can be applied
+    later if one is supplied.
+
+required_implementation:
+  - add an explicit curve-geometry schema and deterministic sampler
+  - extend curvature validation to evaluate analytic curve segments and C1 joins
+  - add a candidate-C refinement generator
+  - add tests for tangent continuity, finite curvature, non-crossing and determinism
+  - add a GitHub Actions workflow that regenerates and evaluates all refinement variants
+
+full_re_evaluation_for_each_variant:
+  - analytic_curve_continuity_and_curvature_validation
+  - sampled_spatial_coverage
+  - boundary_violation
+  - adjacent_line_crossing_detection
+  - total_survey_line_length_m_recomputed_from_curve_geometry
+  - excess_overlap_length_m
+  - multiply_covered_area_percent
+  - grid_sensitivity
+
+selection_rule:
+  feasible_set_definition:
+    - no_hard_corners
+    - no_line_crossings
+    - zero_sampled_uncovered_area_at_frozen_settings
+    - no_boundary_violation
+  rank_feasible_variants_by:
+    - total_survey_line_length_m_ascending
+    - excess_overlap_length_m_ascending
+  compare_against:
+    - original_P4-CAND-C_as_non_executable_lower_reference
+    - P4-CAND-A_as_conservative_executable_reference
+  final_human_gate_required: true
+
+stop_conditions:
+  success: at_least_one_refined_C_variant_is_feasible_and_fully_evaluated
+  partial_success: finite_curvature_variants_exist_but_all_lose_coverage_or_cross_lines
+  failure: no_tested_explicit_refinement_preserves_required_constraints
+  on_failure: return_to_route_design_not_automatic_freeze_of_A
+
+artifacts_expected:
+  generator: tests/case001/run/problem4_candidates/refine_candidate_c.py
+  curve_library: skills/math_modeling/evaluators/curve_geometry.py
+  generated_variants: tests/case001/run/problem4_candidates/generated/P4-CAND-C-R*.json
+  comparison_report: tests/case001/run/problem4_candidates/generated/candidate_c_refinement_comparison.json
+  decision_record: tests/case001/run/H3_problem4_candidate_selection.yaml
