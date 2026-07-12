@@ -1,0 +1,39 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: evaluator_phase2
+status: complete_agent_still_blocked
+
+completed:
+  - deterministic_attachment_xlsx_adapter
+  - source_hash_and_schema_validation
+  - real_251x201_grid_runtime_test
+  - grid_resolution_stability_test
+  - ordered_previous_line_overlap_semantics_frozen
+  - thirteen_analytic_and_adapter_tests_pass_locally
+
+frozen_metric_semantics:
+  policy: ordered_previous_line
+  threshold: 0.20
+  definition: >-
+    Count each later line centerline interval once when more than 20% of its local swath
+    is covered by the immediately preceding spatially adjacent line.
+  line_order_requirement: >-
+    Input order represents spatial adjacency of survey strips, not vessel traversal order
+    unless the two orders coincide.
+  double_counting: prohibited
+
+real_grid_smoke:
+  source_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
+  source_shape_y_by_x: [251, 201]
+  elapsed_seconds: 5.66
+  max_rss_kb: 313828
+  resolution_uncovered_range_percentage_points: 0.6666666666666643
+  status: pass_not_a_route_solution
+
+remaining_unblock_conditions:
+  - define_candidate_route_environment_and_tool_contracts
+  - implement_executable_agent_admission_gate
+  - define_problem4_reference_isolation_state_for_route_explorer
+
+route_explorer_started: false
