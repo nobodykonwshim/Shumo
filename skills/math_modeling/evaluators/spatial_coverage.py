@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Independent spatial evaluator for multibeam survey-line plans.
 
-The evaluator deliberately has no route-generation logic. It accepts a terrain,
-a rectangular evaluation region, an instrument opening angle, and already-created
-survey lines. It reports line length, rasterized uncovered area, overlap-excess
-centerline length, boundary violations, and grid-resolution sensitivity.
+The evaluator contains no route-generation logic. It accepts a terrain, a rectangular
+region, an instrument opening angle and an already-created ordered line plan. It reports
+line length, rasterized uncovered area, overlap-excess centerline length, boundary
+violations and grid-resolution sensitivity.
 
 Only Python's standard library is required.
 """
@@ -18,10 +18,11 @@ from pathlib import Path
 from typing import Any, Sequence
 
 _EPS = 1e-12
+_SUPPORTED_OVERLAP_POLICIES = {"per_line", "ordered_previous_line"}
 
 
 class EvaluationError(ValueError):
-    """Raised when the evaluation input or geometry is invalid."""
+    """Raised when evaluation input or geometry is invalid."""
 
 
 @dataclass(frozen=True)
@@ -75,6 +76,8 @@ class SurveyLine:
     points: tuple[tuple[float, float], ...]
 
     def __post_init__(self) -> None:
+        if not self.line_id:
+            raise EvaluationError("Survey-line id must not be empty")
         if len(self.points) < 2:
             raise EvaluationError(f"Line {self.line_id!r} must have at least two points")
         for segment in self.segments:
@@ -95,7 +98,7 @@ class SurveyLine:
 
 class Terrain:
     def depth_gradient(self, x: float, y: float) -> tuple[float, float, float]:
-        """Return positive-down depth and horizontal depth gradient dD/dx,dD/dy."""
+        """Return positive-down depth and horizontal gradient dD/dx,dD/dy."""
         raise NotImplementedError
 
 
@@ -133,6 +136,8 @@ class GridTerrain(Terrain):
             raise EvaluationError("Grid depth row count must match y coordinate count")
         if any(len(row) != len(self.x) for row in self.depth):
             raise EvaluationError("Every grid depth row must match x coordinate count")
+        if any(not math.isfinite(value) or value <= 0 for row in self.depth for value in row):
+            raise EvaluationError("Grid depths must be finite and positive")
 
     @staticmethod
     def _locate(values: Sequence[float], value: float) -> tuple[int, float]:
@@ -180,7 +185,7 @@ class EvaluationSettings:
     along_step_m: float = 5.0
     cross_track_samples: int = 101
     overlap_threshold: float = 0.20
-    overlap_length_policy: str = "per_line"
+    overlap_length_policy: str = "ordered_previous_line"
     sensitivity_grid_sizes: tuple[int, ...] = (50, 100, 200)
 
     def __post_init__(self) -> None:
@@ -194,8 +199,10 @@ class EvaluationSettings:
             raise EvaluationError("cross_track_samples must be at least 5")
         if not (0 <= self.overlap_threshold < 1):
             raise EvaluationError("overlap_threshold must lie in [0,1)")
-        if self.overlap_length_policy != "per_line":
-            raise EvaluationError("Only overlap_length_policy='per_line' is currently supported")
+        if self.overlap_length_policy not in _SUPPORTED_OVERLAP_POLICIES:
+            raise EvaluationError(
+                f"overlap_length_policy must be one of {sorted(_SUPPORTED_OVERLAP_POLICIES)}"
+            )
         if any(size <= 0 for size in self.sensitivity_grid_sizes):
             raise EvaluationError("sensitivity grid sizes must be positive")
 
@@ -227,15 +234,16 @@ def _swath_at(
     left_denominator = 1.0 + cross_slope * tan_half
     right_denominator = 1.0 - cross_slope * tan_half
     if left_denominator <= _EPS or right_denominator <= _EPS:
-        raise EvaluationError(
-            "Beam/terrain geometry is singular: a swath denominator is non-positive"
-        )
-    left = depth * tan_half / left_denominator
-    right = depth * tan_half / right_denominator
-    return Swath(left_m=left, right_m=right)
+        raise EvaluationError("Beam/terrain geometry is singular: swath denominator non-positive")
+    return Swath(
+        left_m=depth * tan_half / left_denominator,
+        right_m=depth * tan_half / right_denominator,
+    )
 
 
-def _projection_on_segment(segment: Segment, x: float, y: float) -> tuple[float, float, float] | None:
+def _projection_on_segment(
+    segment: Segment, x: float, y: float
+) -> tuple[float, float, float] | None:
     length_sq = segment.dx * segment.dx + segment.dy * segment.dy
     if length_sq <= _EPS:
         return None
@@ -245,8 +253,7 @@ def _projection_on_segment(segment: Segment, x: float, y: float) -> tuple[float,
     px, py = segment.point_at(u)
     tx, ty = segment.unit_tangent()
     nx, ny = -ty, tx
-    signed_cross_track = (x - px) * nx + (y - py) * ny
-    return px, py, signed_cross_track
+    return px, py, (x - px) * nx + (y - py) * ny
 
 
 def _point_covered_by_line(
@@ -276,20 +283,17 @@ def _coverage_counts(
     nx: int,
     ny: int,
 ) -> tuple[int, int, int]:
-    covered = 0
-    uncovered = 0
-    multi = 0
+    covered = uncovered = multi = 0
     dx = (region.xmax - region.xmin) / nx
     dy = (region.ymax - region.ymin) / ny
     for j in range(ny):
         y = region.ymin + (j + 0.5) * dy
         for i in range(nx):
             x = region.xmin + (i + 0.5) * dx
-            count = sum(
-                1
-                for line in lines
-                if _point_covered_by_line(x, y, line, terrain, opening_angle_deg)
-            )
+            count = 0
+            for line in lines:
+                if _point_covered_by_line(x, y, line, terrain, opening_angle_deg):
+                    count += 1
             if count == 0:
                 uncovered += 1
             else:
@@ -314,15 +318,15 @@ def _clipped_segment_length(segment: Segment, region: Region) -> float:
             if qi < 0:
                 return 0.0
             continue
-        r = qi / pi
+        ratio = qi / pi
         if pi < 0:
-            if r > u2:
+            if ratio > u2:
                 return 0.0
-            u1 = max(u1, r)
+            u1 = max(u1, ratio)
         else:
-            if r < u1:
+            if ratio < u1:
                 return 0.0
-            u2 = min(u2, r)
+            u2 = min(u2, ratio)
     return max(0.0, u2 - u1) * segment.length
 
 
@@ -331,36 +335,47 @@ def _line_outside_length(line: SurveyLine, region: Region) -> float:
     return max(0.0, line.length - inside)
 
 
-def _other_lines_overlap_fraction(
-    line_index: int,
+def _overlap_fraction_against_lines(
     segment: Segment,
     u: float,
     terrain: Terrain,
-    lines: Sequence[SurveyLine],
+    reference_lines: Sequence[SurveyLine],
     settings: EvaluationSettings,
 ) -> float:
+    if not reference_lines:
+        return 0.0
     x, y = segment.point_at(u)
     tx, ty = segment.unit_tangent()
     nx, ny = -ty, tx
     swath = _swath_at(terrain, x, y, tx, ty, settings.opening_angle_deg)
     width = swath.width_m
-    hit = 0
-    samples = settings.cross_track_samples
-    for k in range(samples):
-        q = -swath.left_m + (k + 0.5) * width / samples
+    hits = 0
+    for sample_index in range(settings.cross_track_samples):
+        q = -swath.left_m + (sample_index + 0.5) * width / settings.cross_track_samples
         sx, sy = x + q * nx, y + q * ny
         if any(
-            idx != line_index
-            and _point_covered_by_line(
-                sx, sy, other_line, terrain, settings.opening_angle_deg
+            _point_covered_by_line(
+                sx, sy, reference_line, terrain, settings.opening_angle_deg
             )
-            for idx, other_line in enumerate(lines)
+            for reference_line in reference_lines
         ):
-            hit += 1
-    return hit / samples
+            hits += 1
+    return hits / settings.cross_track_samples
 
 
-def _excess_overlap_length_per_line(
+def _reference_lines_for_overlap(
+    line_index: int,
+    lines: Sequence[SurveyLine],
+    policy: str,
+) -> Sequence[SurveyLine]:
+    if policy == "ordered_previous_line":
+        return () if line_index == 0 else (lines[line_index - 1],)
+    if policy == "per_line":
+        return tuple(line for index, line in enumerate(lines) if index != line_index)
+    raise EvaluationError(f"Unsupported overlap policy: {policy}")
+
+
+def _excess_overlap_length(
     terrain: Terrain,
     lines: Sequence[SurveyLine],
     settings: EvaluationSettings,
@@ -368,14 +383,17 @@ def _excess_overlap_length_per_line(
     per_line: dict[str, float] = {}
     total = 0.0
     for line_index, line in enumerate(lines):
+        reference_lines = _reference_lines_for_overlap(
+            line_index, lines, settings.overlap_length_policy
+        )
         excess_length = 0.0
         for segment in line.segments:
             interval_count = max(1, math.ceil(segment.length / settings.along_step_m))
             interval_length = segment.length / interval_count
             for interval_index in range(interval_count):
                 u = (interval_index + 0.5) / interval_count
-                fraction = _other_lines_overlap_fraction(
-                    line_index, segment, u, terrain, lines, settings
+                fraction = _overlap_fraction_against_lines(
+                    segment, u, terrain, reference_lines, settings
                 )
                 if fraction > settings.overlap_threshold + _EPS:
                     excess_length += interval_length
@@ -392,6 +410,9 @@ def evaluate(
 ) -> dict[str, Any]:
     if not lines:
         raise EvaluationError("At least one survey line is required")
+    line_ids = [line.line_id for line in lines]
+    if len(line_ids) != len(set(line_ids)):
+        raise EvaluationError("Survey-line ids must be unique")
 
     covered, uncovered, multi = _coverage_counts(
         region,
@@ -407,11 +428,9 @@ def evaluate(
         line.line_id: _line_outside_length(line, region) for line in lines
     }
     outside_total = sum(outside_by_line.values())
-    overlap_excess, overlap_by_line = _excess_overlap_length_per_line(
-        terrain, lines, settings
-    )
+    overlap_excess, overlap_by_line = _excess_overlap_length(terrain, lines, settings)
 
-    sensitivity = []
+    sensitivity: list[dict[str, float | int]] = []
     for size in settings.sensitivity_grid_sizes:
         _, uncovered_s, multi_s = _coverage_counts(
             region, terrain, lines, settings.opening_angle_deg, size, size
@@ -426,8 +445,21 @@ def evaluate(
             }
         )
 
+    if settings.overlap_length_policy == "ordered_previous_line":
+        overlap_semantics = (
+            "lines are ordered by spatial adjacency; for every line after the first, count "
+            "its sampled centerline length once when more than the threshold fraction of its "
+            "local swath is covered by the immediately preceding line"
+        )
+    else:
+        overlap_semantics = (
+            "sum each line's sampled centerline length where more than the threshold fraction "
+            "of its local swath is covered by any other line; physical overlap can be counted "
+            "on both participating lines"
+        )
+
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "evaluator": "independent_multibeam_spatial_coverage",
         "independence_contract": {
             "contains_route_generation": False,
@@ -437,11 +469,13 @@ def evaluate(
         "metric_semantics": {
             "uncovered_area": "fraction of rectangular raster cell centers covered by zero swaths",
             "multiply_covered_area": "fraction of raster cell centers covered by at least two swaths",
-            "excess_overlap_length": (
-                "sum of each survey line's sampled centerline length where more than the "
-                "configured threshold of that line's local swath is covered by other lines"
-            ),
+            "excess_overlap_length": overlap_semantics,
             "overlap_length_counting_policy": settings.overlap_length_policy,
+            "line_order_requirement": (
+                "input order must represent spatially adjacent survey strips"
+                if settings.overlap_length_policy == "ordered_previous_line"
+                else "none"
+            ),
         },
         "settings": {
             "opening_angle_deg": settings.opening_angle_deg,
@@ -490,6 +524,25 @@ def _parse_terrain(data: dict[str, Any]) -> Terrain:
     raise EvaluationError("terrain.type must be 'plane' or 'grid'")
 
 
+def _load_terrain_reference(config_path: Path, data: dict[str, Any]) -> dict[str, Any]:
+    if "terrain" in data:
+        return data["terrain"]
+    terrain_file = data.get("terrain_file")
+    if not terrain_file:
+        raise EvaluationError("Config must provide terrain or terrain_file")
+    terrain_path = Path(terrain_file)
+    if not terrain_path.is_absolute():
+        terrain_path = (config_path.parent / terrain_path).resolve()
+    try:
+        terrain_bundle = json.loads(terrain_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvaluationError(f"Cannot load terrain_file {terrain_path}: {exc}") from exc
+    terrain_data = terrain_bundle.get("terrain", terrain_bundle)
+    if not isinstance(terrain_data, dict):
+        raise EvaluationError("terrain_file does not contain a terrain object")
+    return terrain_data
+
+
 def load_config(path: Path) -> tuple[Region, Terrain, list[SurveyLine], EvaluationSettings]:
     data = json.loads(path.read_text(encoding="utf-8"))
     region_data = data["region"]
@@ -499,11 +552,11 @@ def load_config(path: Path) -> tuple[Region, Terrain, list[SurveyLine], Evaluati
         ymin=float(region_data["ymin"]),
         ymax=float(region_data["ymax"]),
     )
-    terrain = _parse_terrain(data["terrain"])
+    terrain = _parse_terrain(_load_terrain_reference(path, data))
     lines = [
         SurveyLine(
             line_id=str(line["id"]),
-            points=tuple((float(p[0]), float(p[1])) for p in line["points"]),
+            points=tuple((float(point[0]), float(point[1])) for point in line["points"]),
         )
         for line in data["lines"]
     ]
@@ -516,13 +569,11 @@ def load_config(path: Path) -> tuple[Region, Terrain, list[SurveyLine], Evaluati
         cross_track_samples=int(evaluation_data.get("cross_track_samples", 101)),
         overlap_threshold=float(evaluation_data.get("overlap_threshold", 0.20)),
         overlap_length_policy=str(
-            evaluation_data.get("overlap_length_policy", "per_line")
+            evaluation_data.get("overlap_length_policy", "ordered_previous_line")
         ),
         sensitivity_grid_sizes=tuple(
             int(value)
-            for value in evaluation_data.get(
-                "sensitivity_grid_sizes", [50, 100, 200]
-            )
+            for value in evaluation_data.get("sensitivity_grid_sizes", [50, 100, 200])
         ),
     )
     return region, terrain, lines, settings
