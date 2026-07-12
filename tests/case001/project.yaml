@@ -24,6 +24,8 @@ paths:
   figures: "tests/case001/figures/"
   sections: "tests/case001/sections/"
   spatial_evaluator: "skills/math_modeling/evaluators/spatial_coverage.py"
+  attachment_adapter: "skills/math_modeling/evaluators/xlsx_depth_grid.py"
+  executable_agent_gate: "skills/math_modeling/orchestration/agent_gate.py"
 
 units:
   system: SI
@@ -59,8 +61,11 @@ agent_policy:
   require_prompt_contract: true
   require_rollback_point: true
   require_error_detection: true
+  require_executable_gate_token: true
   default_decision: workflow
-  silent_failure_risk_allowed: low
+  silent_failure_risk:
+    default_allowed: low
+    bounded_agent_exception: medium_only_with_independent_validator_and_human_checkpoint
   global_budget:
     max_iterations: 6
     max_tool_calls: 12
@@ -120,6 +125,7 @@ reference_isolation:
   current_status: contaminated_for_blind_claim
   blind_claim_allowed: false
   current_treatment: reference_quarantined_reconstruction
+  problem4_route_explorer_state: quarantined
   true_blind_validation_requires_fresh_case_or_context: true
 
 modeling:
@@ -136,13 +142,15 @@ modeling:
   partial_result_must_be_labeled: true
 
 problem4_evaluation:
-  phase: 1
-  evaluator_status: analytic_tests_pass
+  phase: 3
+  attachment_adapter_status: verified
+  evaluator_status: analytic_and_real_grid_tests_pass
   route_generator_independent: true
   metric_policy:
     uncovered_area: raster_cell_center
-    excessive_overlap_length: per_line
+    excessive_overlap_length: ordered_previous_line
     excessive_overlap_threshold: 0.20
+    physical_pair_double_counting: prohibited
   implemented:
     - total_line_length
     - uncovered_area_percentage
@@ -150,13 +158,17 @@ problem4_evaluation:
     - excessive_overlap_length
     - outside_region_length
     - grid_resolution_sensitivity
-  remaining_before_agent:
-    - attachment_xlsx_adapter
-    - real_grid_runtime_and_resolution_test
-    - overlap_length_semantics_approval
-    - candidate_route_tool_contracts
-    - executable_agent_gate
-  route_explorer_allowed: false
+    - deterministic_xlsx_grid_adapter
+    - contract_hash_verification
+    - executable_agent_admission_gate
+  real_grid_evidence: "tests/case001/run/problem4_real_grid_smoke_report.json"
+  admission: "tests/case001/run/problem4_agent_admission.json"
+  gate_token: "tests/case001/run/problem4_agent_gate_token.json"
+  contracts: "tests/case001/run/problem4_contracts/"
+  route_explorer_allowed: true
+  route_explorer_status: completed_budget_exhausted
+  candidate_set: "tests/case001/run/problem4_candidates/candidate_set_manifest.yaml"
+  final_route_selected: false
 
 paper_architecture:
   equation_numbering: global
@@ -204,6 +216,14 @@ quality_gates:
     - excessive_overlap_metric_frozen
     - candidate_route_tool_contracts_defined
     - executable_agent_gate_passed
+    - reference_access_quarantined
+    - hash_bound_gate_token_issued
+  problem4_agent_to_human_selection:
+    - no_more_than_three_candidates
+    - every_candidate_independently_evaluated
+    - candidate_and_report_hashes_recorded
+    - no_winner_selected_by_agent
+    - limitations_recorded
   modeling_to_architecture:
     - outputs_covered
     - route_decision_recorded
@@ -224,7 +244,7 @@ quality_gates:
     - required_outputs_present
 
 status:
-  current_stage: problem4_evaluator_phase1_complete
-  state: agent_blocked_pending_real_grid_integration
-  blocker: "Problem4 Route Explorer remains blocked until attachment-grid integration, real-grid stability, overlap metric semantics and executable Agent contracts are verified."
-  note: "Problem1-3 are complete. The phase-one evaluator is analytically tested and independent, but it is not yet sufficient to authorize problem4 Agent exploration."
+  current_stage: H3_problem4_candidate_selection
+  state: awaiting_user_selection
+  blocker: "Final problem4 route selection is a human value and feasibility judgment."
+  note: "Problems 1-3 are complete. Problem4 has three bounded, independently evaluated candidates; no final route or global-optimality claim has been made."
