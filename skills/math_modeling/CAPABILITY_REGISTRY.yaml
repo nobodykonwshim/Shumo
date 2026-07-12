@@ -43,6 +43,24 @@ capabilities:
       - status remains validated until the contract is exercised on a second materially different real case
       - primary objective assumptions accepted risk and final model choice remain human decisions
 
+  - capability_id: project_status_orchestration
+    name: cross-artifact project consistency and lifecycle status calculation
+    status: validated
+    owner_path: skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md
+    validator: skills/math_modeling/validation/project_status_calculator.py
+    contract:
+      inputs: project_status_record_modeling_decisions_model_specs_sensitivity_policies_evidence_blueprints_and_stop_records
+      outputs: calculated_project_state_reasons_blockers_pending_decisions_completed_items_and_valid_next_actions
+    generic_tests:
+      - tests/specs/test_project_status_calculator.py
+    demonstrated_by:
+      - tests/case001/project_status.yaml
+    limits:
+      - calculated status proves contract consistency rather than mathematical correctness
+      - demonstration_complete closes a bounded cycle and does not imply every case subproblem or final paper is complete
+      - lifecycle goals and nonblocking external dependencies remain explicit project declarations
+      - status remains validated until exercised on a second materially different real case
+
   - capability_id: generic_model_spec_schema
     name: generic executable mathematical model specification
     status: validated
