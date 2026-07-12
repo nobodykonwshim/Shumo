@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shumo.local/schemas/capability_registry.schema.json",
+  "title": "Shumo capability registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registry_id", "product_boundary", "case_studies_are", "status_values", "capabilities", "backlog"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "registry_id": {"$ref": "#/$defs/id"},
+    "product_boundary": {"$ref": "#/$defs/nonempty"},
+    "case_studies_are": {"$ref": "#/$defs/nonempty"},
+    "status_values": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["planned", "prototype", "validated", "reusable", "deprecated"]}
+    },
+    "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capability"}},
+    "backlog": {"type": "array", "items": {"$ref": "#/$defs/backlog"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "minLength": 2, "maxLength": 128},
+    "nonempty": {"type": "string", "minLength": 1},
+    "path": {"type": "string", "minLength": 1},
+    "contract": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inputs", "outputs"],
+      "properties": {
+        "inputs": {"$ref": "#/$defs/nonempty"},
+        "outputs": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "capability": {
+      "type": "object", "additionalProperties": false,
+      "required": ["capability_id", "name", "status", "owner_path", "contract", "generic_tests", "demonstrated_by", "limits"],
+      "properties": {
+        "capability_id": {"$ref": "#/$defs/id"},
+        "name": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["planned", "prototype", "validated", "reusable", "deprecated"]},
+        "owner_path": {"$ref": "#/$defs/path"},
+        "validator": {"$ref": "#/$defs/path"},
+        "contract": {"$ref": "#/$defs/contract"},
+        "generic_tests": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/path"}},
+        "demonstrated_by": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/path"}},
+        "limits": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    },
+    "backlog": {
+      "type": "object", "additionalProperties": false,
+      "required": ["capability_id", "priority", "reason"],
+      "properties": {
+        "capability_id": {"$ref": "#/$defs/id"},
+        "priority": {"enum": ["high", "medium", "low"]},
+        "reason": {"$ref": "#/$defs/nonempty"}
+      }
+    }
+  }
+}
