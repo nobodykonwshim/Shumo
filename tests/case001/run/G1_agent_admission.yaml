@@ -52,13 +52,9 @@ decisions:
       approved_by: user
       selected_process: two_phase_independent_then_reference_comparison
       record: tests/case001/run/H1_problem3_route_decision.yaml
-    execution_result:
-      W2_W5_complete: true
-      independent_baseline_frozen: true
-      reference_comparison_complete: true
     ambiguity:
       decision_tree_enumerable: mostly
-      evidence: "Orientation, boundary placement, recursive spacing and verification were handled by a bounded deterministic search after problem1 and problem2 were fixed."
+      evidence: "Orientation, boundary placement, recursive spacing and verification can be handled by a bounded deterministic search after problem1 and problem2 are fixed."
     reference_control:
       phase_R1:
         reference_files_readable: false
@@ -74,9 +70,10 @@ decisions:
         - total_length_recomputation
         - boundary_waste_comparison
         - reference_exposure_log_present
-      silent_failure_risk: low
-    approval_required: false
-    next_stage: complete
+      silent_failure_risk: low_to_medium
+    completion:
+      modeling_packet: tests/case001/artifacts/modeling/problem3.model.yaml
+      status: pass
 
   problem4:
     proposed_role: route_explorer
@@ -91,50 +88,51 @@ decisions:
       completed:
         - original_attachment_inspected
         - coordinate_grid_and_depth_range_verified
-        - independent_spatial_evaluator_phase1_implemented
-        - analytic_planar_evaluator_tests_pass
-        - grid_resolution_sensitivity_reported_by_evaluator
-        - boundary_violation_metric_implemented
-      unresolved_bottlenecks:
-        - direct_or_deterministic_attachment_xlsx_adapter_not_implemented
-        - real_251x201_grid_performance_and_resolution_test_not_run
-        - excessive_overlap_length_reporting_semantics_not_frozen
+        - deterministic_attachment_xlsx_adapter_implemented
+        - independent_spatial_coverage_evaluator_implemented
+        - excessive_overlap_length_evaluator_implemented
+        - ordered_previous_line_overlap_semantics_frozen
+        - analytic_regression_tests_pass
+        - real_251x201_grid_runtime_test_pass
+        - grid_resolution_stability_test_pass
+      remaining:
         - candidate_route_environment_and_tool_contracts_not_defined
         - executable_agent_admission_gate_not_implemented
+        - route_explorer_reference_isolation_state_not_frozen
     error_control:
       detectable_failures:
         - uncovered_grid_or_polygon_cells
-        - overlap_above_threshold
+        - excessive_overlap_length
         - line_outside_region
         - inconsistent_length_recomputation
-      implemented_checks:
-        - independent_raster_evaluator
-        - grid_resolution_perturbation
-        - region_boundary_clipping
-        - analytic_flat_and_sloped_plane_tests
-      remaining_checks:
-        - real_attachment_grid_smoke_test
-        - evaluator_runtime_benchmark
-        - accepted_problem4_overlap_length_semantics
-        - candidate_plan_tool_contract_validation
-      silent_failure_risk: medium_to_high
+        - grid_resolution_instability
+      independent_evaluator:
+        path: skills/math_modeling/evaluators/spatial_coverage.py
+        route_generation_code_present: false
+        candidate_scoring_imported: false
+      attachment_adapter:
+        path: skills/math_modeling/evaluators/xlsx_depth_grid.py
+        source_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
+      frozen_overlap_policy:
+        policy: ordered_previous_line
+        threshold: 0.20
+        double_counting: prohibited
+      real_grid_evidence:
+        report: tests/case001/run/problem4_real_grid_smoke_report.json
+        runtime_seconds: 5.66
+        resolution_range_percentage_points: 0.6666666666666643
+      silent_failure_risk: medium
     unblock_conditions:
-      completed:
-        - implement_independent_spatial_evaluator_phase1
-      remaining:
-        - connect_and_test_attachment_grid_adapter
-        - freeze_overlap_length_reporting_semantics
-        - define_agent_environment_and_tool_contracts
-        - implement_executable_agent_admission_gate
-        - lower_silent_failure_risk_to_low_or_medium
-        - define_reference_isolation_mode_for_route_exploration
+      - define_candidate_route_environment_and_tool_contracts
+      - implement_executable_agent_admission_gate
+      - freeze_route_explorer_reference_isolation_state
     intended_future_decision: bounded_agent
     approval_required: true
     route_explorer_started: false
 
 summary:
-  workflow: [problem1, problem2, problem3]
-  human_checkpoint_resolved: [problem3_process_selection, problem3_reference_release]
-  blocked: [problem4]
+  workflow: [problem1, problem2, problem3_phase_R1]
+  completed: [problem1, problem2, problem3, problem4_evaluator_phase2]
+  blocked: [problem4_route_explorer]
   bounded_agent_now: []
-  rationale: "The independent evaluator now has analytic phase-one evidence, but problem4 remains blocked until real-grid integration, metric semantics and executable Agent contracts are complete."
+  rationale: "Problem4 now has an independent evaluator and real-grid ingestion, but Agent execution remains blocked until contracts and an executable admission gate prevent unauthorized or contaminated runs."
