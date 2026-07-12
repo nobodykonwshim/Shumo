@@ -56,5 +56,5 @@ scope_and_limits:
 
 final_decision:
   selected_candidate: P4-CAND-A
-  problem4_baseline_state: ready_to_freeze
+  problem4_baseline_state: frozen
   merge_pr: false
