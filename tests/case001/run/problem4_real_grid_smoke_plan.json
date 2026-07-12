@@ -1,0 +1,40 @@
+{
+  "evaluation": {
+    "along_step_m": 100.0,
+    "cross_track_samples": 31,
+    "grid_nx": 40,
+    "grid_ny": 50,
+    "overlap_length_policy": "ordered_previous_line",
+    "overlap_threshold": 0.2,
+    "sensitivity_grid_sizes": [25, 50, 75]
+  },
+  "instrument": {"opening_angle_deg": 120.0},
+  "lines": [
+    {"id": "SMOKE-01", "points": [[0.0, 0.0], [0.0, 9260.0]]},
+    {"id": "SMOKE-02", "points": [[463.0, 0.0], [463.0, 9260.0]]},
+    {"id": "SMOKE-03", "points": [[926.0, 0.0], [926.0, 9260.0]]},
+    {"id": "SMOKE-04", "points": [[1389.0, 0.0], [1389.0, 9260.0]]},
+    {"id": "SMOKE-05", "points": [[1852.0, 0.0], [1852.0, 9260.0]]},
+    {"id": "SMOKE-06", "points": [[2315.0, 0.0], [2315.0, 9260.0]]},
+    {"id": "SMOKE-07", "points": [[2778.0, 0.0], [2778.0, 9260.0]]},
+    {"id": "SMOKE-08", "points": [[3241.0, 0.0], [3241.0, 9260.0]]},
+    {"id": "SMOKE-09", "points": [[3704.0, 0.0], [3704.0, 9260.0]]},
+    {"id": "SMOKE-10", "points": [[4167.0, 0.0], [4167.0, 9260.0]]},
+    {"id": "SMOKE-11", "points": [[4630.0, 0.0], [4630.0, 9260.0]]},
+    {"id": "SMOKE-12", "points": [[5093.0, 0.0], [5093.0, 9260.0]]},
+    {"id": "SMOKE-13", "points": [[5556.0, 0.0], [5556.0, 9260.0]]},
+    {"id": "SMOKE-14", "points": [[6019.0, 0.0], [6019.0, 9260.0]]},
+    {"id": "SMOKE-15", "points": [[6482.0, 0.0], [6482.0, 9260.0]]},
+    {"id": "SMOKE-16", "points": [[6945.0, 0.0], [6945.0, 9260.0]]},
+    {"id": "SMOKE-17", "points": [[7408.0, 0.0], [7408.0, 9260.0]]}
+  ],
+  "notes": [
+    "This is a deterministic evaluator smoke plan, not a problem4 candidate solution.",
+    "Lines are fixed at 0.25 NM east-west spacing and ordered west-to-east.",
+    "The source terrain file is generated locally by xlsx_depth_grid.py and is not committed."
+  ],
+  "purpose": "deterministic_real_grid_smoke_only_not_candidate_solution",
+  "region": {"xmax": 7408.0, "xmin": 0.0, "ymax": 9260.0, "ymin": 0.0},
+  "schema_version": 1,
+  "terrain_file": "../local/generated/attachment_terrain.json"
+}
