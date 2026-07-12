@@ -2,7 +2,13 @@ schema_version: 1
 case_id: case001
 stage: G1
 status: verified
-rule: "Agent admission decisions are based on the original problem and inspected attachment."
+rule: "Agent admission decisions are based on original sources, error detectability and reference-isolation status."
+
+reference_isolation:
+  protocol: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+  exposure_status: contaminated_for_blind_claim
+  blind_claim_allowed: false
+  implication: "Current case may test provenance and quarantined reconstruction, but cannot prove unknown-problem independence."
 
 decisions:
   problem1:
@@ -39,34 +45,37 @@ decisions:
     approval_required: false
 
   problem3:
-    proposed_role: route_explorer
-    decision: human_checkpoint
+    proposed_role: none_during_phase_R1
+    decision: workflow
+    previous_decision: human_checkpoint
+    checkpoint_resolution:
+      approved_by: user
+      selected_process: two_phase_independent_then_reference_comparison
+      record: tests/case001/run/H1_problem3_route_decision.yaml
     ambiguity:
       decision_tree_enumerable: mostly
-      evidence: "The mature baseline is contour-parallel lines with recursive spacing; only boundary placement and proof strategy need bounded comparison."
+      evidence: "Orientation, boundary placement, recursive spacing and verification can be handled by a bounded deterministic search after problem1 and problem2 are fixed."
     value:
       impact: high
-      expected_gain_from_agent: limited
+      expected_gain_from_agent: "Not evaluated until an independent or quarantined baseline is frozen."
+    reference_control:
+      phase_R1:
+        reference_files_readable: false
+        same_problem_web_search: forbidden
+        route_explorer_allowed: false
+      phase_R2:
+        reference_files_readable: true_after_human_release
+        purpose: comparison_only
     error_control:
       checks:
         - complete_rectangle_coverage
         - every_adjacent_overlap_between_10_and_20_percent
         - total_length_recomputation
         - boundary_waste_comparison
-      silent_failure_risk: medium
-    scope:
-      allowed_actions:
-        - propose_at_most_3_boundary_and_spacing_routes
-        - compare_cost_risk_and_validation_plan
-      forbidden_actions:
-        - select_final_route
-        - modify_registry
-        - write_final_paper
-    budget:
-      max_iterations: 2
-      max_tool_calls: 4
-      max_candidate_routes: 3
-    approval_required: true
+        - reference_exposure_log_present
+      silent_failure_risk: low_to_medium
+    approval_required: false_for_W2
+    next_stage: W2_problem3
 
   problem4:
     proposed_role: route_explorer
@@ -101,12 +110,13 @@ decisions:
       - implement_independent_spatial_evaluator
       - define_agent_environment_and_tool_contracts
       - lower_silent_failure_risk_to_low_or_medium
+      - define_reference_isolation_mode_for_route_exploration
     intended_future_decision: bounded_agent
     approval_required: true
 
 summary:
-  workflow: [problem1, problem2]
-  human_checkpoint: [problem3]
+  workflow: [problem1, problem2, problem3_phase_R1]
+  human_checkpoint_resolved: [problem3_process_selection]
   blocked: [problem4]
   bounded_agent_now: []
-  rationale: "Original-source verification did not change the workflow-first routing. Attachment availability closes ingestion but does not justify problem4 autonomy without an evaluator."
+  rationale: "Problem3 now tests deterministic independent-first orchestration. Agent exploration is deferred until a frozen baseline and explicit reference-release checkpoint exist."
