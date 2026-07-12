@@ -1,17 +1,11 @@
 name: Case001 candidate C refinement demonstration
 
-# This workflow is a real-case demonstration. It is intentionally not triggered
-# by generic Skill or evaluator changes; those are covered by reusable unit tests.
-# Refresh this evidence only when the case-specific refinement pipeline changes
-# or through an explicit manual dispatch.
+# This workflow is a real-case demonstration, not a reusable Skill gate.
+# Pull-request triggers are intentionally disabled because GitHub evaluates path
+# filters against the whole PR diff and would rerun this case on unrelated Skill work.
+# Refresh evidence manually or when the case-specific refinement pipeline is pushed.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "tests/case001/run/problem4_candidates/refine_candidate_c.py"
-      - "tests/case001/run/problem4_candidates/evaluate_refined_candidates.py"
-      - "tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml"
-      - ".github/workflows/problem4-candidate-c-refinement.yml"
   push:
     paths:
       - "tests/case001/run/problem4_candidates/refine_candidate_c.py"
