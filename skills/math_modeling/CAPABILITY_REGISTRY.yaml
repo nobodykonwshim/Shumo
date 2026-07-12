@@ -59,6 +59,24 @@ capabilities:
       - missing generic tests on legacy validated capabilities are warnings until migrated
       - promotion from validated to reusable remains a human governance decision
 
+  - capability_id: generic_sensitivity_policy
+    name: pre-result case-specific sensitivity declaration and audit
+    status: validated
+    owner_path: skills/math_modeling/support/SENSITIVITY_POLICY.md
+    validator: skills/math_modeling/validation/sensitivity_policy_validator.py
+    contract:
+      inputs: model_or_evaluation_artifact_case_specific_perturbations_metrics_acceptance_rules_and_governance
+      outputs: machine_validated_pre_result_policy_execution_results_evidence_and_amendment_history
+    generic_tests:
+      - tests/specs/test_sensitivity_policy_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/sensitivity_policy.example.yaml
+      - tests/case001/problem4_evaluator.sensitivity.yaml
+    limits:
+      - the Skill supplies no universal numerical threshold
+      - perturbation magnitudes and acceptance rules remain case-specific human or authoritative-source decisions
+      - schema conformance does not prove that the chosen sensitivity scope is sufficient
+
   - capability_id: agent_admission
     name: bounded agent admission and runtime token
     status: reusable
@@ -158,9 +176,6 @@ capabilities:
       - the promotion decision still requires human judgment
 
 backlog:
-  - capability_id: generic_sensitivity_policy
-    priority: medium
-    reason: cases need a reusable way to declare mandatory sensitivity grids and acceptance rules
   - capability_id: paper_blueprint_validator
     priority: medium
     reason: architecture-to-writing consistency is documented but not yet executable
