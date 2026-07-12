@@ -3,7 +3,7 @@ case_id: case001
 problem_id: problem4
 task_id: A-P4-ROUTE-01
 admission_id: ADM-P4-ROUTE-001
-status: evaluated_and_h3_resolved
+status: evaluated_candidate_set_reopened_for_c_refinement
 honest_label: reference_aware_assisted_pilot
 
 reference_access:
@@ -44,14 +44,6 @@ evaluation_settings:
   overlap_length_policy: ordered_previous_line
   sensitivity_grid_sizes: [30, 50, 70]
 
-budget:
-  max_iterations: 3
-  max_tool_calls: 8
-  max_candidate_routes: 3
-  candidate_routes_used: 3
-  tool_calls_used: 8
-  stop_reason: budget_exhausted_after_candidate_set_submission
-
 candidates:
   - candidate_id: P4-CAND-A
     route_family: global_north_south_conservative_adaptive
@@ -68,14 +60,11 @@ candidates:
       excess_overlap_length_m: 369055.8064516127
       outside_region_line_length_m: 0.0
       boundary_violation: false
-    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
     feasibility:
       status: pass
       exact_polyline_hard_corner_count: 0
-    limitations:
-      - conservative whole-line spacing causes large overlap in locally deep regions
-      - continuous extrema between placement samples are not proven
-      - global optimality is not claimed
+    current_role: conservative_reference_and_fallback_only
+    final_selected: false
 
   - candidate_id: P4-CAND-B
     route_family: global_east_west_conservative_adaptive
@@ -92,11 +81,8 @@ candidates:
       excess_overlap_length_m: 452776.95999999956
       outside_region_line_length_m: 0.0
       boundary_violation: false
-    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
-    limitations:
-      - conservative whole-line spacing causes large overlap in locally deep regions
-      - continuous extrema between placement samples are not proven
-      - global optimality is not claimed
+    current_role: dominated_reference
+    final_selected: false
 
   - candidate_id: P4-CAND-C
     route_family: terrain_responsive_curved_north_south
@@ -114,32 +100,36 @@ candidates:
       excess_overlap_length_m: 339673.0975448946
       outside_region_line_length_m: 0.0
       boundary_violation: false
-    grid_sensitivity_uncovered_percent: [0.0, 0.0, 0.0]
     feasibility:
-      status: fail
+      original_exact_polyline_status: fail
       exact_polyline_hard_corner_count: 548
       minimum_three_point_circumradius_m: 2397.1959212741776
       failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
-    limitations:
-      - exact piecewise-linear geometry contains heading discontinuities
-      - implicit smoothing would create a new route requiring full spatial re-evaluation
-      - global optimality is not claimed
+      failure_scope: original_piecewise_linear_realization_only
+    current_role: active_refinement_primary
+    final_selected: false
+    refinement_required:
+      - explicit finite-curvature route geometry
+      - full spatial re-evaluation
+      - length and overlap comparison against candidate A
 
 comparison:
-  winner_selected: true
-  selected_candidate: P4-CAND-A
-  selection_basis:
-    - user conditionally selected candidate C for feasibility validation
-    - candidate C failed the frozen exact-geometry curvature gate
-    - fallback candidate A passed the same within-line feasibility gate
-    - candidate A spatial metrics were independently reconfirmed
+  winner_selected: false
+  selected_candidate: null
+  primary_route_family_for_next_stage: P4-CAND-C
+  conservative_reference_candidate: P4-CAND-A
   deterministic_observations:
-    - all three candidates have zero sampled uncovered area and no boundary violation
-    - candidate C has the lowest evaluated length and excessive-overlap length but is infeasible as an exact polyline
+    - all three original candidates have zero sampled uncovered area and no boundary violation
+    - candidate C has the shortest evaluated length and lowest excessive-overlap length
+    - candidate C's original polyline representation contains hard corners
+    - the hard-corner result requires explicit refinement rather than rejection of the route family
     - candidate B has the greatest evaluated length and overlap burden
-    - every candidate still has material multiply-covered area and excessive-overlap length
+  objective_priority:
+    - minimize total survey-line length subject to feasibility and coverage constraints
+    - reduce excessive overlap as a secondary objective
   claims:
     global_optimality: false
     continuous_coverage_proof: false
   resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
-  next_stage: freeze_candidate_A_problem4_baseline
+  refinement_plan: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+  next_stage: construct_and_evaluate_refined_candidate_c
