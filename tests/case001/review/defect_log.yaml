@@ -3,7 +3,7 @@ case_id: case001
 
 summary:
   open_critical: 0
-  open_major: 3
+  open_major: 4
   open_minor: 1
   closed: 2
 
@@ -88,6 +88,30 @@ defects:
       - add deterministic workbook writer and verifier
       - add CI smoke test for problem1 and problem2 fixtures
     regression_test: "A clean checkout plus matching local sources must regenerate both workbook hashes or equivalent numeric tables with one documented command."
+
+  - defect_id: D-007
+    status: open
+    severity: major
+    stage: W0-H1
+    category: provenance_and_experimental_design
+    observation: "The three reference papers and their problem3 benchmark results were read before an independent problem3 baseline was frozen."
+    expected: "For unknown-problem validation, reference solutions must remain outside the readable environment until independent_baseline.yaml is frozen and a human release checkpoint is approved."
+    actual: "Reference methods, 34-line consensus and 68-NM result were already present in the current conversation and repository benchmark artifact."
+    impact:
+      - current_case_cannot_support_true_blind_independence_claim
+      - route_selection_may_be_anchored_by_known_reference_consensus
+      - originality_and_error_detection_metrics_are_confounded
+    positive_behavior:
+      - exposure_is_now_explicitly_logged
+      - current_run_is_labeled_reference_aware_assisted_pilot
+      - problem3_reference_access_is_quarantined_for_the_next_stage
+    proposed_fix:
+      - enforce REFERENCE_ISOLATION_PROTOCOL.md in project configuration
+      - require reference_exposure_log.yaml at W0
+      - exclude reference paths from Agent and Workflow environments during phase R1
+      - freeze and hash independent_baseline.yaml before reference release
+      - use a fresh unseen case or isolated session for true blind validation
+    regression_test: "Start a new case with reference paths mounted but forbidden; the runner must fail any pre-freeze attempt to read them and must record accidental exposure."
 
 benchmark_anomalies:
   - anomaly_id: R-001
