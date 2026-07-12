@@ -27,6 +27,11 @@ case_result_state:
 reusable_capabilities_extracted:
   - capability_id: workflow_orchestration
     owner_path: skills/math_modeling/workflows/README.md
+  - capability_id: generic_model_spec_schema
+    owner_path: skills/math_modeling/specs/model_spec.schema.json
+    validator: skills/math_modeling/validation/model_spec_validator.py
+    case_demonstration: tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    status: validated
   - capability_id: agent_admission
     owner_path: skills/math_modeling/orchestration/agent_gate.py
   - capability_id: reference_isolation
@@ -45,18 +50,27 @@ reusable_capabilities_extracted:
 promotion_evidence:
   capability_registry: skills/math_modeling/CAPABILITY_REGISTRY.yaml
   generic_tests:
+    - tests/specs/test_model_spec_validator.py
     - tests/evaluators/test_xlsx_depth_grid.py
     - tests/evaluators/test_spatial_coverage.py
     - tests/evaluators/test_route_geometry.py
     - tests/evaluators/test_route_feasibility.py
     - tests/orchestration/test_agent_gate.py
   real_case_evidence:
+    - tests/case001/artifacts/modeling/problem3.model.v2.yaml
     - tests/case001/run/problem4_real_grid_smoke_report.json
     - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
     - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
 
+completed_skill_backlog:
+  - capability_id: generic_model_spec_schema
+    completed_at: 2026-07-12
+    result: >-
+      Added a model-family-neutral JSON Schema, YAML/JSON validator, semantic
+      reference checks, evidence-path checks, regression tests and a migrated
+      real-case demonstration.
+
 next_skill_backlog:
-  - generic_model_spec_schema
   - capability_registry_validator
   - generic_sensitivity_policy
   - paper_blueprint_validator
