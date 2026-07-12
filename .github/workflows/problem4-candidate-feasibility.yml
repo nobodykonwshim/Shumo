@@ -1,22 +1,27 @@
-name: Problem4 candidate feasibility resolution
+name: Case001 problem4 legacy feasibility demonstration
 
+# This is an expensive case-study evidence workflow, not a reusable Skill gate.
+# Generic evaluator changes are validated by spatial-evaluator.yml. Refresh this
+# case evidence only when the case-specific candidate pipeline changes or when
+# a maintainer dispatches it explicitly.
 on:
+  workflow_dispatch:
   pull_request:
     paths:
-      - "skills/math_modeling/evaluators/**"
-      - "tests/case001/run/problem4_candidates/**"
+      - "tests/case001/run/problem4_candidates/generate_candidates.py"
+      - "tests/case001/run/problem4_candidates/resolve_candidate_selection.py"
       - ".github/workflows/problem4-candidate-feasibility.yml"
   push:
     paths:
-      - "skills/math_modeling/evaluators/**"
-      - "tests/case001/run/problem4_candidates/**"
+      - "tests/case001/run/problem4_candidates/generate_candidates.py"
+      - "tests/case001/run/problem4_candidates/resolve_candidate_selection.py"
       - ".github/workflows/problem4-candidate-feasibility.yml"
 
 permissions:
   contents: read
 
 jobs:
-  resolve:
+  demonstrate-legacy-resolution:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +56,7 @@ jobs:
           echo "1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189  tests/case001/run/problem4_candidates/generated/P4-CAND-C.json" | sha256sum --check
           echo "adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4  tests/case001/run/problem4_candidates/generated/P4-CAND-A.json" | sha256sum --check
 
-      - name: Resolve C or fallback A
+      - name: Reproduce historical exact-polyline resolution record
         shell: bash
         run: |
           set -euo pipefail
@@ -62,12 +67,10 @@ jobs:
             --output tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
           cat tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
 
-      - name: Reconfirm selected route spatial metrics
+      - name: Reconfirm historical selected-route spatial metrics
         shell: bash
         run: |
           set -euo pipefail
-          # Candidate manifests intentionally preserve the original local-only relative
-          # terrain reference. Recreate that exact expected location for independent recheck.
           mkdir -p tests/case001/run/local/generated
           cp tests/case001/local/generated/attachment_terrain.json \
             tests/case001/run/local/generated/attachment_terrain.json
@@ -91,6 +94,7 @@ jobs:
           assert results["uncovered_area_percent"] == 0.0
           assert results["boundary_violation"] is False
           summary = {
+              "evidence_role": "historical_case_demonstration_not_final_selection",
               "selected_candidate": selected,
               "resolution": resolution["resolution"],
               "primary_hard_corner_count": resolution["primary_feasibility"]["results"]["hard_corner_count"],
@@ -98,6 +102,7 @@ jobs:
               "uncovered_area_percent": results["uncovered_area_percent"],
               "excess_overlap_length_m": results["excess_overlap_length_m"],
               "boundary_violation": results["boundary_violation"],
+              "final_case_selection_made": False,
           }
           Path("tests/case001/run/problem4_candidates/generated/problem4_selection_summary.json").write_text(
               json.dumps(summary, indent=2, sort_keys=True) + "\n",
@@ -106,10 +111,10 @@ jobs:
           print(json.dumps(summary, indent=2))
           PY
 
-      - name: Upload resolution evidence
+      - name: Upload legacy case evidence
         uses: actions/upload-artifact@v4
         with:
-          name: problem4-candidate-feasibility-resolution
+          name: case001-problem4-legacy-feasibility-demonstration
           path: |
             tests/case001/run/problem4_candidates/generated/P4-CAND-A.json
             tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
