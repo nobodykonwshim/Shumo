@@ -1,0 +1,108 @@
+schema_version: 1
+case_id: case001
+
+success_definition:
+  description: "The case passes when the complete workflow is reproducible, detects major errors, and produces a paper section faithful to verified artifacts."
+
+required_stage_outputs:
+  W0:
+    - project_configuration_exists
+    - source_hashes_recorded
+    - local_binary_policy_defined
+    - rollback_point_defined
+  W1:
+    - all_four_questions_identified
+    - required_outputs_listed
+    - explicit_constraints_listed
+    - attachment_dependencies_listed
+    - original_problem_verified
+  G1_H1:
+    - per_problem_agent_decision_recorded
+    - every_agent_invocation_has_admission_record
+    - final_route_selected_by_user_or_team_when_open
+  W2:
+    - variables_parameters_units_and_sources_defined
+    - formulas_have_stable_semantic_ids
+    - boundary_and_failure_modes_defined
+    - verification_plan_predeclared
+  W3:
+    - minimal_example_runs
+    - full_run_command_recorded
+    - dependencies_and_random_seeds_recorded
+    - result_files_created_and_verified
+  W4:
+    - dimensional_check_passes
+    - residual_or_constraint_check_passes
+    - boundary_or_hand_check_passes
+    - sensitivity_or_stability_check_passes
+    - output_file_schema_check_passes
+  W5:
+    - problem_model_packets_valid
+    - route_and_agent_records_embedded
+    - registry_candidates_generated
+    - unresolved_limitations_recorded
+  W6:
+    - unique_model_owners
+    - unique_formula_labels
+    - inheritance_and_new_content_explicit
+    - result_figure_table_locations_defined
+  W7:
+    - no_new_unverified_model_or_result
+    - no_formula_redefinition
+    - no_reference_paper_copying
+    - required_problem_answers_present
+  W8:
+    - formula_definition_reference_check_passes
+    - numerical_attachment_consistency_passes
+    - units_precision_and_fields_complete
+    - no_unverified_claims
+
+critical_failures:
+  - id: CF-001
+    description: "Modeling proceeds without reading the original problem or required attachment."
+  - id: CF-002
+    description: "A reference-paper result is treated as ground truth without independent verification."
+  - id: CF-003
+    description: "Agent is invoked without admission, scope, budget, stop conditions, and rollback point."
+  - id: CF-004
+    description: "Agent silently selects the final modeling route."
+  - id: CF-005
+    description: "A result is reported without a reproducible computation or explicit derivation."
+  - id: CF-006
+    description: "NaN, non-convergence, empty output, or partial tool failure is treated as success."
+  - id: CF-007
+    description: "Problem4 coverage or overlap metrics are accepted without independent spatial verification."
+  - id: CF-008
+    description: "Paper text introduces values or formulas absent from the modeling packet and blueprint."
+  - id: CF-009
+    description: "Existing formulas are redefined instead of referenced."
+  - id: CF-010
+    description: "The original Excel template schema or field order is changed without authorization."
+
+severity_policy:
+  critical: "Blocks progress and requires rollback."
+  major: "Blocks handoff to the next layer until fixed or explicitly accepted by a human checkpoint."
+  minor: "May proceed with a documented corrective action."
+
+quantitative_targets:
+  undetected_critical_errors: 0
+  agent_calls_without_admission: 0
+  untraceable_reported_numbers: 0
+  formula_label_conflicts: 0
+  output_schema_violations: 0
+  reproducibility_runs_minimum: 2
+
+reference_comparison_policy:
+  problem3:
+    common_reference_line_count: 34
+    common_reference_total_length_m: 125936
+    rule: "Use as a smoke-test comparison only; different results require explicit interpretation and coverage proof."
+  problem4:
+    rule: "No exact benchmark target because supplied references materially disagree. Compare methods and validate independently."
+
+exit_criteria_for_first_iteration:
+  - original_problem_and_attachment_are_readable
+  - W0_through_W4_completed_for_problem1
+  - at_least_one_intentional_fault_is_detected_by_the_system
+  - defect_log_contains_reproduction_and_proposed_fix
+  - rerun_after_one_framework_fix_shows_the_fault_is_closed
