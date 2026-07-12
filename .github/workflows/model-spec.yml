@@ -6,16 +6,20 @@ on:
       - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
       - "skills/math_modeling/specs/**"
       - "skills/math_modeling/validation/**"
+      - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
+      - "tests/**/*.sensitivity.yaml"
       - ".github/workflows/model-spec.yml"
   push:
     paths:
       - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
       - "skills/math_modeling/specs/**"
       - "skills/math_modeling/validation/**"
+      - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
+      - "tests/**/*.sensitivity.yaml"
       - ".github/workflows/model-spec.yml"
 
 permissions:
@@ -49,6 +53,13 @@ jobs:
           python skills/math_modeling/validation/model_spec_validator.py \
             --spec skills/math_modeling/specs/model_spec.example.yaml
 
+      - name: Validate case-independent sensitivity-policy example
+        run: |
+          python skills/math_modeling/validation/sensitivity_policy_validator.py \
+            --policy skills/math_modeling/specs/sensitivity_policy.example.yaml \
+            --repo-root . \
+            --check-paths
+
       - name: Validate repository model specifications and evidence paths
         shell: bash
         run: |
@@ -62,4 +73,19 @@ jobs:
               --repo-root . \
               --check-paths
           done < <(find tests -type f -name '*.model.v2.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Validate repository sensitivity policies and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' policy; do
+            found=1
+            echo "Validating ${policy}"
+            python skills/math_modeling/validation/sensitivity_policy_validator.py \
+              --policy "${policy}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.sensitivity.yaml' -print0)
           test "${found}" -eq 1
