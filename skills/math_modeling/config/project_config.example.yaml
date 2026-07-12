@@ -18,6 +18,7 @@ paths:
   modeling_artifacts: "<project>/artifacts/modeling/"
   architecture_artifacts: "<project>/artifacts/architecture/"
   agent_runs: "<project>/artifacts/agents/"
+  reference_artifacts: "<project>/artifacts/references/"
   paper_sections: "<project>/sections/"
   results: "<project>/results/"
   figures: "<project>/figures/"
@@ -86,23 +87,44 @@ workflow_policy:
   validation_rules_predefined_when_possible: true
   fixed_failure_tree_before_diagnostic_agent: true
 
+reference_isolation:
+  protocol: "skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md"
+  default_mode: independent_first_reference_second
+  classify_sources_at_W0: true
+  require_reference_exposure_log: true
+  reference_exposure_log: "<project>/artifacts/references/reference_exposure_log.yaml"
+  require_independent_baseline_freeze: true
+  independent_baseline: "<project>/artifacts/references/independent_baseline.yaml"
+  require_human_reference_release: true
+  reference_comparison: "<project>/artifacts/references/reference_comparison.yaml"
+  adoption_decisions: "<project>/artifacts/references/adoption_decisions.yaml"
+  same_problem_solution_search_before_baseline_freeze: forbidden
+  external_reference_paths_readable_before_release: false
+  accidental_exposure_marks_run_contaminated: true
+  contaminated_run_policy: assisted_baseline_or_fresh_rerun
+  allow_domain_fact_search_before_release: true
+  domain_fact_search_must_log_query_and_use: true
+
 runtime:
   environment:
     explicit_readable_paths: true
     explicit_writable_paths: true
     immutable_paths_required: true
     unavailable_information_must_be_declared: true
+    reference_paths_must_follow_release_state: true
   tools:
     structured_inputs_required: true
     failure_signal_required: true
     side_effect_verification_required: true
     bounded_retry_required: true
+    web_search_must_respect_reference_isolation: true
   prompt:
     success_criteria_required: true
     unknowns_required: true
     allowed_and_forbidden_actions_required: true
     output_schema_required: true
     escalation_conditions_required: true
+    reference_access_state_required: true
 
 modeling:
   stable_formula_ids: true
@@ -123,6 +145,7 @@ innovation:
   require_baseline_comparison: true
   require_user_decision_record: true
   invoke_only_after_agent_admission: true
+  respect_reference_isolation_phase: true
 
 solution_review:
   mode: gated_optional
@@ -130,6 +153,7 @@ solution_review:
   invoke_after_basic_validation: true
   critical_findings_block_progress: true
   reviewer_cannot_modify_registries: true
+  separate_internal_review_from_reference_comparison: true
 
 paper_architecture:
   equation_numbering: global
@@ -153,6 +177,7 @@ paper_writing:
   table_caption_position: above
   editable_equations_required: true
   exploration_agents_forbidden: true
+  provenance_required_for_reference_influenced_content: true
 
 context_budget:
   read_entire_repository: false
@@ -163,6 +188,7 @@ context_budget:
     - project_registries
     - direct_dependencies
     - explicit_environment_manifest
+    - released_reference_artifacts_only
   prefer_registry_over_previous_full_text: true
 
 compatibility:
@@ -171,12 +197,19 @@ compatibility:
   preserve_existing_project_directories: true
 
 quality_gates:
+  independent_modeling_to_reference_release:
+    - source_classes_recorded
+    - exposure_status_recorded
+    - independent_baseline_frozen
+    - baseline_hash_recorded
+    - human_reference_release_approved
   modeling_to_architecture:
     - outputs_covered
     - route_decision_recorded
     - reproducible_model_and_algorithm
     - quantitative_validation
     - agent_actions_auditable
+    - reference_provenance_recorded
     - no_open_critical_review_findings
     - constraints_separated_from_writing
   architecture_to_writing:
