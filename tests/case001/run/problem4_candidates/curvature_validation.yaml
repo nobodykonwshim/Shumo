@@ -1,0 +1,48 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3_candidate_feasibility
+status: pending_local_candidate_run
+
+primary_candidate: P4-CAND-C
+fallback_candidate: P4-CAND-A
+candidate_plan: tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
+validator: skills/math_modeling/evaluators/route_feasibility.py
+report: tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+
+frozen_checks:
+  exact_polyline_requires_c1_continuity: true
+  heading_tolerance_deg: 0.000001
+  minimum_turn_radius_m: null
+  minimum_turn_radius_policy: >-
+    No numerical vessel turning-radius limit appears in the problem statement or
+    the current repository contracts, so no value may be invented. A positive
+    value may be added only after it is frozen as an explicit operational assumption.
+  inter_line_connectors_checked: false
+
+command: >-
+  python skills/math_modeling/evaluators/route_feasibility.py
+  --candidate tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
+  --output tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+
+exit_policy:
+  0:
+    action: retain_candidate_C
+    next_stage: freeze_problem4_baseline_after_spatial_metrics_are_reconfirmed
+  2:
+    action: fallback_to_candidate_A
+    next_stage: freeze_candidate_A_as_problem4_baseline
+  other:
+    action: block_selection
+    next_stage: repair_validation_input_or_execution_environment
+
+failure_semantics:
+  - any nonzero interior heading change in the exact polyline is a hard corner
+  - an exact hard corner requires an instantaneous heading change and unbounded curvature
+  - implicit smoothing is forbidden because it changes the evaluated route geometry
+  - reconsidering C requires an explicit finite-radius smoothed route followed by full spatial re-evaluation
+
+limitations:
+  - expanded candidate plans are generated from the official local-only terrain bundle and are not committed
+  - this check validates within-line curvature only; connecting turns between separate survey lines remain unmodeled
+  - no global optimality claim is permitted
