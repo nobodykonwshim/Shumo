@@ -41,6 +41,11 @@ reusable_capabilities_extracted:
     validator: skills/math_modeling/validation/sensitivity_policy_validator.py
     case_demonstration: tests/case001/problem4_evaluator.sensitivity.yaml
     status: validated
+  - capability_id: paper_blueprint_validation
+    owner_path: skills/math_modeling/support/PAPER_BLUEPRINT.md
+    validator: skills/math_modeling/validation/paper_blueprint_validator.py
+    case_demonstration: tests/case001/artifacts/architecture/problem3.paper-blueprint.yaml
+    status: validated
   - capability_id: agent_admission
     owner_path: skills/math_modeling/orchestration/agent_gate.py
   - capability_id: reference_isolation
@@ -62,6 +67,7 @@ promotion_evidence:
     - tests/specs/test_model_spec_validator.py
     - tests/specs/test_capability_registry_validator.py
     - tests/specs/test_sensitivity_policy_validator.py
+    - tests/specs/test_paper_blueprint_validator.py
     - tests/evaluators/test_xlsx_depth_grid.py
     - tests/evaluators/test_spatial_coverage.py
     - tests/evaluators/test_route_geometry.py
@@ -69,6 +75,7 @@ promotion_evidence:
     - tests/orchestration/test_agent_gate.py
   real_case_evidence:
     - tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    - tests/case001/artifacts/architecture/problem3.paper-blueprint.yaml
     - tests/case001/problem4_evaluator.sensitivity.yaml
     - tests/case001/run/problem4_real_grid_smoke_report.json
     - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
@@ -94,9 +101,14 @@ completed_skill_backlog:
       Added a pre-result sensitivity schema, semantic and path validator,
       generic tests, a case-independent example and a real-case resolution
       demonstration. Post-result rule replacement is explicitly prohibited.
+  - capability_id: paper_blueprint_validator
+    completed_at: 2026-07-12
+    result: >-
+      Added an executable W6 architecture contract, unique model and formula
+      ownership checks, locked labels, output and claim traceability, writing
+      drift prevention, generic tests and a real-case draft demonstration.
 
-next_skill_backlog:
-  - paper_blueprint_validator
+next_skill_backlog: []
 
 iteration_gate:
   additional_case001_work_requires:
