@@ -1,0 +1,63 @@
+schema_version: 1
+case_id: case001
+stage: W2
+problem_id: problem1
+status: approved_for_execution
+execution_mode: workflow
+
+coordinate_convention:
+  x_axis: horizontal cross-track coordinate
+  x_positive_direction: uphill_toward_shallower_water
+  line_order_m: [-800, -600, -400, -200, 0, 200, 400, 600, 800]
+  previous_line_for_x_i: x_i_minus_200_m
+
+parameters:
+  theta_degree: 120
+  alpha_degree: 1.5
+  center_depth_m: 70
+  line_spacing_m: 200
+
+formula_registry_candidates:
+  F-P1-DEPTH:
+    expression: "D(x)=D0-x*tan(alpha)"
+    purpose: local_vertical_depth
+  F-P1-DEEP-HALF:
+    expression: "L_deep(D)=D*sin(theta/2)/sin((pi-theta)/2-alpha)"
+    purpose: downslope_half_swath_along_seabed
+  F-P1-SHALLOW-HALF:
+    expression: "L_shallow(D)=D*sin(theta/2)/sin((pi-theta)/2+alpha)"
+    purpose: upslope_half_swath_along_seabed
+  F-P1-COVERAGE:
+    expression: "W(D)=L_deep(D)+L_shallow(D)"
+    purpose: total_swath_width_along_seabed
+  F-P1-OVERLAP:
+    expression: "eta_i=[L_deep(D_i)+L_shallow(D_{i-1})-d/cos(alpha)]/W(D_i)"
+    purpose: overlap_length_divided_by_current_swath_width
+
+modeling_choice:
+  slope_overlap_definition: "overlap length divided by the current line's total swath width"
+  justification:
+    - reduces_to_1_minus_d_over_W_when_alpha_is_zero
+    - preserves ordered meaning of 'with previous survey line'
+    - negative_value_directly_represents_a_gap
+
+validity_conditions:
+  - local_depth_positive
+  - alpha_less_than_90_degree_minus_theta_over_2
+  - adjacent_lines_parallel
+  - planar_uniform_slope
+  - beam_fan_plane_perpendicular_to_survey_line
+
+predefined_validation:
+  - zero_slope_limit
+  - depth_monotonicity_with_x
+  - coverage_proportional_to_depth
+  - first_row_has_no_previous_overlap
+  - negative_overlap_identifies_missed_coverage
+  - independent_recalculation_before_template_write
+
+expected_output_schema:
+  workbook: result1.xlsx
+  sheet: Sheet1
+  range: A1:J4
+  field_order_locked: true
