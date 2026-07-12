@@ -1,0 +1,89 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+status: verified_for_bounded_use
+
+environment:
+  project_root: tests/case001
+  readable_paths:
+    - local normalized terrain CSV derived from 附件.xlsx
+    - tests/case001/tools/problem4_spatial_evaluator.py
+    - tests/case001/run/W1_attachment_profile.yaml
+    - verified problem1 and problem2 model artifacts
+  writable_paths:
+    - local evaluator output directory
+    - tests/case001/results/problem4_lines.csv
+    - tests/case001/run/problem4_*.yaml
+  immutable_paths:
+    - original B题.pdf
+    - original 附件.xlsx
+    - frozen problem3 baseline
+  unavailable_information:
+    - vessel turning radius and transit cost
+    - required minimum practical segment length
+    - machine-readable route coordinates from reference papers
+  rollback_point: problem3_complete_before_problem4_tooling
+
+tool:
+  name: problem4_spatial_evaluator
+  implementation: tests/case001/tools/problem4_spatial_evaluator.py
+  implementation_sha256_local_tested: 935f641e4d28fafef323d70cec3fd9f50e33936b0aded687eb78234fba28d3a8
+  purpose: generate and independently evaluate adaptive east-west survey segments inside equal-width vertical bands
+  required_inputs:
+    - normalized terrain CSV with x/y coordinates in nautical miles and positive depths in metres
+    - positive integer band count
+    - target ordered overlap in [0,1)
+    - multibeam opening angle in degrees
+    - output directory
+  returned_observations:
+    - problem4_lines.csv with reproducible segment coordinates
+    - problem4_metrics.json
+    - uncovered cell-centre area percentage
+    - total measurement-line length
+    - total same-family line length where ordered overlap exceeds 20 percent
+    - segment count and coverage multiplicity
+  side_effects:
+    - creates or replaces files only inside the supplied output directory
+  failure_signals:
+    - invalid terrain dimensions
+    - missing, non-positive or non-numeric depths
+    - invalid band count or overlap target
+    - local slope outside beam-intersection validity range
+    - inability to bracket the next line position
+    - segment safety limit exceeded
+  retry_policy: no automatic retry after a structural input or validity error; one rerun is allowed only after input correction
+  verification_after_call:
+    - output files exist and are non-empty
+    - uncovered_area_percent is finite and non-negative
+    - reported total length equals sum of line coordinates
+    - all generated coordinates remain inside their assigned band
+    - repeat on a 0.04 NM coarsened grid
+
+input_provenance:
+  original_attachment: 附件.xlsx
+  normalized_csv_storage: local_only
+  normalized_csv_sha256: e7cb4868eea121c4c57adfa8bba14877633ffcd2b6300d7c90e8993d1e782f5c
+  native_grid_shape: [251, 201]
+  native_spacing_nautical_mile: 0.02
+  coarsened_grid_sha256: c1746e7c8298958f87874e58725926796b7df708d451665cdbc85f684ed94955
+
+model_contract:
+  local_footprint:
+    negative_half_width: h_minus=D*tan(theta/2)/(1+g*tan(theta/2))
+    positive_half_width: h_plus=D*tan(theta/2)/(1-g*tan(theta/2))
+    g_definition: local depth gradient in the positive cross-track direction, measured in metre per metre
+  overlap:
+    ordered_eta: (previous_positive_half+current_negative_half-spacing)/(current_negative_half+current_positive_half)
+  coverage_metric:
+    method: uniform cell-centre coverage on the supplied grid
+    uncovered_area_percent: uncovered cell centres divided by all cell centres
+  over20_metric:
+    method: sum adjacent within-band along-track intervals whose midpoint ordered overlap exceeds 0.20
+    excluded: cross-family overlap and vessel transit paths
+
+known_limits:
+  - local tangent-plane approximation between sounding-grid nodes
+  - no vessel turning or transit length
+  - equal-width vertical bands only
+  - the evaluator does not prove a global optimum over arbitrary curved routes
+  - the official phrase 尽量 does not define a unique scalar objective
