@@ -1,0 +1,94 @@
+schema_version: "1.0"
+status_record_id: STATUS-CASE001-SKILL-EXTRACTION
+project_id: case001
+cycle_id: case001_skill_extraction_2026
+scope: development_cycle
+declared_goal: >-
+  Use case001 as a bounded validation fixture to extract reusable modeling-decision,
+  model-specification, validation-governance and paper-architecture capabilities
+  without requiring a final solution to every case subproblem.
+expected_status: demonstration_complete
+
+problem_bundles:
+  - problem_id: case001_problem3
+    required_for_cycle: true
+    modeling_decision_path: tests/case001/artifacts/modeling/problem3.model-decision.yaml
+    model_spec_path: tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    sensitivity_policy_paths: []
+    paper_blueprint_path: tests/case001/artifacts/architecture/problem3.paper-blueprint.yaml
+    traceability:
+      selected_candidate_id: ROUTE-P3-CONTOUR-PARALLEL
+      model_component_ids:
+        - M-P3-CONTOUR-FAMILY
+        - M-P3-BOUNDARY-PLACEMENT
+        - M-P3-SPACING-RECURRENCE
+        - M-P3-TERMINATION
+    evidence_paths:
+      - tests/case001/run/H1_problem3_route_decision.yaml
+      - tests/case001/run/problem3_independent_baseline.yaml
+      - tests/case001/review/problem3_reference_comparison.yaml
+
+supporting_artifacts:
+  sensitivity_policy_paths:
+    - tests/case001/problem4_evaluator.sensitivity.yaml
+  evidence_paths:
+    - tests/case001/run/problem4_real_grid_smoke_report.json
+    - tests/case001/run/problem4_evaluator_phase2_status.yaml
+    - tests/case001/run/S0_skill_extraction_handoff.yaml
+
+lifecycle:
+  stop_record_path: tests/case001/run/S0_skill_extraction_handoff.yaml
+  stop_status: demonstration_complete
+  reopen_requires:
+    - A named reusable capability gap.
+    - A generic Skill artifact and generic regression test to add or modify.
+    - Explicit human authorization for additional case-specific work.
+
+external_dependencies:
+  - id: DEP-EXTERNAL-MODEL-SOURCE
+    description: External candidate-model source interface selected by the user.
+    status: waiting
+    blocks_current_cycle: false
+  - id: DEP-SECOND-REAL-CASE
+    description: A second materially different real case for cross-domain validation.
+    status: waiting
+    blocks_current_cycle: false
+
+next_actions:
+  - id: ACTION-WAIT-EXTERNAL-SOURCE
+    when_status: demonstration_complete
+    description: Wait for the user-selected external model source before defining its adapter contract.
+    authority: user
+  - id: ACTION-WAIT-CASE002
+    when_status: demonstration_complete
+    description: Wait for a second materially different real case before promoting validated contracts to reusable.
+    authority: user
+  - id: ACTION-RESOLVE-HUMAN
+    when_status: waiting_for_human_decision
+    description: Present the unresolved modeling decision and alternatives to the authorized human.
+    authority: user
+  - id: ACTION-BUILD-MODEL
+    when_status: ready_for_implementation
+    description: Implement the approved model specification without changing the selected route silently.
+    authority: team
+  - id: ACTION-VALIDATE-MODEL
+    when_status: ready_for_validation
+    description: Execute required independent validation and the predeclared sensitivity policy.
+    authority: team
+  - id: ACTION-WRITE-PAPER
+    when_status: ready_for_paper
+    description: Freeze the evidence package and begin paper writing from the approved blueprint.
+    authority: user
+  - id: ACTION-REPAIR-BLOCKER
+    when_status: blocked
+    description: Repair the first reported cross-artifact inconsistency before any downstream work.
+    authority: team
+  - id: ACTION-GENERATE-CANDIDATES
+    when_status: needs_model_candidates
+    description: Obtain at least two eligible modeling routes from an authorized source.
+    authority: external
+
+limitations:
+  - demonstration_complete applies to the case001 Skill-extraction cycle, not to every competition subproblem.
+  - Problem 4 has no final selected route and no global-optimality claim.
+  - The pending problem-3 paper-blueprint checkpoint does not block completion of the modeling-Skill demonstration cycle.
