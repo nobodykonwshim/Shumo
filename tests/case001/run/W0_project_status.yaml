@@ -1,0 +1,80 @@
+schema_version: 1
+case_id: case001
+stage: W0
+status: partial
+started_at: "2026-07-12"
+
+inputs_received:
+  - filename: "B题.rar"
+    role: problem_package
+    hash_recorded: true
+  - filename: "B477.pdf"
+    role: reference_paper
+    hash_recorded: true
+  - filename: "B226.pdf"
+    role: reference_paper
+    hash_recorded: true
+  - filename: "B311.pdf"
+    role: reference_paper
+    hash_recorded: true
+
+completed_checks:
+  repository:
+    test_branch_created: true
+    branch: "test/case001-multibeam-pilot"
+    base_ref: "agent/three-layer-math-modeling-architecture"
+    case_directory_tracked: true
+  configuration:
+    project_yaml_created: true
+    workflow_first_enabled: true
+    agent_slots_bounded: true
+    local_binary_policy_defined: true
+  source_inventory:
+    archive_format_detected: RAR4
+    archive_listing_readable: true
+    archive_entry_count: 4
+    reference_paper_page_counts_recorded: true
+    source_sha256_recorded: true
+  reference_precheck:
+    paper_titles_identified: true
+    common_problem_structure_identified: true
+    reported_results_compared: true
+    material_problem4_disagreement_detected: true
+
+rollback_point:
+  branch_base_sha: "30cf5a2754534fe4a4d06a5a03a88073adab00ed"
+  description: "Three-layer architecture PR head before case001 commits."
+
+blockers:
+  - id: BLK-001
+    severity: critical
+    category: tool
+    description: "Current runtime has no working backend for decompressing the supplied RAR archive."
+    evidence:
+      - "rarfile listed B题.pdf, 附件.xlsx, result1.xlsx, result2.xlsx"
+      - "rarfile extraction returned RarCannotExec"
+      - "7z, unrar, bsdtar and unar were unavailable"
+    impact:
+      - original_problem_not_directly_verified
+      - attachment_schema_not_inspected
+      - official_result_templates_not_inspected
+    stop_rule: "Do not enter W2 modeling or numerical solution until closed."
+
+warnings:
+  - id: WARN-001
+    description: "Reference papers disagree materially on problem4 results and cannot be used as a single expected answer."
+  - id: WARN-002
+    description: "Reference PDF binaries are not committed to the public repository; local source resolution is required for reruns."
+
+next_actions:
+  - provide_or_install_trusted_rar_extractor
+  - extract_all_archive_entries
+  - compute_extracted_file_hashes
+  - inspect_original_problem_pdf
+  - inspect_attachment_and_result_workbook_schemas
+  - update_W1_from_inferred_to_verified
+
+handoff_allowed:
+  W1_inferred_intake: true
+  W2_modeling: false
+  agent_route_exploration: false
