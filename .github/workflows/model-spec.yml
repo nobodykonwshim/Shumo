@@ -8,6 +8,8 @@ on:
       - "skills/math_modeling/validation/**"
       - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
       - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
+      - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
+      - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
       - "tests/**/artifacts/architecture/**"
@@ -21,6 +23,8 @@ on:
       - "skills/math_modeling/validation/**"
       - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
       - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
+      - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
+      - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
       - "tests/**/artifacts/architecture/**"
@@ -54,6 +58,11 @@ jobs:
             --repo-root . \
             --check-paths
 
+      - name: Validate case-independent modeling-decision example
+        run: |
+          python skills/math_modeling/validation/modeling_decision_validator.py \
+            --decision skills/math_modeling/specs/modeling_decision.example.yaml
+
       - name: Validate case-independent model-spec example
         run: |
           python skills/math_modeling/validation/model_spec_validator.py \
@@ -72,6 +81,21 @@ jobs:
             --blueprint skills/math_modeling/specs/paper_blueprint.example.yaml \
             --repo-root . \
             --check-paths
+
+      - name: Validate repository modeling decisions and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' decision; do
+            found=1
+            echo "Validating ${decision}"
+            python skills/math_modeling/validation/modeling_decision_validator.py \
+              --decision "${decision}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.model-decision.yaml' -print0)
+          test "${found}" -eq 1
 
       - name: Validate repository model specifications and evidence paths
         shell: bash
