@@ -2,13 +2,13 @@ schema_version: 1
 case_id: case001
 problem_id: problem4
 stage: H3_candidate_feasibility
-status: pending_local_candidate_run
+status: completed_failed_primary_fallback_selected
 
 primary_candidate: P4-CAND-C
 fallback_candidate: P4-CAND-A
-candidate_plan: tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
 validator: skills/math_modeling/evaluators/route_feasibility.py
-report: tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+resolver: tests/case001/run/problem4_candidates/resolve_candidate_selection.py
+resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
 
 frozen_checks:
   exact_polyline_requires_c1_continuity: true
@@ -16,33 +16,37 @@ frozen_checks:
   minimum_turn_radius_m: null
   minimum_turn_radius_policy: >-
     No numerical vessel turning-radius limit appears in the problem statement or
-    the current repository contracts, so no value may be invented. A positive
-    value may be added only after it is frozen as an explicit operational assumption.
+    the current repository contracts, so no value was invented.
   inter_line_connectors_checked: false
 
-command: >-
-  python skills/math_modeling/evaluators/route_feasibility.py
-  --candidate tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
-  --output tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+verified_execution:
+  workflow_run_id: 29193104720
+  workflow_conclusion: success
+  official_attachment_hash_verified: true
+  regenerated_candidate_hashes_verified: true
 
-exit_policy:
-  0:
-    action: retain_candidate_C
-    next_stage: freeze_problem4_baseline_after_spatial_metrics_are_reconfirmed
-  2:
-    action: fallback_to_candidate_A
-    next_stage: freeze_candidate_A_as_problem4_baseline
-  other:
-    action: block_selection
-    next_stage: repair_validation_input_or_execution_environment
+result:
+  primary_candidate_status: fail
+  primary_hard_corner_count: 548
+  primary_minimum_three_point_circumradius_m: 2397.1959212741776
+  primary_failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  fallback_candidate_status: pass
+  selected_candidate: P4-CAND-A
 
 failure_semantics:
   - any nonzero interior heading change in the exact polyline is a hard corner
   - an exact hard corner requires an instantaneous heading change and unbounded curvature
+  - a finite three-point circumradius is diagnostic only and does not remove the vertex discontinuity
   - implicit smoothing is forbidden because it changes the evaluated route geometry
   - reconsidering C requires an explicit finite-radius smoothed route followed by full spatial re-evaluation
 
+selected_route_recheck:
+  total_survey_line_length_m: 620420.0
+  uncovered_area_percent: 0.0
+  excess_overlap_length_m: 369055.8064516127
+  boundary_violation: false
+
 limitations:
-  - expanded candidate plans are generated from the official local-only terrain bundle and are not committed
-  - this check validates within-line curvature only; connecting turns between separate survey lines remain unmodeled
+  - this check validates within-line curvature only
+  - connecting turns between separate survey lines remain outside the reported survey-line metrics
   - no global optimality claim is permitted
