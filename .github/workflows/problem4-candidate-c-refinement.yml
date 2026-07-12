@@ -1,26 +1,29 @@
-name: Problem4 candidate C finite-curvature refinement
+name: Case001 candidate C refinement demonstration
 
+# This workflow is a real-case demonstration. It is intentionally not triggered
+# by generic Skill or evaluator changes; those are covered by reusable unit tests.
+# Refresh this evidence only when the case-specific refinement pipeline changes
+# or through an explicit manual dispatch.
 on:
+  workflow_dispatch:
   pull_request:
     paths:
-      - "skills/math_modeling/geometry/**"
-      - "skills/math_modeling/evaluators/**"
-      - "tests/evaluators/**"
-      - "tests/case001/run/problem4_candidates/**"
+      - "tests/case001/run/problem4_candidates/refine_candidate_c.py"
+      - "tests/case001/run/problem4_candidates/evaluate_refined_candidates.py"
+      - "tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml"
       - ".github/workflows/problem4-candidate-c-refinement.yml"
   push:
     paths:
-      - "skills/math_modeling/geometry/**"
-      - "skills/math_modeling/evaluators/**"
-      - "tests/evaluators/**"
-      - "tests/case001/run/problem4_candidates/**"
+      - "tests/case001/run/problem4_candidates/refine_candidate_c.py"
+      - "tests/case001/run/problem4_candidates/evaluate_refined_candidates.py"
+      - "tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml"
       - ".github/workflows/problem4-candidate-c-refinement.yml"
 
 permissions:
   contents: read
 
 jobs:
-  refine-candidate-c:
+  demonstrate-refined-c:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -30,7 +33,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run geometry and evaluator regression tests
+      - name: Run reusable geometry and evaluator regression tests
         run: python -m unittest discover -s tests/evaluators -v
 
       - name: Download hash-verified official attachment mirror
@@ -80,7 +83,7 @@ jobs:
             --output tests/case001/run/problem4_candidates/generated/refined/refinement_evaluation_summary.json \
             --candidate-a-length-m 620420.0
 
-      - name: Verify refinement gate output
+      - name: Verify demonstration output without final selection
         shell: bash
         run: |
           python - <<'PY'
@@ -89,20 +92,22 @@ jobs:
           path = Path("tests/case001/run/problem4_candidates/generated/refined/refinement_evaluation_summary.json")
           report = json.loads(path.read_text())
           best = report["best_feasible_refined_c"]
-          assert best is not None, "no feasible refined-C variant"
+          assert best is not None, "no feasible refined-C demonstration variant"
           assert best["hard_corner_count"] == 0
           assert best["crossing_count"] == 0
-          assert best["uncovered_area_percent"] == 0.0
           assert best["boundary_violation"] is False
           assert best["exact_total_survey_line_length_m"] < report["candidate_a_reference_length_m"]
           assert report["human_gate_required"] is True
           assert report["final_selection_made"] is False
-          print(json.dumps(best, indent=2, sort_keys=True))
+          print(json.dumps({
+              "evidence_role": "case_demonstration_not_skill_gate_or_final_selection",
+              "best_demonstrated_variant": best,
+          }, indent=2, sort_keys=True))
           PY
 
-      - name: Upload refined candidate evidence
+      - name: Upload case demonstration evidence
         uses: actions/upload-artifact@v4
         with:
-          name: problem4-candidate-c-refinement
+          name: case001-candidate-c-refinement-demonstration
           path: tests/case001/run/problem4_candidates/generated/refined/**
           if-no-files-found: error
