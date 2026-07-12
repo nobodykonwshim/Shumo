@@ -55,15 +55,21 @@ The validator performs JSON-Schema checks plus semantic checks that JSON Schema 
 - finite, ordered parameter ranges;
 - optional existence checks for repository evidence and implementation paths.
 
+## Sensitivity declarations
+
+The compact `validation.sensitivity_policy` field may summarize a model's sensitivity intent. A fully auditable plan should be stored as a separate `*.sensitivity.yaml` artifact validated against `sensitivity_policy.schema.json`.
+
+The Skill provides no universal numerical threshold. Each case must freeze its perturbations, metrics and acceptance rules before the final result, record the source of those choices, and preserve the original verdict if later amendments are made. The governance policy is documented in `../support/SENSITIVITY_POLICY.md`.
+
 ## CI boundary
 
-`Model specification validation` is a reusable Skill gate. It runs the generic regression suite, validates the case-independent example and validates committed `*.model.v2.yaml` specifications with repository-path checks.
+`Skill contract validation` is a reusable Skill gate. It runs the generic regression suites, validates the live capability registry, validates case-independent contract examples and validates committed model and sensitivity artifacts with repository-path checks.
 
 Expensive case-study reconstruction workflows are not prerequisites for this gate. They are dispatched separately and cannot substitute for schema or semantic validation.
 
 ## Human judgment boundary
 
-The validator can detect missing objectives, unresolved references, unverified required checks and pending decisions. It cannot decide whether a route family, objective weighting, assumption or accepted risk is appropriate. Those decisions remain explicit human checkpoints.
+The validators can detect missing objectives, unresolved references, unverified required checks, post-result threshold replacement and pending decisions. They cannot decide whether a route family, objective weighting, assumption, perturbation magnitude or accepted risk is appropriate. Those decisions remain explicit human checkpoints.
 
 ## Lifecycle rule
 
