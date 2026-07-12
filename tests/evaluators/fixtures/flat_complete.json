@@ -1,0 +1,23 @@
+{
+  "region": {"xmin": 0, "xmax": 100, "ymin": 0, "ymax": 100},
+  "terrain": {
+    "type": "plane",
+    "depth_at_origin": 25,
+    "origin": [0, 0],
+    "gradient": [0, 0]
+  },
+  "instrument": {"opening_angle_deg": 90},
+  "lines": [
+    {"id": "L1", "points": [[25, 0], [25, 100]]},
+    {"id": "L2", "points": [[75, 0], [75, 100]]}
+  ],
+  "evaluation": {
+    "grid_nx": 40,
+    "grid_ny": 40,
+    "along_step_m": 2,
+    "cross_track_samples": 121,
+    "overlap_threshold": 0.2,
+    "overlap_length_policy": "per_line",
+    "sensitivity_grid_sizes": [20, 40, 80]
+  }
+}
