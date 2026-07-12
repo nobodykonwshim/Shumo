@@ -1,0 +1,60 @@
+# Model specification contract
+
+`model_spec.schema.json` is the reusable W2-to-W5 contract for a mathematical model. It separates the model itself from case-specific prose and from the final paper.
+
+A conforming specification records:
+
+- the primary objective and its metrics;
+- typed inputs, variables, parameters and units;
+- assumptions and their validation state;
+- model components, formulas and hard or soft constraints;
+- an executable algorithm with a termination rule;
+- outputs and acceptance conditions;
+- validation checks and sensitivity policy;
+- provenance, evidence and reference-exposure state;
+- human checkpoints, limitations and claim boundaries.
+
+The core contract is deliberately model-family neutral. Optimization, statistical, simulation, prediction and feasibility models use the same top-level structure and may place domain-specific additions under `extensions`.
+
+## Authoring formats
+
+The validator accepts JSON directly and YAML when PyYAML is installed. The JSON Schema remains the authoritative structural contract regardless of authoring format.
+
+## Validation
+
+Install the small validation dependency set:
+
+```bash
+python -m pip install -r skills/math_modeling/validation/requirements.txt
+```
+
+Validate one specification:
+
+```bash
+python skills/math_modeling/validation/model_spec_validator.py \
+  --spec skills/math_modeling/specs/model_spec.example.yaml
+```
+
+Validate repository evidence paths as well:
+
+```bash
+python skills/math_modeling/validation/model_spec_validator.py \
+  --spec tests/case001/artifacts/modeling/problem3.model.v2.yaml \
+  --repo-root . \
+  --check-paths
+```
+
+The validator performs JSON-Schema checks plus semantic checks that JSON Schema alone cannot express reliably:
+
+- globally unique semantic IDs;
+- resolvable formula, symbol, component, output and validation references;
+- at least one primary objective metric;
+- an explicit randomness contract for non-deterministic algorithms;
+- nonempty blockers for blocked specifications;
+- passed required checks and closed human checkpoints before `status: solved`;
+- finite, ordered parameter ranges;
+- optional existence checks for repository evidence and implementation paths.
+
+## Lifecycle rule
+
+A specification is written at W2, completed during W3, updated with evidence during W4 and frozen into the modeling package at W5. W7 paper writing may consume the frozen specification, but must not silently redefine it.
