@@ -1,0 +1,95 @@
+schema_version: 1
+case_id: case001
+
+summary:
+  open_critical: 1
+  open_major: 3
+  open_minor: 1
+  closed: 0
+
+defects:
+  - defect_id: D-001
+    status: open
+    severity: critical
+    stage: W0
+    category: tool
+    observation: "The supplied RAR archive can be listed but cannot be extracted in the current runtime."
+    expected: "The source-ingestion tool should either extract RAR archives or return a supported, actionable failure path before the workflow proceeds."
+    actual: "rarfile reports RarCannotExec because no unrar/unar/7z backend is available."
+    evidence:
+      archive_entries_visible: true
+      extraction_success: false
+    reproducible: true
+    impact:
+      - original problem statement unreadable
+      - required Excel attachment unreadable
+      - official output templates unreadable
+      - W2 correctly blocked
+    root_cause_guess: "Environment capability is not checked during W0 and no archive tool contract exists."
+    proposed_fix:
+      - add source-ingestion preflight
+      - define archive extraction tool contract
+      - support RAR or require ZIP/PDF/XLSX inputs explicitly
+      - verify extracted files by hash and schema
+    regression_test: "Given the same RAR, W0 must either extract all four files or stop with a structured blocked status before W1 verification."
+
+  - defect_id: D-002
+    status: open
+    severity: major
+    stage: W0
+    category: schema
+    observation: "project.yaml and stage artifacts follow documented shapes but the repository has no executable schema validator."
+    expected: "Invalid enum values, missing fields and broken paths should fail automatically."
+    actual: "YAML structure is enforced only by prose."
+    reproducible: true
+    root_cause_guess: "Architecture was documented before schema and CLI implementation."
+    proposed_fix:
+      - add JSON Schema or Pydantic models
+      - add validate_case.py CLI
+      - run validation in CI
+    regression_test: "Delete a required field from a fixture and require non-zero validator exit status."
+
+  - defect_id: D-003
+    status: open
+    severity: major
+    stage: W1
+    category: provenance
+    observation: "The initial problem intake had to be reconstructed from reference papers because the original problem PDF was not readable."
+    expected: "W1 requirements must be sourced from the original problem and attachment."
+    actual: "A clearly labeled inferred intake was created and W2 was blocked."
+    reproducible: true
+    positive_behavior: "The architecture's stop-on-missing-source rule was followed rather than silently guessing."
+    proposed_fix:
+      - close D-001
+      - add per-field source citations or source pointers in W1 artifacts
+      - diff inferred and verified intake after extraction
+    regression_test: "W1 cannot become verified while original_problem_read is false."
+
+  - defect_id: D-004
+    status: open
+    severity: major
+    stage: G1
+    category: enforcement
+    observation: "Agent admission decisions are recorded, but no executable gate currently prevents a blocked Agent from being invoked."
+    expected: "An orchestration command should reject problem4 route exploration until unblock conditions are satisfied."
+    actual: "The gate is a YAML record and Markdown rule only."
+    reproducible: true
+    proposed_fix:
+      - implement gate evaluator
+      - require admission ID in every agent run
+      - verify decision and budgets before execution
+    regression_test: "Attempt to start problem4 route_explorer while decision=blocked and require hard failure."
+
+  - defect_id: D-005
+    status: open
+    severity: minor
+    stage: W0
+    category: repository
+    observation: "An empty tests/case001 directory created in GitHub is not tracked by Git."
+    expected: "The test case should contain tracked configuration and status files."
+    actual: "No directory was visible until files were committed."
+    reproducible: true
+    proposed_fix:
+      - initialize cases with README.md and project.yaml
+      - optionally add a case-init CLI
+    current_resolution: "Partially addressed by this branch's committed case files."
