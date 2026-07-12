@@ -1,0 +1,182 @@
+schema_version: "1.0"
+spec_id: MODEL-DEMO-TRANSPORT-01
+problem_id: demo_transport
+title: Minimum-cost transport allocation demonstration
+status: draft
+
+objective:
+  sense: minimize
+  description: Minimize total transport cost while satisfying all supply and demand constraints.
+  metrics:
+    - id: METRIC-TOTAL-COST
+      description: Total transport cost
+      priority: primary
+      formula_id: F-TOTAL-COST
+      unit: currency
+
+inputs:
+  - id: IN-SUPPLY
+    description: Supply available at each origin
+    data_type: vector
+    unit: item
+    required: true
+    source: problem statement
+  - id: IN-DEMAND
+    description: Demand required at each destination
+    data_type: vector
+    unit: item
+    required: true
+    source: problem statement
+  - id: IN-COST
+    description: Unit transport cost from every origin to every destination
+    data_type: matrix
+    unit: currency/item
+    required: true
+    source: problem statement
+
+symbols:
+  variables:
+    - id: VAR-X
+      description: Quantity transported from origin i to destination j
+      role: decision
+      domain: nonnegative real matrix
+      unit: item
+    - id: VAR-Z
+      description: Total transport cost
+      role: output
+      domain: nonnegative real
+      unit: currency
+  parameters:
+    - id: PAR-SUPPLY
+      description: Origin supply vector
+      unit: item
+      source: IN-SUPPLY
+    - id: PAR-DEMAND
+      description: Destination demand vector
+      unit: item
+      source: IN-DEMAND
+    - id: PAR-COST
+      description: Unit-cost matrix
+      unit: currency/item
+      source: IN-COST
+
+assumptions:
+  - id: A-BALANCED
+    statement: Total supply equals total demand.
+    status: testable
+    impact: An imbalance requires a dummy origin or destination before optimization.
+    validation_check_id: V-BALANCE
+
+model_components:
+  - id: M-TRANSPORT-LP
+    type: optimization
+    purpose: Represent the allocation problem as a linear program.
+    depends_on: [F-TOTAL-COST, C-SUPPLY, C-DEMAND]
+
+formulas:
+  - id: F-TOTAL-COST
+    expression: Z = sum_i sum_j c_ij x_ij
+    description: Sum all unit costs multiplied by allocated quantities.
+    symbols: [VAR-Z, PAR-COST, VAR-X]
+    unit_check: pass
+
+constraints:
+  - id: C-SUPPLY
+    kind: hard
+    description: Shipments leaving each origin equal its available supply.
+    expression: sum_j x_ij = supply_i
+    symbols: [VAR-X, PAR-SUPPLY]
+    tolerance: 1.0e-9
+    failure_signal: maximum origin-balance residual exceeds tolerance
+  - id: C-DEMAND
+    kind: hard
+    description: Shipments entering each destination equal its required demand.
+    expression: sum_i x_ij = demand_j
+    symbols: [VAR-X, PAR-DEMAND]
+    tolerance: 1.0e-9
+    failure_signal: maximum destination-balance residual exceeds tolerance
+
+algorithm:
+  method: deterministic linear programming
+  deterministic: true
+  steps:
+    - id: STEP-LOAD
+      description: Load and dimension-check the three input arrays.
+      uses: [IN-SUPPLY, IN-DEMAND, IN-COST]
+      produces: [PAR-SUPPLY, PAR-DEMAND, PAR-COST]
+    - id: STEP-SOLVE
+      description: Solve the linear program under hard balance constraints.
+      uses: [M-TRANSPORT-LP]
+      produces: [VAR-X, VAR-Z]
+    - id: STEP-EXPORT
+      description: Export the allocation table and objective value.
+      uses: [VAR-X, VAR-Z]
+      produces: [OUT-ALLOCATION, OUT-TOTAL-COST]
+  termination: Stop when the solver reports an optimal feasible solution or a detectable infeasibility state.
+
+outputs:
+  - id: OUT-ALLOCATION
+    description: Optimal allocation matrix
+    data_type: matrix
+    unit: item
+    depends_on: [VAR-X]
+    acceptance: All entries are nonnegative and all hard constraints pass.
+  - id: OUT-TOTAL-COST
+    description: Recalculated total transport cost
+    data_type: number
+    unit: currency
+    depends_on: [VAR-Z, F-TOTAL-COST]
+    acceptance: Recalculated cost agrees with the solver objective within tolerance.
+
+validation:
+  checks:
+    - id: V-DIMENSION
+      type: dimension
+      description: Confirm matrix and vector dimensions are compatible.
+      target_ids: [IN-SUPPLY, IN-DEMAND, IN-COST]
+      acceptance: Cost rows equal origin count and cost columns equal destination count.
+      required: true
+      status: planned
+    - id: V-BALANCE
+      type: constraint
+      description: Verify total supply equals total demand before solving.
+      target_ids: [PAR-SUPPLY, PAR-DEMAND, A-BALANCED]
+      acceptance: Absolute total imbalance is at most 1e-9 item.
+      required: true
+      status: planned
+    - id: V-RECALCULATE
+      type: residual
+      description: Independently recalculate objective and balance residuals.
+      target_ids: [OUT-ALLOCATION, OUT-TOTAL-COST, C-SUPPLY, C-DEMAND]
+      acceptance: All residuals and objective differences are within declared tolerances.
+      required: true
+      status: planned
+  sensitivity_policy:
+    declared_before_final_result: true
+    parameters: [PAR-COST]
+    acceptance: Report whether small cost perturbations change the selected allocation pattern.
+
+provenance:
+  reference_exposure_status: not_applicable
+  source_artifacts:
+    - id: SRC-DEMO-DATA
+      location: synthetic transport fixture supplied with the skill
+      availability: external
+      role: authoritative_input
+  evidence_paths: []
+
+human_checkpoints:
+  - id: H-OBJECTIVE
+    decision: Confirm that monetary cost is the only primary objective.
+    authority: user
+    status: pending
+
+limitations:
+  - The demonstration excludes route capacity, fixed charges and uncertain demand.
+  - Linear cost assumptions may not represent economies of scale.
+
+claims:
+  allowed:
+    - The specification defines a deterministic minimum-cost transport model.
+  forbidden:
+    - The model is universally suitable for every logistics problem.
