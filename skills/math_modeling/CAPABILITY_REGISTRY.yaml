@@ -77,6 +77,24 @@ capabilities:
       - perturbation magnitudes and acceptance rules remain case-specific human or authoritative-source decisions
       - schema conformance does not prove that the chosen sensitivity scope is sufficient
 
+  - capability_id: paper_blueprint_validation
+    name: paper architecture ownership and writing-boundary validation
+    status: validated
+    owner_path: skills/math_modeling/support/PAPER_BLUEPRINT.md
+    validator: skills/math_modeling/validation/paper_blueprint_validator.py
+    contract:
+      inputs: frozen_model_specs_section_plan_numbering_ownership_output_placements_claims_and_writing_constraints
+      outputs: machine_validated_paper_blueprint_with_unique_owners_locked_labels_and_traceable_claim_boundaries
+    generic_tests:
+      - tests/specs/test_paper_blueprint_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/paper_blueprint.example.yaml
+      - tests/case001/artifacts/architecture/problem3.paper-blueprint.yaml
+    limits:
+      - the validator cannot choose the best chapter structure or page allocation
+      - final section ownership labels and presentation choices require human approval
+      - status remains validated until exercised on a second unrelated real case
+
   - capability_id: agent_admission
     name: bounded agent admission and runtime token
     status: reusable
@@ -175,7 +193,4 @@ capabilities:
     limits:
       - the promotion decision still requires human judgment
 
-backlog:
-  - capability_id: paper_blueprint_validator
-    priority: medium
-    reason: architecture-to-writing consistency is documented but not yet executable
+backlog: []
