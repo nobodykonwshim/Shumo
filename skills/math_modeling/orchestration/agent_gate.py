@@ -30,12 +30,31 @@ def _sha256(data: Any) -> str:
     return hashlib.sha256(_canonical_bytes(data)).hexdigest()
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _resolve_repo_path(repo_root: Path, value: str) -> Path:
+    root = repo_root.resolve()
+    resolved = (root / value).resolve()
+    if not resolved.is_relative_to(root):
+        raise GateError(f"path escapes repo root: {value}")
+    return resolved
+
+
 def _nonempty(value: Any) -> bool:
     return value is not None and value != "" and value != [] and value != {}
 
 
 def validate_admission(
-    admission: dict[str, Any], requested_agent: str, requested_task: str | None = None
+    admission: dict[str, Any],
+    requested_agent: str,
+    requested_task: str | None = None,
+    repo_root: Path | None = None,
 ) -> list[str]:
     errors: list[str] = []
     decision = admission.get("decision")
@@ -94,6 +113,15 @@ def validate_admission(
                 errors.append(f"contracts.{field}.path is required")
             if not _nonempty(contract.get("sha256")):
                 errors.append(f"contracts.{field}.sha256 is required")
+            if repo_root is not None and _nonempty(contract.get("path")) and _nonempty(contract.get("sha256")):
+                try:
+                    contract_path = _resolve_repo_path(repo_root, str(contract["path"]))
+                    if not contract_path.is_file():
+                        errors.append(f"contracts.{field}.path does not exist")
+                    elif _file_sha256(contract_path) != contract["sha256"]:
+                        errors.append(f"contracts.{field}.sha256 does not match file")
+                except (OSError, GateError) as exc:
+                    errors.append(f"contracts.{field} path verification failed: {exc}")
 
     error_control = admission.get("error_control")
     if not isinstance(error_control, dict):
@@ -131,13 +159,24 @@ def validate_admission(
         if approval.get("status") != "approved" or not _nonempty(approval.get("approved_by")):
             errors.append("required human approval is missing")
 
+    if repo_root is not None and _nonempty(admission.get("rollback_point")):
+        try:
+            rollback = _resolve_repo_path(repo_root, str(admission["rollback_point"]))
+            if not rollback.exists():
+                errors.append("rollback_point does not exist")
+        except (OSError, GateError) as exc:
+            errors.append(f"rollback_point verification failed: {exc}")
+
     return errors
 
 
 def issue_token(
-    admission: dict[str, Any], requested_agent: str, requested_task: str | None = None
+    admission: dict[str, Any],
+    requested_agent: str,
+    requested_task: str | None = None,
+    repo_root: Path | None = None,
 ) -> dict[str, Any]:
-    errors = validate_admission(admission, requested_agent, requested_task)
+    errors = validate_admission(admission, requested_agent, requested_task, repo_root)
     if errors:
         raise GateError("; ".join(errors))
     admission_hash = _sha256(admission)
@@ -152,6 +191,7 @@ def issue_token(
         "stop_conditions": admission["stop_conditions"],
         "rollback_point": admission["rollback_point"],
         "reference_access": admission["reference_access"],
+        "contracts": admission["contracts"],
         "admission_sha256": admission_hash,
         "issued_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
     }
@@ -165,10 +205,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--agent", required=True, help="Requested Agent type")
     parser.add_argument("--task", help="Optional expected task id")
     parser.add_argument("--output", type=Path, help="Output token JSON")
+    parser.add_argument(
+        "--repo-root", type=Path, default=Path.cwd(),
+        help="Repository root used to verify contract hashes and rollback point",
+    )
     args = parser.parse_args(argv)
     try:
         admission = json.loads(args.admission.read_text(encoding="utf-8"))
-        token = issue_token(admission, args.agent, args.task)
+        token = issue_token(admission, args.agent, args.task, args.repo_root)
     except (OSError, json.JSONDecodeError, GateError) as exc:
         print(json.dumps({"status": "rejected", "message": str(exc)}, ensure_ascii=False))
         return 2
