@@ -1,90 +1,113 @@
-# case001：多波束测线问题实战验证
+# case001：多波束测线问题能力验证案例
 
-## 目的
+## 案例定位
 
-本案例用于验证 Shumo 的 `Workflow first, Agent when justified` 架构能否在真实数学建模题目上闭环运行，而不是直接追求一次性生成完整论文。
+`case001` 是 Shumo 数学建模 Skill 的真实案例验证夹具，不是当前开发周期的最终产品。
 
-测试对象为多波束测深与测线布设问题。用户提供：
+它的作用是暴露通用能力缺口、提供最小真实证据，并验证通用模块能否在复杂题目上运行。案例本身可以保持 `partial`，只要本轮目标能力已经完成抽象、测试和记录。
 
-- `B题.rar`：题面、附件和题目给定结果表；
-- `B477.pdf`、`B226.pdf`、`B311.pdf`：三篇参考论文。
+## 本轮验证目标
 
-参考论文只用于建立对照基线、识别常见路线和发现结果分歧，不作为唯一标准答案，也不允许系统复制论文表述。
+本案例已经用于验证：
 
-## 分支
+1. Workflow-first 分阶段建模；
+2. Agent 准入、预算和人工决策点；
+3. 参考资料隔离与证据留痕；
+4. XLSX 结构化网格读取；
+5. 独立覆盖、重叠和边界评估；
+6. 显式直线与 Bézier 路线几何；
+7. 切向连续与有限曲率验证；
+8. GitHub Actions 可复现证据生成；
+9. 从案例实现提炼通用 Skill 的停止与晋升规则。
 
-本案例位于：
+通用能力清单见：
 
 ```text
-test/case001-multibeam-pilot
+skills/math_modeling/CAPABILITY_REGISTRY.yaml
 ```
 
-该分支基于三层架构 PR 的 head 创建，用于独立记录实战测试，不直接污染架构 PR。
-
-## 当前阶段
+案例转 Skill 的规则见：
 
 ```text
-W0 项目初始化：已完成基础配置，状态 partial
-W1 题目解析：已根据三篇参考论文交叉重建，等待原题面复核
-G1 Agent 准入：已形成初始分题决策
-W2 及以后：尚未开始
+skills/math_modeling/support/CASE_TO_SKILL_PROMOTION.md
 ```
 
-当前运行环境能够读取 RAR 文件目录，但缺少可用的 RAR 解压后端，因此尚未直接读取压缩包中的 `B题.pdf` 和 `附件.xlsx`。在该缺口关闭前，不进入正式建模与数值求解。
-
-## 目录
+## 当前状态
 
 ```text
-tests/case001/
+案例状态：partial / demonstration_complete
+Skill 提炼状态：完成本轮抽象
+问题 1-3：保留已有案例证据
+问题 4：保留为未最终选择的案例研究
+PR 状态：Draft
+合并授权：否
+```
+
+问题 4 中对候选 C 的有限曲率改进已经证明以下通用能力可行：
+
+- 原始折线失败不等于路线族失败；
+- 路线需要显式、版本化的几何表达；
+- 改进后的候选必须重新进行独立空间评估；
+- 采样覆盖结论必须包含敏感性说明；
+- 评估器不得自动作最终路线选择。
+
+继续压缩某一个 C 变体的长度或修复局部漏测，只会提高本案例成绩，目前不会产生新的通用能力。因此这部分工作暂停，不作为本轮 Skill 建立的阻塞项。
+
+## 本轮提炼出的 Skill 资产
+
+```text
+skills/math_modeling/
 ├── README.md
-├── project.yaml
-├── .gitignore
-├── problem/
-│   └── source_manifest.yaml
-├── expected/
-│   ├── acceptance.yaml
-│   └── reference_benchmarks.yaml
-├── run/
-│   ├── W0_project_status.yaml
-│   ├── W1_problem_intake.yaml
-│   └── G1_agent_admission.yaml
-└── review/
-    ├── defect_log.yaml
-    └── run_log.md
+├── CAPABILITY_REGISTRY.yaml
+├── workflows/README.md
+├── orchestration/agent_gate.py
+├── evaluators/
+│   ├── xlsx_depth_grid.py
+│   ├── spatial_coverage.py
+│   └── route_feasibility.py
+├── geometry/route_geometry.py
+└── support/
+    ├── REFERENCE_ISOLATION_PROTOCOL.md
+    └── CASE_TO_SKILL_PROMOTION.md
 ```
+
+通用单元测试位于：
+
+```text
+tests/evaluators/
+tests/orchestration/
+```
+
+## 案例目录责任
+
+`tests/case001/` 只保存：
+
+- 题目和附件清单；
+- 案例特有假设、参数和候选；
+- 人工路线决策；
+- 运行证据；
+- 案例限制和失败记录。
+
+任何能够脱离 `case001` 描述的能力，应迁移或抽象到 `skills/math_modeling/`，并增加通用测试。
 
 ## 二进制材料策略
 
-本仓库为公开仓库。参考论文 PDF 不直接提交，只保存：
-
-- 文件名；
-- SHA-256；
-- 页数；
-- 标题；
-- 方法摘要；
-- 关键报告结果。
-
-原始材料应在本地测试环境中放置于：
+本仓库为公开仓库，原始题面、附件和参考论文保存在本地目录，不直接提交：
 
 ```text
-tests/case001/local/problem/B题.rar
-tests/case001/local/references/B477.pdf
-tests/case001/local/references/B226.pdf
-tests/case001/local/references/B311.pdf
+tests/case001/local/problem/
+tests/case001/local/references/
 ```
 
-`local/` 已被 `.gitignore` 排除。
+`local/` 已被 `.gitignore` 排除。公开仓库仅保存哈希、结构说明和可复现命令。
 
-## 本轮核心观察指标
+## 下一开发主线
 
-1. Workflow 是否能在不调用 Agent 的情况下完成确定性任务；
-2. Agent 准入记录是否真实阻断不合格调用；
-3. 每个重要结论是否有题面、程序或验证证据；
-4. 参考论文之间的分歧是否被识别，而不是被平均或任选；
-5. 未读取原始附件时，系统是否会停止而不是猜测；
-6. 人工路线决策是否有明确留痕；
-7. 后续论文正文是否严格来自成果包和论文蓝图。
+下一阶段不继续追逐问题 4 的单一最优路线，而是按能力注册表处理高优先级 Skill 缺口：
 
-## 下一检查点
+1. 建立通用 `model_spec` schema；
+2. 为能力注册表和证据路径增加机器校验；
+3. 建立通用敏感性测试声明与验收规则；
+4. 建立论文蓝图一致性验证器。
 
-先解决 RAR 解压与附件读取，然后使用原题面复核 `W1_problem_intake.yaml`。复核通过后，逐问执行 W2-W4；问题四再根据 G1 结果决定是否调用受控路线探索 Agent。
+如未来单独启动“完成 CUMCM-2023-B 最终解”的项目，应作为新的案例求解目标和独立决策，而不是隐含延长当前 Skill 开发周期。
