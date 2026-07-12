@@ -1,0 +1,56 @@
+name: Model specification validation
+
+on:
+  pull_request:
+    paths:
+      - "skills/math_modeling/specs/**"
+      - "skills/math_modeling/validation/**"
+      - "tests/specs/**"
+      - "tests/**/artifacts/modeling/**"
+      - ".github/workflows/model-spec.yml"
+  push:
+    paths:
+      - "skills/math_modeling/specs/**"
+      - "skills/math_modeling/validation/**"
+      - "tests/specs/**"
+      - "tests/**/artifacts/modeling/**"
+      - ".github/workflows/model-spec.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-model-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validation dependencies
+        run: python -m pip install -r skills/math_modeling/validation/requirements.txt
+
+      - name: Run validator regression tests
+        run: python -m unittest discover -s tests/specs -p 'test_*.py' -v
+
+      - name: Validate case-independent example
+        run: |
+          python skills/math_modeling/validation/model_spec_validator.py \
+            --spec skills/math_modeling/specs/model_spec.example.yaml
+
+      - name: Validate repository model specifications and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' spec; do
+            found=1
+            echo "Validating ${spec}"
+            python skills/math_modeling/validation/model_spec_validator.py \
+              --spec "${spec}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.model.v2.yaml' -print0)
+          test "${found}" -eq 1
