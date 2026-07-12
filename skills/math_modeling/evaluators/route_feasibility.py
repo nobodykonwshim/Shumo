@@ -1,31 +1,27 @@
 #!/usr/bin/env python3
-"""Deterministic geometric feasibility checks for precomputed survey polylines.
+"""Deterministic feasibility checks for explicit or polyline survey routes.
 
-This module does not generate or smooth routes. It evaluates the exact polyline
-geometry supplied by a candidate plan. A non-zero heading change at an interior
-polyline vertex is a hard corner; following that exact path requires an
-instantaneous heading change (unbounded curvature), so it is not a finite-turn-
-radius vessel path unless a separate smoothing step is performed and the
-smoothed route is re-evaluated for coverage and overlap.
+Polyline-only inputs are evaluated exactly as piecewise-linear paths. Inputs
+that provide ``geometry_segments`` are evaluated using their explicit line and
+quadratic-Bezier geometry; any accompanying ``points`` are treated only as a
+sampling representation for independent spatial evaluation.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any, Sequence
 
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from skills.math_modeling.geometry.route_geometry import point, validate_explicit_geometry
+
 _EPS = 1e-12
-
-
-def _point(raw: Sequence[float]) -> tuple[float, float]:
-    if len(raw) != 2:
-        raise ValueError("Each route point must contain exactly two coordinates")
-    x, y = float(raw[0]), float(raw[1])
-    if not math.isfinite(x) or not math.isfinite(y):
-        raise ValueError("Route coordinates must be finite")
-    return x, y
 
 
 def _segment(a: tuple[float, float], b: tuple[float, float]) -> tuple[float, float, float]:
@@ -36,9 +32,7 @@ def _segment(a: tuple[float, float], b: tuple[float, float]) -> tuple[float, flo
     return dx / length, dy / length, length
 
 
-def _turn_angle_deg(
-    u0: tuple[float, float], u1: tuple[float, float]
-) -> float:
+def _turn_angle_deg(u0: tuple[float, float], u1: tuple[float, float]) -> float:
     dot = max(-1.0, min(1.0, u0[0] * u1[0] + u0[1] * u1[1]))
     cross = u0[0] * u1[1] - u0[1] * u1[0]
     return math.degrees(math.atan2(abs(cross), dot))
@@ -47,9 +41,7 @@ def _turn_angle_deg(
 def _circumradius(
     a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]
 ) -> float | None:
-    ab = math.dist(a, b)
-    bc = math.dist(b, c)
-    ca = math.dist(c, a)
+    ab, bc, ca = math.dist(a, b), math.dist(b, c), math.dist(c, a)
     twice_area = abs(
         (b[0] - a[0]) * (c[1] - a[1])
         - (b[1] - a[1]) * (c[0] - a[0])
@@ -59,15 +51,14 @@ def _circumradius(
     return ab * bc * ca / (2.0 * twice_area)
 
 
-def validate_line(
+def _validate_polyline_line(
     line: dict[str, Any], *, heading_tolerance_deg: float
 ) -> dict[str, Any]:
     raw_points = line.get("points")
     if not isinstance(raw_points, list) or len(raw_points) < 2:
         raise ValueError("Each line must contain at least two points")
-    points = [_point(raw) for raw in raw_points]
+    points = [point(raw) for raw in raw_points]
     segments = [_segment(points[i], points[i + 1]) for i in range(len(points) - 1)]
-
     corners: list[dict[str, Any]] = []
     sampled_radii: list[float] = []
     for i in range(1, len(points) - 1):
@@ -84,15 +75,40 @@ def validate_line(
                     "three_point_circumradius_m": radius,
                 }
             )
-
     return {
         "line_id": str(line.get("id", "")),
+        "geometry_mode": "exact_polyline",
         "point_count": len(points),
+        "segment_count": len(segments),
         "length_m": sum(segment[2] for segment in segments),
         "hard_corner_count": len(corners),
-        "c1_continuous_exact_polyline": len(corners) == 0,
-        "minimum_three_point_circumradius_m": min(sampled_radii) if sampled_radii else None,
+        "c1_continuous": len(corners) == 0,
+        "minimum_curvature_radius_m": min(sampled_radii) if sampled_radii else None,
         "corners": corners,
+    }
+
+
+def validate_line(
+    line: dict[str, Any], *, heading_tolerance_deg: float
+) -> dict[str, Any]:
+    raw_geometry = line.get("geometry_segments")
+    if raw_geometry is None:
+        return _validate_polyline_line(line, heading_tolerance_deg=heading_tolerance_deg)
+    if not isinstance(raw_geometry, list) or not raw_geometry:
+        raise ValueError("geometry_segments must be a non-empty list")
+    report = validate_explicit_geometry(
+        raw_geometry, heading_tolerance_deg=heading_tolerance_deg
+    )
+    return {
+        "line_id": str(line.get("id", "")),
+        "geometry_mode": "explicit_line_and_quadratic_bezier",
+        "point_count": len(line.get("points", [])),
+        "segment_count": report["segment_count"],
+        "length_m": report["length_m"],
+        "hard_corner_count": report["hard_corner_count"],
+        "c1_continuous": report["c1_continuous"],
+        "minimum_curvature_radius_m": report["minimum_curvature_radius_m"],
+        "corners": report["hard_corners"],
     }
 
 
@@ -104,9 +120,10 @@ def validate_plan(
 ) -> dict[str, Any]:
     if heading_tolerance_deg < 0 or not math.isfinite(heading_tolerance_deg):
         raise ValueError("heading_tolerance_deg must be finite and non-negative")
-    if minimum_turn_radius_m is not None:
-        if minimum_turn_radius_m <= 0 or not math.isfinite(minimum_turn_radius_m):
-            raise ValueError("minimum_turn_radius_m must be finite and positive")
+    if minimum_turn_radius_m is not None and (
+        minimum_turn_radius_m <= 0 or not math.isfinite(minimum_turn_radius_m)
+    ):
+        raise ValueError("minimum_turn_radius_m must be finite and positive")
 
     lines = plan.get("lines")
     if not isinstance(lines, list) or not lines:
@@ -116,55 +133,51 @@ def validate_plan(
     ]
     hard_corner_count = sum(report["hard_corner_count"] for report in line_reports)
     finite_radii = [
-        report["minimum_three_point_circumradius_m"]
+        report["minimum_curvature_radius_m"]
         for report in line_reports
-        if report["minimum_three_point_circumradius_m"] is not None
+        if report["minimum_curvature_radius_m"] is not None
     ]
-    minimum_sampled_radius = min(finite_radii) if finite_radii else None
+    minimum_radius = min(finite_radii) if finite_radii else None
     radius_pass = (
         minimum_turn_radius_m is None
-        or minimum_sampled_radius is None
-        or minimum_sampled_radius + 1e-9 >= minimum_turn_radius_m
+        or minimum_radius is None
+        or minimum_radius + 1e-9 >= minimum_turn_radius_m
     )
-    exact_polyline_pass = hard_corner_count == 0
-    passed = exact_polyline_pass and radius_pass
+    tangent_pass = hard_corner_count == 0
+    passed = tangent_pass and radius_pass
 
     reasons: list[str] = []
-    if not exact_polyline_pass:
-        reasons.append(
-            "nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature"
-        )
+    if not tangent_pass:
+        reasons.append("nonzero_heading_change_requires_unbounded_curvature")
     if not radius_pass:
-        reasons.append("sampled_circumradius_below_frozen_minimum_turn_radius")
+        reasons.append("minimum_curvature_radius_below_frozen_turn_radius")
     if passed:
-        reasons.append("exact_survey_line_geometry_has_no_detected_curvature_violation")
+        reasons.append("route_geometry_is_tangent_continuous_with_finite_curvature")
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "candidate_id": plan.get("candidate_id"),
         "route_family": plan.get("route_family"),
         "status": "pass" if passed else "fail",
-        "decision": {
-            "selected_candidate_on_pass": plan.get("candidate_id"),
-            "fallback_candidate_on_fail": "P4-CAND-A",
-        },
         "criteria": {
-            "exact_polyline_requires_c1_continuity": True,
+            "route_requires_tangent_continuity": True,
             "heading_tolerance_deg": heading_tolerance_deg,
             "minimum_turn_radius_m": minimum_turn_radius_m,
+            "explicit_geometry_preferred_over_sampled_points": True,
         },
         "results": {
             "line_count": len(line_reports),
+            "total_length_m": sum(report["length_m"] for report in line_reports),
             "hard_corner_count": hard_corner_count,
-            "minimum_three_point_circumradius_m": minimum_sampled_radius,
+            "minimum_curvature_radius_m": minimum_radius,
             "within_line_curvature_pass": passed,
             "inter_line_connectors_checked": False,
         },
         "reasons": reasons,
         "required_follow_up_if_failed": [
-            "select P4-CAND-A as the frozen fallback baseline",
-            "do not repair P4-CAND-C by implicit smoothing",
-            "if C is reconsidered, generate an explicit finite-radius smoothed route and rerun spatial coverage and overlap evaluation",
+            "retain the route family for explicit geometry refinement when length remains competitive",
+            "generate a versioned tangent-continuous replacement rather than applying implicit smoothing",
+            "rerun complete spatial coverage, overlap, boundary and crossing evaluation",
         ],
         "line_reports": line_reports,
     }
@@ -177,7 +190,6 @@ def main() -> int:
     parser.add_argument("--heading-tolerance-deg", type=float, default=1e-6)
     parser.add_argument("--minimum-turn-radius-m", type=float)
     args = parser.parse_args()
-
     plan = json.loads(args.candidate.read_text(encoding="utf-8"))
     report = validate_plan(
         plan,
