@@ -1,0 +1,137 @@
+schema_version: 1
+registry_id: shumo_math_modeling_capabilities
+product_boundary: reusable_mathematical_modeling_skill
+case_studies_are: validation_fixtures
+
+status_values:
+  - planned
+  - prototype
+  - validated
+  - reusable
+  - deprecated
+
+capabilities:
+  - capability_id: workflow_orchestration
+    name: workflow-first staged modeling
+    status: reusable
+    owner_path: skills/math_modeling/workflows/README.md
+    contract:
+      inputs: problem_sources_and_project_config
+      outputs: staged_artifacts_and_human_gates
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/
+    limits:
+      - workflow quality still depends on explicit artifact schemas
+
+  - capability_id: agent_admission
+    name: bounded agent admission and runtime token
+    status: reusable
+    owner_path: skills/math_modeling/orchestration/agent_gate.py
+    contract:
+      inputs: admission_record_agent_type_task_and_environment
+      outputs: admitted_or_blocked_token
+    generic_tests:
+      - tests/orchestration/test_agent_gate.py
+    demonstrated_by:
+      - tests/case001/run/problem4_agent_admission.json
+    limits:
+      - admission does not prove the agent output is mathematically correct
+
+  - capability_id: reference_isolation
+    name: independent-first reference isolation
+    status: reusable
+    owner_path: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+    contract:
+      inputs: source_classification_and_release_state
+      outputs: exposure_log_and_reference_access_policy
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/review/reference_exposure_log.yaml
+    limits:
+      - a contaminated context cannot support a true blind-solution claim
+
+  - capability_id: structured_grid_ingestion
+    name: deterministic XLSX depth-grid ingestion
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/xlsx_depth_grid.py
+    contract:
+      inputs: xlsx_workbook_with_coordinate_and_depth_matrix
+      outputs: normalized_si_terrain_bundle
+    generic_tests:
+      - tests/evaluators/test_xlsx_depth_grid.py
+    demonstrated_by:
+      - tests/case001/run/problem4_real_grid_smoke_report.json
+    limits:
+      - the current adapter targets rectangular numeric grids rather than arbitrary workbooks
+
+  - capability_id: independent_spatial_evaluation
+    name: independent coverage overlap and boundary evaluator
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/spatial_coverage.py
+    contract:
+      inputs: precomputed_plan_terrain_region_instrument_and_sampling_policy
+      outputs: length_coverage_overlap_boundary_and_sensitivity_report
+    generic_tests:
+      - tests/evaluators/test_spatial_coverage.py
+    demonstrated_by:
+      - tests/case001/run/problem4_real_grid_smoke_report.json
+      - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+    limits:
+      - coverage is sampling-based unless a separate continuous proof is supplied
+      - overlap semantics must be frozen by the case contract
+
+  - capability_id: explicit_route_geometry
+    name: explicit line and Bezier route geometry
+    status: reusable
+    owner_path: skills/math_modeling/geometry/route_geometry.py
+    contract:
+      inputs: versioned_straight_and_bezier_segments
+      outputs: length_tangent_curvature_and_sampling_operations
+    generic_tests:
+      - tests/evaluators/test_route_geometry.py
+    demonstrated_by:
+      - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+    limits:
+      - operational vessel constraints must be supplied by the case
+
+  - capability_id: route_feasibility_validation
+    name: tangent continuity and finite-curvature validation
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/route_feasibility.py
+    contract:
+      inputs: precomputed_explicit_route_and_optional_operational_limits
+      outputs: feasibility_report_with_detectable_failure_reasons
+    generic_tests:
+      - tests/evaluators/test_route_feasibility.py
+    demonstrated_by:
+      - tests/case001/run/problem4_candidates/curvature_validation.yaml
+    limits:
+      - no minimum turning radius may be invented when the case does not provide one
+
+  - capability_id: case_to_skill_promotion
+    name: case-to-skill extraction and stop policy
+    status: validated
+    owner_path: skills/math_modeling/support/CASE_TO_SKILL_PROMOTION.md
+    contract:
+      inputs: case_gap_reusable_candidate_and_evidence
+      outputs: promote_refine_or_stop_decision
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/run/S0_skill_extraction_handoff.yaml
+    limits:
+      - the promotion decision still requires human judgment
+
+backlog:
+  - capability_id: generic_model_spec_schema
+    priority: high
+    reason: model specifications are currently demonstrated but not yet enforced by one generic schema
+  - capability_id: capability_registry_validator
+    priority: high
+    reason: registry and evidence paths should be machine-checked
+  - capability_id: generic_sensitivity_policy
+    priority: medium
+    reason: cases need a reusable way to declare mandatory sensitivity grids and acceptance rules
+  - capability_id: paper_blueprint_validator
+    priority: medium
+    reason: architecture-to-writing consistency is documented but not yet executable
