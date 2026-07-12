@@ -1,0 +1,62 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: post_h3_finalization_audit
+status: complete
+
+scope:
+  purpose: verify the frozen candidate-A decision is consistently represented and reproducible before formal review
+  merge_authorized: false
+  keep_pr_draft: true
+
+baseline_consistency:
+  selected_candidate: P4-CAND-A
+  baseline_state: frozen
+  authoritative_records:
+    - tests/case001/run/H3_problem4_candidate_selection.yaml
+    - tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+    - tests/case001/run/problem4_candidates/curvature_validation.yaml
+    - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+  candidate_c_role: rejected_conditional_primary_retained_for_audit_only
+  candidate_c_must_not_be_used_as_default: true
+
+validation:
+  clean_checkout_proxy: github_actions_fresh_runner_checkout
+  head_sha_checked: 4e6afe1d19aaff9cff53fc1878d8f056aaac28a9
+  workflow_runs:
+    problem4_candidate_feasibility_resolution:
+      run_id: 29193246911
+      conclusion: success
+    spatial_evaluator_tests:
+      run_id: 29193246932
+      conclusion: success
+    agent_admission_gate_tests:
+      run_id: 29193246910
+      conclusion: success
+  open_review_threads: 0
+
+verified_result:
+  candidate_c:
+    status: fail
+    exact_polyline_hard_corner_count: 548
+    failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  candidate_a:
+    status: pass
+    survey_line_count: 67
+    total_survey_line_length_m: 620420.0
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 369055.8064516127
+    boundary_violation: false
+
+remaining_limits:
+  - inter-line connecting transit turns are not modeled
+  - no vessel-specific minimum turning radius is provided or invented
+  - sampled zero uncovered area is not a continuous mathematical coverage proof
+  - no global optimality claim is made
+
+review_readiness:
+  technical_blockers: []
+  documentation_blockers: []
+  ready_for_human_review: true
+  pr_transition_performed: false
+  reason_pr_remains_draft: explicit user instruction to avoid merge and prior frozen PR policy
