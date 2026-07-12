@@ -1,0 +1,50 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3
+status: awaiting_user_selection
+
+candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+selection_authority: user
+agent_may_select: false
+
+candidates:
+  P4-CAND-A:
+    family: global_north_south_conservative_adaptive
+    total_length_m: 620420.0
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 369055.8064516127
+    principal_risk: conservative_global_spacing_creates_large_local_overlap
+
+  P4-CAND-B:
+    family: global_east_west_conservative_adaptive
+    total_length_m: 703760.0
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 452776.95999999956
+    principal_risk: longest_and_highest_overlap_burden_of_tested_candidates
+
+  P4-CAND-C:
+    family: terrain_responsive_curved_north_south
+    total_length_m: 576755.7023466643
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 339673.0975448946
+    principal_risk: vessel_turning_and_curve_feasibility_not_yet_modeled
+
+required_human_decision:
+  selected_candidate: null
+  accepted_reasons: []
+  accepted_risks: []
+  rejected_candidates: []
+  additional_validation_required: []
+
+selection_rule:
+  - do not infer final choice from lowest reported length alone
+  - explicitly decide whether curved lines are operationally admissible
+  - if curved lines are inadmissible choose between straight-line candidates or request a bounded deterministic revision
+  - no candidate may be described as globally optimal
+
+handoff_after_selection:
+  - run selected-route feasibility checks
+  - freeze problem4 baseline
+  - optionally open reference-comparison phase
+  - build problem4.model.yaml only after validation
