@@ -1,0 +1,215 @@
+schema_version: "1.0"
+decision_id: DECISION-DEMO-FORECAST-01
+project_id: demo_forecast
+problem_id: demand_forecasting
+status: draft
+declared_before_implementation: true
+
+problem_profile:
+  task_types: [prediction]
+  objective: Forecast the next twelve monthly demand values with calibrated uncertainty.
+  hard_constraints:
+    - Preserve temporal order during validation.
+    - Do not use future observations or future-derived features.
+  required_outputs:
+    - Point forecasts for twelve months.
+    - Prediction intervals for twelve months.
+  data_profile:
+    availability: complete
+    structure: timeseries
+    sample_size: small
+    temporal_ordering: true
+    spatial_structure: false
+    labels_available: true
+    missingness: No missing monthly observations are present.
+    uncertainty: Demand contains seasonality, trend and possible structural change.
+  evaluation_metrics:
+    - Rolling-origin mean absolute scaled error.
+    - Empirical prediction-interval coverage.
+  decision_uncertainties:
+    - Whether nonlinear covariates add stable information beyond seasonality.
+
+candidate_routes:
+  - id: ROUTE-SEASONAL-NAIVE
+    name: Seasonal naive baseline
+    model_family: deterministic seasonal benchmark
+    status: shortlisted
+    rationale: Establish a leakage-safe and interpretable minimum-performance baseline.
+    applicability_conditions:
+      - A stable seasonal period is present.
+    required_data:
+      - Historical monthly demand.
+    assumptions:
+      - The previous seasonal cycle remains informative.
+    strengths:
+      - Very low variance and transparent behavior.
+      - Essential benchmark for judging added complexity.
+    risks:
+      - Cannot adapt to changing trend or nonlinear covariates.
+    computational_cost: low
+    novelty_role:
+      required: false
+      description: This route is a baseline, not an innovation claim.
+    validation_plan:
+      - Evaluate with rolling-origin splits only.
+      - Construct intervals from historical seasonal residuals.
+
+  - id: ROUTE-ETS
+    name: Exponential smoothing state-space model
+    model_family: statistical time-series model
+    status: shortlisted
+    rationale: Represent level, trend and seasonality while retaining interpretable uncertainty.
+    applicability_conditions:
+      - Historical dynamics are adequately represented by smooth latent components.
+    required_data:
+      - Historical monthly demand.
+    assumptions:
+      - Residual dependence is limited after fitting level, trend and seasonality.
+    strengths:
+      - Interpretable components and native forecast intervals.
+      - Appropriate for a small univariate data set.
+    risks:
+      - Structural breaks can invalidate extrapolated components.
+    computational_cost: low
+    novelty_role:
+      required: false
+      description: Innovation is unnecessary unless diagnostics expose a real deficiency.
+    validation_plan:
+      - Tune component forms inside each rolling-origin training window.
+      - Check residual autocorrelation and interval coverage.
+
+  - id: ROUTE-BOOSTED-TREES
+    name: Lag-feature gradient boosting
+    model_family: supervised nonlinear regression
+    status: deferred
+    rationale: Test whether nonlinear lag interactions or external covariates improve forecast accuracy.
+    applicability_conditions:
+      - Enough leakage-safe training windows and useful covariates are available.
+    required_data:
+      - Historical demand and pre-forecast covariates.
+    assumptions:
+      - Engineered lag relationships remain stable out of sample.
+    strengths:
+      - Flexible nonlinear interactions.
+    risks:
+      - High overfitting risk with a short series.
+      - Prediction intervals require an additional calibrated method.
+    computational_cost: medium
+    novelty_role:
+      required: false
+      description: Use only when rolling-origin evidence justifies added complexity.
+    validation_plan:
+      - Build every feature within each training window.
+      - Compare against the seasonal baseline and ETS on identical origins.
+
+comparison_criteria:
+  - id: CRIT-NO-LEAKAGE
+    description: The route supports temporal validation without future information.
+    kind: hard
+    direction: satisfy
+    authority: problem_statement
+  - id: CRIT-SMALL-SAMPLE
+    description: The route is credible for the available sample size.
+    kind: hard
+    direction: satisfy
+    authority: data
+  - id: CRIT-POINT-ACCURACY
+    description: Rolling-origin point-forecast accuracy.
+    kind: soft
+    direction: minimize
+    authority: human_decision
+  - id: CRIT-INTERVALS
+    description: Ability to produce calibrated and interpretable uncertainty intervals.
+    kind: soft
+    direction: maximize
+    authority: human_decision
+  - id: CRIT-INTERPRETABILITY
+    description: Ease of explaining the mechanism and failure conditions.
+    kind: diagnostic
+    direction: inform
+    authority: skill_diagnostic
+
+comparison_matrix:
+  - candidate_id: ROUTE-SEASONAL-NAIVE
+    assessments:
+      - criterion_id: CRIT-NO-LEAKAGE
+        rating: pass
+        justification: The forecast uses only the same month from the previous cycle.
+      - criterion_id: CRIT-SMALL-SAMPLE
+        rating: pass
+        justification: The route estimates almost no parameters.
+      - criterion_id: CRIT-POINT-ACCURACY
+        rating: unknown
+        justification: Accuracy must be measured on frozen rolling-origin splits.
+      - criterion_id: CRIT-INTERVALS
+        rating: moderate
+        justification: Residual-based intervals are possible but structurally simple.
+      - criterion_id: CRIT-INTERPRETABILITY
+        rating: strong
+        justification: The mechanism is directly auditable.
+
+  - candidate_id: ROUTE-ETS
+    assessments:
+      - criterion_id: CRIT-NO-LEAKAGE
+        rating: pass
+        justification: Parameters can be refit inside every training window.
+      - criterion_id: CRIT-SMALL-SAMPLE
+        rating: pass
+        justification: The model family is designed for compact univariate series.
+      - criterion_id: CRIT-POINT-ACCURACY
+        rating: unknown
+        justification: Accuracy must be established before selection.
+      - criterion_id: CRIT-INTERVALS
+        rating: strong
+        justification: State-space formulations provide explicit forecast uncertainty.
+      - criterion_id: CRIT-INTERPRETABILITY
+        rating: strong
+        justification: Level, trend and seasonal components can be explained.
+
+  - candidate_id: ROUTE-BOOSTED-TREES
+    assessments:
+      - criterion_id: CRIT-NO-LEAKAGE
+        rating: pass
+        justification: Leakage can be prevented by constructing features within each origin.
+      - criterion_id: CRIT-SMALL-SAMPLE
+        rating: weak
+        justification: The short series may not support the model capacity reliably.
+      - criterion_id: CRIT-POINT-ACCURACY
+        rating: unknown
+        justification: Added accuracy is unproven before rolling-origin evaluation.
+      - criterion_id: CRIT-INTERVALS
+        rating: weak
+        justification: Calibrated intervals require additional methodology.
+      - criterion_id: CRIT-INTERPRETABILITY
+        rating: moderate
+        justification: Feature effects are less direct than state-space components.
+
+recommendation:
+  selected_candidate_id: ROUTE-ETS
+  fallback_candidate_id: ROUTE-SEASONAL-NAIVE
+  rationale: Implement ETS and the seasonal baseline first; retain boosted trees only if diagnostics and sample size justify a nonlinear extension.
+  unresolved_risks:
+    - Structural change may make all historical extrapolation unstable.
+  requires_human_decision: true
+
+human_checkpoint:
+  decision: Approve ETS as the primary route and seasonal naive as the mandatory baseline before implementation.
+  authority: user
+  status: pending
+
+provenance:
+  source_paths: []
+  evidence_paths: []
+  reference_exposure_status: not_applicable
+
+stop_rule:
+  case_work_stops_when:
+    - The selected route and baseline have been evaluated on frozen rolling-origin splits.
+    - Remaining changes only tune the demonstration score without exposing a reusable capability gap.
+  reopen_requires:
+    - A named reusable capability gap.
+    - A generic Skill artifact and generic test to change.
+    - Explicit human authorization.
+
+limitations:
+  - This example demonstrates decision governance and does not contain forecast results.
