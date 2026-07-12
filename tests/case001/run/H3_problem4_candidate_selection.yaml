@@ -53,7 +53,7 @@ selected_baseline:
   uncovered_area_percent: 0.0
   excess_overlap_length_m: 369055.8064516127
   boundary_violation: false
-  state: ready_to_freeze
+  state: frozen
 
 selection_rule_application:
   - candidate C was not selected from length metrics alone
@@ -72,9 +72,8 @@ remaining_scope_limit:
     remain outside the frozen reported route metrics.
 
 handoff_after_resolution:
-  - freeze P4-CAND-A as the problem4 baseline
+  - build problem4.model.yaml from the frozen candidate-A baseline
   - optionally open reference-comparison phase
-  - build problem4.model.yaml from the validated candidate-A baseline
 
 pr_policy:
   keep_draft: true
