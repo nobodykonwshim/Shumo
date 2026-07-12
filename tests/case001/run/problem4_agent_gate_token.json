@@ -1,6 +1,6 @@
 {
   "admission_id": "ADM-P4-ROUTE-001",
-  "admission_sha256": "5947bb9e52bb991d349dd296e3ebfd77f2c01dfa2f85c2dad9dce9d9be0a0167",
+  "admission_sha256": "77c13c3a53de15536bc4e611aee7df5a8155a01d7d47300a3f68a9423b55806a",
   "agent_type": "route_explorer",
   "budget": {
     "max_candidate_routes": 3,
@@ -10,7 +10,7 @@
   "contracts": {
     "environment_manifest": {
       "path": "tests/case001/run/problem4_contracts/environment_manifest.json",
-      "sha256": "5e69d2cf75dca49320c993205160b7c000e8bdfa2ad21aacb2fe3789068f344d",
+      "sha256": "f968e868e6d790cff008a884e87b659f06eb1c8e45a59f2223297993930857c4",
       "status": "verified"
     },
     "prompt_contract": {
@@ -24,7 +24,7 @@
       "status": "verified"
     }
   },
-  "issued_at_utc": "2026-07-12T11:53:45+00:00",
+  "issued_at_utc": "2026-07-12T11:59:57+00:00",
   "reference_access": {
     "exposure_label": "reference_aware_assisted_pilot",
     "external_reference_paths_readable": false,
@@ -58,5 +58,5 @@
     "human_value_judgment_required"
   ],
   "task_id": "A-P4-ROUTE-01",
-  "token_sha256": "fea1b4d9f8149fa95e0b88a70d3a1e17b7bdb6ab2256e865d43890adfa658c98"
+  "token_sha256": "fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c"
 }
