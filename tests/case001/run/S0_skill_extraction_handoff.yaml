@@ -1,0 +1,75 @@
+schema_version: 1
+record_id: S0-CASE001-SKILL-EXTRACTION
+case_id: case001
+status: demonstration_complete
+recorded_at: 2026-07-12
+
+objective_correction:
+  previous_drift: >-
+    Development effort was increasingly optimizing problem4 candidate C rather
+    than building the reusable mathematical-modeling skill.
+  corrected_primary_objective: >-
+    Extract, test and register reusable modeling capabilities. Treat case001 as
+    a validation fixture rather than the product boundary.
+
+case_result_state:
+  overall: partial
+  problem1_to_problem3: retained_as_existing_case_evidence
+  problem4:
+    final_candidate_selected: false
+    active_route_family: terrain_responsive_candidate_c
+    case_specific_optimization_paused: true
+    pause_reason: >-
+      Further route refinement currently improves only this case's numerical
+      result and is not required to demonstrate a new reusable capability.
+    global_optimality_claimed: false
+
+reusable_capabilities_extracted:
+  - capability_id: workflow_orchestration
+    owner_path: skills/math_modeling/workflows/README.md
+  - capability_id: agent_admission
+    owner_path: skills/math_modeling/orchestration/agent_gate.py
+  - capability_id: reference_isolation
+    owner_path: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+  - capability_id: structured_grid_ingestion
+    owner_path: skills/math_modeling/evaluators/xlsx_depth_grid.py
+  - capability_id: independent_spatial_evaluation
+    owner_path: skills/math_modeling/evaluators/spatial_coverage.py
+  - capability_id: explicit_route_geometry
+    owner_path: skills/math_modeling/geometry/route_geometry.py
+  - capability_id: route_feasibility_validation
+    owner_path: skills/math_modeling/evaluators/route_feasibility.py
+  - capability_id: case_to_skill_promotion
+    owner_path: skills/math_modeling/support/CASE_TO_SKILL_PROMOTION.md
+
+promotion_evidence:
+  capability_registry: skills/math_modeling/CAPABILITY_REGISTRY.yaml
+  generic_tests:
+    - tests/evaluators/test_xlsx_depth_grid.py
+    - tests/evaluators/test_spatial_coverage.py
+    - tests/evaluators/test_route_geometry.py
+    - tests/evaluators/test_route_feasibility.py
+    - tests/orchestration/test_agent_gate.py
+  real_case_evidence:
+    - tests/case001/run/problem4_real_grid_smoke_report.json
+    - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+    - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+
+next_skill_backlog:
+  - generic_model_spec_schema
+  - capability_registry_validator
+  - generic_sensitivity_policy
+  - paper_blueprint_validator
+
+iteration_gate:
+  additional_case001_work_requires:
+    - a_new_reusable_capability_gap
+    - a_named_skill_owned_artifact_to_change
+    - a_generic_test_to_add_or_modify
+    - explicit_human_authorization
+  case_score_improvement_alone_is_sufficient: false
+
+pr_policy:
+  keep_draft: true
+  merge_allowed: false
+  ready_for_review: false
