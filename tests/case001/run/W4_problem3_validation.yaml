@@ -1,0 +1,60 @@
+schema_version: 1
+case_id: case001
+stage: W4
+problem_id: problem3
+status: pass
+reference_access_state: quarantined
+
+checks:
+  western_boundary:
+    status: pass
+    expected_m: -3704
+    actual_swath_edge_m: -3704.000000
+    tolerance_m: 1.0e-6
+  eastern_boundary:
+    status: pass
+    expected_m: 3704
+    actual_swath_edge_m: 3719.405496
+    overshoot_m: 15.405496
+  adjacent_overlap:
+    status: pass
+    required_range: [0.10, 0.20]
+    observed_minimum: 0.100000000000
+    observed_maximum: 0.100000000000
+    pair_count: 33
+  no_gap:
+    status: pass
+    method: verify_each_adjacent_pair_has_nonnegative_geometric_overlap
+  line_count_lower_bound:
+    status: pass
+    best_case_33_line_eastern_shortfall_m: 25.756620
+    explanation: >-
+      The best-case 33-line construction already uses the lowest permitted overlap and a
+      western-boundary-tangent first line. Any greater overlap or additional western waste
+      can only reduce eastward reach.
+  line_count_feasibility:
+    status: pass
+    feasible_line_count: 34
+  total_length:
+    status: pass
+    recomputation: 34*3704
+    value_m: 125936
+    value_nm: 68
+  units:
+    status: pass
+    nautical_mile_to_m: 1852
+  monotonic_behavior:
+    status: pass
+    observations:
+      - depth decreases from west to east
+      - admissible spacing decreases toward shallow water
+      - all local depths remain positive
+
+claim_limits:
+  proven: minimum_line_count_within_parallel_contour_aligned_straight_line_family
+  not_proven: global_optimum_over_arbitrary_curved_or_nonparallel_line_geometries
+
+validation_result:
+  handoff_to_baseline_freeze: allowed
+  critical_findings: []
+  unresolved_major_findings: []
