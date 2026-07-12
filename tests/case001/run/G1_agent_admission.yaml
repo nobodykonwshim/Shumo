@@ -52,12 +52,13 @@ decisions:
       approved_by: user
       selected_process: two_phase_independent_then_reference_comparison
       record: tests/case001/run/H1_problem3_route_decision.yaml
+    execution_result:
+      W2_W5_complete: true
+      independent_baseline_frozen: true
+      reference_comparison_complete: true
     ambiguity:
       decision_tree_enumerable: mostly
-      evidence: "Orientation, boundary placement, recursive spacing and verification can be handled by a bounded deterministic search after problem1 and problem2 are fixed."
-    value:
-      impact: high
-      expected_gain_from_agent: "Not evaluated until an independent or quarantined baseline is frozen."
+      evidence: "Orientation, boundary placement, recursive spacing and verification were handled by a bounded deterministic search after problem1 and problem2 were fixed."
     reference_control:
       phase_R1:
         reference_files_readable: false
@@ -73,9 +74,9 @@ decisions:
         - total_length_recomputation
         - boundary_waste_comparison
         - reference_exposure_log_present
-      silent_failure_risk: low_to_medium
-    approval_required: false_for_W2
-    next_stage: W2_problem3
+      silent_failure_risk: low
+    approval_required: false
+    next_stage: complete
 
   problem4:
     proposed_role: route_explorer
@@ -90,33 +91,50 @@ decisions:
       completed:
         - original_attachment_inspected
         - coordinate_grid_and_depth_range_verified
+        - independent_spatial_evaluator_phase1_implemented
+        - analytic_planar_evaluator_tests_pass
+        - grid_resolution_sensitivity_reported_by_evaluator
+        - boundary_violation_metric_implemented
       unresolved_bottlenecks:
-        - independent_spatial_coverage_evaluator_not_implemented
-        - excessive_overlap_length_evaluator_not_implemented
-        - candidate_route_tool_contracts_not_defined
+        - direct_or_deterministic_attachment_xlsx_adapter_not_implemented
+        - real_251x201_grid_performance_and_resolution_test_not_run
+        - excessive_overlap_length_reporting_semantics_not_frozen
+        - candidate_route_environment_and_tool_contracts_not_defined
+        - executable_agent_admission_gate_not_implemented
     error_control:
       detectable_failures:
         - uncovered_grid_or_polygon_cells
         - overlap_above_threshold
         - line_outside_region
         - inconsistent_length_recomputation
-      required_checks:
-        - independent_grid_or_polygon_evaluator
+      implemented_checks:
+        - independent_raster_evaluator
         - grid_resolution_perturbation
-        - region_boundary_tests
-        - baseline_comparison
-      silent_failure_risk: high
+        - region_boundary_clipping
+        - analytic_flat_and_sloped_plane_tests
+      remaining_checks:
+        - real_attachment_grid_smoke_test
+        - evaluator_runtime_benchmark
+        - accepted_problem4_overlap_length_semantics
+        - candidate_plan_tool_contract_validation
+      silent_failure_risk: medium_to_high
     unblock_conditions:
-      - implement_independent_spatial_evaluator
-      - define_agent_environment_and_tool_contracts
-      - lower_silent_failure_risk_to_low_or_medium
-      - define_reference_isolation_mode_for_route_exploration
+      completed:
+        - implement_independent_spatial_evaluator_phase1
+      remaining:
+        - connect_and_test_attachment_grid_adapter
+        - freeze_overlap_length_reporting_semantics
+        - define_agent_environment_and_tool_contracts
+        - implement_executable_agent_admission_gate
+        - lower_silent_failure_risk_to_low_or_medium
+        - define_reference_isolation_mode_for_route_exploration
     intended_future_decision: bounded_agent
     approval_required: true
+    route_explorer_started: false
 
 summary:
-  workflow: [problem1, problem2, problem3_phase_R1]
-  human_checkpoint_resolved: [problem3_process_selection]
+  workflow: [problem1, problem2, problem3]
+  human_checkpoint_resolved: [problem3_process_selection, problem3_reference_release]
   blocked: [problem4]
   bounded_agent_now: []
-  rationale: "Problem3 now tests deterministic independent-first orchestration. Agent exploration is deferred until a frozen baseline and explicit reference-release checkpoint exist."
+  rationale: "The independent evaluator now has analytic phase-one evidence, but problem4 remains blocked until real-grid integration, metric semantics and executable Agent contracts are complete."
