@@ -36,6 +36,11 @@ reusable_capabilities_extracted:
     owner_path: skills/math_modeling/specs/capability_registry.schema.json
     validator: skills/math_modeling/validation/capability_registry_validator.py
     status: validated
+  - capability_id: generic_sensitivity_policy
+    owner_path: skills/math_modeling/support/SENSITIVITY_POLICY.md
+    validator: skills/math_modeling/validation/sensitivity_policy_validator.py
+    case_demonstration: tests/case001/problem4_evaluator.sensitivity.yaml
+    status: validated
   - capability_id: agent_admission
     owner_path: skills/math_modeling/orchestration/agent_gate.py
   - capability_id: reference_isolation
@@ -56,6 +61,7 @@ promotion_evidence:
   generic_tests:
     - tests/specs/test_model_spec_validator.py
     - tests/specs/test_capability_registry_validator.py
+    - tests/specs/test_sensitivity_policy_validator.py
     - tests/evaluators/test_xlsx_depth_grid.py
     - tests/evaluators/test_spatial_coverage.py
     - tests/evaluators/test_route_geometry.py
@@ -63,6 +69,7 @@ promotion_evidence:
     - tests/orchestration/test_agent_gate.py
   real_case_evidence:
     - tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    - tests/case001/problem4_evaluator.sensitivity.yaml
     - tests/case001/run/problem4_real_grid_smoke_report.json
     - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
     - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
@@ -80,9 +87,15 @@ completed_skill_backlog:
       Added a registry schema, structural and semantic validator, ownership and
       evidence-path checks, backlog consistency checks, regression tests and a
       reusable CI gate.
+  - capability_id: generic_sensitivity_policy
+    completed_at: 2026-07-12
+    governance_decision: case_specific_rules_no_skill_default_threshold
+    result: >-
+      Added a pre-result sensitivity schema, semantic and path validator,
+      generic tests, a case-independent example and a real-case resolution
+      demonstration. Post-result rule replacement is explicitly prohibited.
 
 next_skill_backlog:
-  - generic_sensitivity_policy
   - paper_blueprint_validator
 
 iteration_gate:
