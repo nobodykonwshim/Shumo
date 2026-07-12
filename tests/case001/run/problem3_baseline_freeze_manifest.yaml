@@ -1,0 +1,20 @@
+schema_version: 1
+case_id: case001
+problem_id: problem3
+stage: baseline_freeze
+status: frozen
+frozen_artifact: tests/case001/run/problem3_independent_baseline.yaml
+sha256: 19b1b4e4401876288426e66ace523dfab13aae02979c3481bae7ba282dc0a1d6
+git_blob_sha: 113d2750dfc6d12c60d7f7335cbf412cf933fd82
+frozen_after:
+  - W2_problem3_model_spec_complete
+  - W3_problem3_execution_complete
+  - W4_problem3_validation_pass
+reference_release_before_freeze: false
+reference_access_during_baseline_execution: quarantined
+blind_claim_allowed: false
+honest_label: reference_aware_assisted_pilot
+mutation_policy:
+  frozen_artifact_is_immutable: true
+  later_changes_require_new_artifact_id: true
+  reference_comparison_cannot_overwrite_baseline: true
