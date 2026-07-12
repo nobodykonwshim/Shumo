@@ -1,0 +1,48 @@
+name: Agent admission gate tests
+
+on:
+  pull_request:
+    paths:
+      - "skills/math_modeling/orchestration/**"
+      - "tests/orchestration/**"
+      - "tests/case001/run/problem4_contracts/**"
+      - "tests/case001/run/problem4_agent_admission.json"
+      - ".github/workflows/agent-gate.yml"
+  push:
+    paths:
+      - "skills/math_modeling/orchestration/**"
+      - "tests/orchestration/**"
+      - "tests/case001/run/problem4_contracts/**"
+      - "tests/case001/run/problem4_agent_admission.json"
+      - ".github/workflows/agent-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  gate-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run gate regression tests
+        run: python -m unittest discover -s tests/orchestration -p 'test_*.py' -v
+      - name: Verify problem4 admission emits a bounded token
+        run: |
+          python skills/math_modeling/orchestration/agent_gate.py \
+            --admission tests/case001/run/problem4_agent_admission.json \
+            --agent route_explorer \
+            --task A-P4-ROUTE-01 \
+            --repo-root . \
+            --output /tmp/problem4_agent_gate_token.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          token = json.loads(Path('/tmp/problem4_agent_gate_token.json').read_text())
+          assert token['status'] == 'admitted'
+          assert token['agent_type'] == 'route_explorer'
+          assert token['reference_access']['state'] == 'quarantined'
+          assert token['budget']['max_candidate_routes'] == 3
+          PY
