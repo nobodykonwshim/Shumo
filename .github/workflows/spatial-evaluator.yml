@@ -1,0 +1,40 @@
+name: Spatial evaluator tests
+
+on:
+  pull_request:
+    paths:
+      - "skills/math_modeling/evaluators/**"
+      - "tests/evaluators/**"
+      - ".github/workflows/spatial-evaluator.yml"
+  push:
+    paths:
+      - "skills/math_modeling/evaluators/**"
+      - "tests/evaluators/**"
+      - ".github/workflows/spatial-evaluator.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run analytic evaluator tests
+        run: python -m unittest discover -s tests/evaluators -v
+      - name: Run CLI smoke test
+        run: |
+          python skills/math_modeling/evaluators/spatial_coverage.py \
+            --config tests/evaluators/fixtures/flat_complete.json \
+            --output /tmp/spatial_report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('/tmp/spatial_report.json').read_text())
+          assert report['results']['uncovered_area_percent'] == 0.0
+          assert report['results']['boundary_violation'] is False
+          assert report['independence_contract']['contains_route_generation'] is False
+          PY
