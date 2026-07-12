@@ -99,6 +99,28 @@ case_policy:
   forbid_copying_reference_prose: true
   binary_materials_commit_policy: local_only
 
+reference_isolation:
+  protocol: "skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md"
+  default_mode: independent_first_reference_second
+  authoritative_sources:
+    - B题.pdf
+    - 附件.xlsx
+    - result1.xlsx
+    - result2.xlsx
+  external_reference_sources:
+    - B477.pdf
+    - B226.pdf
+    - B311.pdf
+    - tests/case001/expected/reference_benchmarks.yaml
+  require_exposure_log: true
+  exposure_log: "tests/case001/review/reference_exposure_log.yaml"
+  require_baseline_freeze_before_reference_release: true
+  same_problem_web_search_before_baseline_freeze: forbidden
+  current_status: contaminated_for_blind_claim
+  blind_claim_allowed: false
+  current_treatment: reference_quarantined_reconstruction
+  true_blind_validation_requires_fresh_case_or_context: true
+
 modeling:
   stable_formula_ids: true
   final_equation_numbers: false
@@ -141,12 +163,18 @@ quality_gates:
     - all_questions_identified
     - outputs_and_constraints_verified
     - missing_information_resolved_or_blocked
+  independent_modeling_to_reference_release:
+    - reference_exposure_status_recorded
+    - independent_baseline_frozen
+    - baseline_hash_recorded
+    - human_reference_release_approved
   modeling_to_architecture:
     - outputs_covered
     - route_decision_recorded
     - reproducible_model_and_algorithm
     - quantitative_validation
     - agent_actions_auditable
+    - provenance_and_reference_adoptions_recorded
     - no_open_critical_review_findings
   architecture_to_writing:
     - unique_model_ownership
@@ -160,6 +188,7 @@ quality_gates:
     - required_outputs_present
 
 status:
-  current_stage: W1
-  state: partial
-  blocker: "RAR archive contents listed but original problem PDF and Excel attachments are not yet extracted in the current runtime"
+  current_stage: H1_problem3_reference_isolation
+  state: approved_process_pending_W2
+  blocker: null
+  note: "Problem3 will run as a reference-quarantined reconstruction, not as a true blind claim; a fresh case is required for genuine unknown-problem validation."
