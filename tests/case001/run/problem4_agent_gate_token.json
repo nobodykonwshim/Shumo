@@ -1,0 +1,62 @@
+{
+  "admission_id": "ADM-P4-ROUTE-001",
+  "admission_sha256": "5947bb9e52bb991d349dd296e3ebfd77f2c01dfa2f85c2dad9dce9d9be0a0167",
+  "agent_type": "route_explorer",
+  "budget": {
+    "max_candidate_routes": 3,
+    "max_iterations": 3,
+    "max_tool_calls": 8
+  },
+  "contracts": {
+    "environment_manifest": {
+      "path": "tests/case001/run/problem4_contracts/environment_manifest.json",
+      "sha256": "5e69d2cf75dca49320c993205160b7c000e8bdfa2ad21aacb2fe3789068f344d",
+      "status": "verified"
+    },
+    "prompt_contract": {
+      "path": "tests/case001/run/problem4_contracts/prompt_contract.json",
+      "sha256": "afd160ee6dd7c38897ff4c30b251da048249d959677c4a8ea96d3e0c45527013",
+      "status": "verified"
+    },
+    "tool_contracts": {
+      "path": "tests/case001/run/problem4_contracts/tool_contracts.json",
+      "sha256": "69d5343f08b81b08d1ed67280ec37ad5204d8b92e8984c0cc9dd3672ad200f6f",
+      "status": "verified"
+    }
+  },
+  "issued_at_utc": "2026-07-12T11:53:45+00:00",
+  "reference_access": {
+    "exposure_label": "reference_aware_assisted_pilot",
+    "external_reference_paths_readable": false,
+    "same_problem_web_search": "forbidden",
+    "state": "quarantined"
+  },
+  "rollback_point": "tests/case001/run/problem4_evaluator_phase2_status.yaml",
+  "schema_version": 1,
+  "scope": {
+    "allowed_actions": [
+      "read authoritative terrain bundle",
+      "write candidate plans below the candidate directory",
+      "request independent evaluator reports",
+      "submit an evaluated candidate-set manifest"
+    ],
+    "forbidden_actions": [
+      "read same-problem references",
+      "search same-problem web solutions",
+      "select the final route",
+      "change evaluator or metric semantics",
+      "modify registries, frozen artifacts, paper or PR state"
+    ]
+  },
+  "status": "admitted",
+  "stop_conditions": [
+    "budget_exhausted",
+    "two_iterations_without_new_route_family",
+    "candidate_not_executable",
+    "independent_evaluator_failure",
+    "reference_access_required",
+    "human_value_judgment_required"
+  ],
+  "task_id": "A-P4-ROUTE-01",
+  "token_sha256": "fea1b4d9f8149fa95e0b88a70d3a1e17b7bdb6ab2256e865d43890adfa658c98"
+}
