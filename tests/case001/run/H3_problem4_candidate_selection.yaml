@@ -2,7 +2,7 @@ schema_version: 1
 case_id: case001
 problem_id: problem4
 stage: H3
-status: awaiting_user_selection
+status: candidate_c_selected_for_feasibility_validation
 
 candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
 selection_authority: user
@@ -30,21 +30,49 @@ candidates:
     excess_overlap_length_m: 339673.0975448946
     principal_risk: vessel_turning_and_curve_feasibility_not_yet_modeled
 
-required_human_decision:
-  selected_candidate: null
-  accepted_reasons: []
-  accepted_risks: []
-  rejected_candidates: []
-  additional_validation_required: []
+human_decision:
+  selected_candidate_for_validation: P4-CAND-C
+  selection_is_conditional: true
+  accepted_reasons:
+    - lowest evaluated survey-line length among the three bounded candidates
+    - lowest evaluated excessive-overlap length among the three bounded candidates
+    - zero sampled uncovered area and no boundary violation at frozen evaluator settings
+  accepted_risks:
+    - curved survey polylines may contain hard heading changes or insufficient local turn radius
+    - implicit smoothing would change the evaluated route and is therefore forbidden
+    - inter-line connecting turns are not yet represented
+  rejected_candidates:
+    - candidate_id: P4-CAND-B
+      reason: longest tested route and highest tested excessive-overlap burden
+  fallback_candidate_on_validation_failure: P4-CAND-A
+  fallback_reason: straight within-line geometry avoids candidate C's unresolved curvature risk
+
+feasibility_validation:
+  specification: tests/case001/run/problem4_candidates/curvature_validation.yaml
+  validator: skills/math_modeling/evaluators/route_feasibility.py
+  candidate_plan: tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
+  report: tests/case001/run/problem4_candidates/generated/P4-CAND-C_feasibility.json
+  state: pending_local_candidate_run
+  blocking_conditions:
+    - any nonzero heading change at an exact polyline vertex
+    - any sampled local radius below a subsequently frozen positive minimum turn radius
+    - missing or malformed generated candidate artifact
+  pass_action: retain P4-CAND-C and reconfirm spatial metrics before baseline freeze
+  fail_action: select P4-CAND-A and freeze it as the problem4 fallback baseline
 
 selection_rule:
   - do not infer final choice from lowest reported length alone
-  - explicitly decide whether curved lines are operationally admissible
-  - if curved lines are inadmissible choose between straight-line candidates or request a bounded deterministic revision
+  - candidate C must pass the exact-geometry feasibility validator before baseline freeze
+  - no numerical vessel turning-radius limit may be invented without a frozen operational assumption
+  - if candidate C fails, fall back to candidate A without attempting implicit route smoothing
   - no candidate may be described as globally optimal
 
-handoff_after_selection:
-  - run selected-route feasibility checks
-  - freeze problem4 baseline
+handoff_after_validation:
+  - retain C only after a passing feasibility report and reconfirmed spatial evaluation
+  - otherwise freeze A as the problem4 fallback baseline
   - optionally open reference-comparison phase
-  - build problem4.model.yaml only after validation
+  - build problem4.model.yaml only after the selected baseline is validated
+
+pr_policy:
+  keep_draft: true
+  merge_allowed: false
