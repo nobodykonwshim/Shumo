@@ -1,0 +1,67 @@
+schema_version: 1
+case_id: case001
+problem_id: problem3
+artifact: independent_baseline
+status: frozen
+honest_label: reference_aware_assisted_pilot
+blind_claim_allowed: false
+reference_access_during_execution: quarantined
+baseline_sha256: SELF_HASH_RECORDED_IN_FREEZE_MANIFEST
+
+scope:
+  route_family: parallel_straight_lines
+  line_direction: north_south_parallel_to_depth_contours
+  global_all_possible_line_geometries_claimed: false
+
+parameters:
+  north_south_length_m: 3704
+  east_west_width_m: 7408
+  west_boundary_m: -3704
+  east_boundary_m: 3704
+  center_depth_m: 110
+  slope_degree: 1.5
+  opening_angle_degree: 120
+  target_overlap: 0.10
+  allowed_overlap_range: [0.10, 0.20]
+
+construction:
+  first_line_rule: western_swath_edge_equals_western_boundary
+  recurrence_rule: largest_spacing_satisfying_ordered_overlap_eta_0_10
+  termination_rule: first_line_whose_shallow_swath_reaches_eastern_boundary
+
+result:
+  line_count: 34
+  single_line_length_m: 3704
+  total_line_length_m: 125936
+  total_line_length_nm: 68
+  west_boundary_margin_m: 0.000000000000
+  east_boundary_overshoot_m: 15.405496
+  line_33_east_boundary_shortfall_m: 25.756620
+  minimum_adjacent_overlap: 0.100000000000
+  maximum_adjacent_overlap: 0.100000000000
+  minimum_spacing_m: 43.029038
+  maximum_spacing_m: 594.498687
+
+line_positions_from_center_m: [-3345.478207, -2750.979520, -2203.316098, -1698.798208, -1234.026796, -805.870591, -411.445007, -48.092707, 286.634296, 594.991135, 879.055280, 1140.740537, 1381.809940, 1603.887627, 1808.469789, 1996.934741, 2170.552215, 2330.491912, 2477.831383, 2613.563286, 2738.602080, 2853.790179, 2959.903633, 3057.657350, 3147.709922, 3230.668052, 3307.090648, 3377.492588, 3442.348185, 3502.094386, 3557.133715, 3607.836985, 3654.545795, 3697.574833]
+line_depths_m: [197.604430, 182.036934, 167.695863, 154.484597, 142.314129, 131.102464, 120.774067, 111.259352, 102.494217, 94.419609, 86.981127, 80.128658, 73.816033, 68.000724, 62.643552, 57.708423, 53.162090, 48.973922, 45.115702, 41.561437, 38.287181, 35.270874, 32.492196, 29.932424, 27.574315, 25.401980, 23.400784, 21.557244, 19.858940, 18.294431, 16.853176, 15.525464, 14.302350, 13.175595]
+spacings_m: [594.498687, 547.663422, 504.517890, 464.771412, 428.156205, 394.425585, 363.352300, 334.727003, 308.356839, 284.064145, 261.685257, 241.069402, 222.077688, 204.582161, 188.464952, 173.617474, 159.939697, 147.339471, 135.731904, 125.038794, 115.188099, 106.113453, 97.753718, 90.052571, 82.958130, 76.422597, 70.401940, 64.855597, 59.746201, 55.039329, 50.703270, 46.708810, 43.029038]
+
+optimality_within_scope:
+  line_33_infeasible: true
+  line_34_feasible: true
+  argument: >-
+    Setting eta=0.10 maximizes every admissible spacing. Placing the first line with its
+    western swath edge exactly on the western boundary maximizes eastward reach. Under
+    those two best-case choices, 33 lines still leave 25.756620 m uncovered, while the
+    34th line covers the eastern boundary. Thus 34 is the minimum count in this route family.
+
+validation:
+  complete_rectangle_coverage: pass
+  all_adjacent_overlap_between_10_and_20_percent: pass
+  boundary_coverage: pass
+  total_length_recalculation: pass
+  unit_conversion: pass
+
+provenance:
+  allowed_inputs: [B题.pdf, verified_problem1_artifacts, verified_problem2_artifacts]
+  forbidden_during_execution: [B477.pdf, B226.pdf, B311.pdf, reference_benchmarks.yaml, same_problem_web_solutions]
