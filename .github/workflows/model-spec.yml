@@ -3,6 +3,7 @@ name: Skill contract validation
 on:
   pull_request:
     paths:
+      - "shumo.py"
       - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
       - "skills/math_modeling/specs/**"
       - "skills/math_modeling/validation/**"
@@ -10,14 +11,18 @@ on:
       - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
       - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
       - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_STATUS_SCHEMA.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
       - "tests/**/artifacts/architecture/**"
+      - "tests/**/project_status.yaml"
       - "tests/**/*.sensitivity.yaml"
       - "tests/**/*.paper-blueprint.yaml"
       - ".github/workflows/model-spec.yml"
   push:
     paths:
+      - "shumo.py"
       - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
       - "skills/math_modeling/specs/**"
       - "skills/math_modeling/validation/**"
@@ -25,9 +30,12 @@ on:
       - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
       - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
       - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_STATUS_SCHEMA.md"
       - "tests/specs/**"
       - "tests/**/artifacts/modeling/**"
       - "tests/**/artifacts/architecture/**"
+      - "tests/**/project_status.yaml"
       - "tests/**/*.sensitivity.yaml"
       - "tests/**/*.paper-blueprint.yaml"
       - ".github/workflows/model-spec.yml"
@@ -140,4 +148,18 @@ jobs:
               --repo-root . \
               --check-paths
           done < <(find tests -type f -name '*.paper-blueprint.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Calculate repository project states and validate cross-artifact consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' project; do
+            found=1
+            echo "Calculating ${project}"
+            python shumo.py validate-project "${project}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name 'project_status.yaml' -print0)
           test "${found}" -eq 1
