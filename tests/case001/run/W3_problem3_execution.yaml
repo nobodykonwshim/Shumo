@@ -1,0 +1,53 @@
+schema_version: 1
+case_id: case001
+stage: W3
+problem_id: problem3
+status: complete
+execution_mode: deterministic_workflow
+reference_access_state: quarantined
+
+algorithm:
+  name: boundary_tangent_recursive_spacing
+  steps:
+    - solve the western boundary equality for the first line
+    - move from west to east
+    - solve each next-line position from ordered overlap eta=0.10
+    - stop when the shallow-side swath reaches the eastern boundary
+  numerical_method:
+    scalar_solver: bracketed_root_finding
+    target_overlap: 0.10
+    coordinate_unit: m
+    angle_internal_unit: rad
+
+results:
+  line_count: 34
+  single_line_length_m: 3704
+  total_line_length_m: 125936
+  total_line_length_nm: 68
+  first_line_x_m: -3345.478207
+  last_line_x_m: 3697.574833
+  west_boundary_margin_m: 0.0
+  east_boundary_overshoot_m: 15.405496
+  minimum_spacing_m: 43.029038
+  maximum_spacing_m: 594.498687
+  minimum_overlap: 0.10
+  maximum_overlap: 0.10
+
+line_positions_from_center_m:
+  [-3345.478207, -2750.979520, -2203.316098, -1698.798208, -1234.026796, -805.870591,
+   -411.445007, -48.092707, 286.634296, 594.991135, 879.055280, 1140.740537,
+   1381.809940, 1603.887627, 1808.469789, 1996.934741, 2170.552215, 2330.491912,
+   2477.831383, 2613.563286, 2738.602080, 2853.790179, 2959.903633, 3057.657350,
+   3147.709922, 3230.668052, 3307.090648, 3377.492588, 3442.348185, 3502.094386,
+   3557.133715, 3607.836985, 3654.545795, 3697.574833]
+
+reproducibility:
+  deterministic: true
+  random_seed_required: false
+  source_formulas: tests/case001/run/W2_problem3_model_spec.yaml
+  raw_reference_material_used_during_execution: false
+  same_problem_web_search_used: false
+
+status_transition:
+  previous: W2_approved_for_execution
+  next: W4_validation
