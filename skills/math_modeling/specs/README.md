@@ -55,6 +55,16 @@ The validator performs JSON-Schema checks plus semantic checks that JSON Schema 
 - finite, ordered parameter ranges;
 - optional existence checks for repository evidence and implementation paths.
 
+## CI boundary
+
+`Model specification validation` is a reusable Skill gate. It runs the generic regression suite, validates the case-independent example and validates committed `*.model.v2.yaml` specifications with repository-path checks.
+
+Expensive case-study reconstruction workflows are not prerequisites for this gate. They are dispatched separately and cannot substitute for schema or semantic validation.
+
+## Human judgment boundary
+
+The validator can detect missing objectives, unresolved references, unverified required checks and pending decisions. It cannot decide whether a route family, objective weighting, assumption or accepted risk is appropriate. Those decisions remain explicit human checkpoints.
+
 ## Lifecycle rule
 
 A specification is written at W2, completed during W3, updated with evidence during W4 and frozen into the modeling package at W5. W7 paper writing may consume the frozen specification, but must not silently redefine it.
