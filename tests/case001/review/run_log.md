@@ -58,6 +58,36 @@ W0 更新为 `complete`，W1 更新为 `verified`。问题四仍未允许调用 
 
 发现一项参考论文异常：`beta=135°、距离=2.1 海里` 的独立结果为 `166.430 m`，且必须与 225° 对称；部分参考材料中的 `116.430 m` 被标记为疑似排版或转录错误。
 
+## 2026-07-12：问题三参考隔离与人工检查点
+
+### 发现的实验设计问题
+
+在问题三独立模型冻结之前，当前对话和仓库已经读取了三篇参考论文，并知道：
+
+- 常见路线是沿等深线布线；
+- 三篇论文均报告 34 条测线；
+- 常见总长度为 68 海里。
+
+因此，当前 case001 不能再诚实地称为“未知题目盲态独立建模”。仅要求执行者忽略已经看过的信息，不能消除锚定效应。
+
+### 已采取的处理
+
+1. 新增通用 `REFERENCE_ISOLATION_PROTOCOL.md`；
+2. 建立 `review/reference_exposure_log.yaml`；
+3. 将当前状态标记为 `contaminated_for_blind_claim`；
+4. 用户批准采用“两阶段流程”：先独立建模，再开放参考对照；
+5. 问题三第一阶段改为确定性 Workflow，禁止 Route Explorer、参考论文读取和同题联网检索；
+6. 第一阶段只能读取原题面、问题一和问题二的已验证成果；
+7. 独立成果必须冻结并记录哈希后，才能经新的人工检查点开放参考资料。
+
+由于已有暴露，问题三第一阶段被准确命名为：
+
+```text
+reference-quarantined reconstruction
+```
+
+它可以测试 Workflow、环境权限和来源追踪，但不能证明真正的盲态原创性。
+
 ### 当前状态
 
 ```text
@@ -66,7 +96,8 @@ W0 complete
 → G1 verified
 → problem1 W2-W4 pass
 → problem2 W2-W4 pass
-→ H1 problem3 route decision required
+→ H1 problem3 two-phase process approved
+→ problem3 W2 ready under reference quarantine
 → problem4 blocked pending independent evaluator
 ```
 
@@ -74,5 +105,6 @@ W0 complete
 
 1. Workflow-first 路由有效：问题一、二无需 Agent 即可稳定完成。
 2. 原始输入阻塞和参考论文异常均被显式记录，没有被静默掩盖。
-3. 最大剩余缺陷是执行层仍为人工编排：尚无一个命令自动完成 stage 校验、模板写入、W4 验证和状态更新。
-4. 下一轮不应先增加 Agent，而应先实现 schema validator、gate evaluator 和确定性 runner。
+3. 参考资料必须在 W0 分类，并通过文件权限和环境清单实现真正隔离，不能只靠提示词说“不要参考”。
+4. 最大剩余工程缺陷仍是执行层人工编排：尚无 schema validator、reference-access gate、stage runner 和自动回滚。
+5. 真正检验未知题目能力，需要使用一个从未向执行环境暴露参考方案的 `case002` 或全新隔离会话。
