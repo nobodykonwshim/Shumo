@@ -1,148 +1,107 @@
 schema_version: 1
 case_id: case001
 stage: G1
-status: preliminary
-rule: "These decisions are provisional until the original problem and attachment are readable."
+status: verified
+rule: "Agent admission decisions are based on the original problem and inspected attachment."
 
 decisions:
   problem1:
     proposed_role: none
+    decision: workflow
     ambiguity:
       decision_tree_enumerable: true
-      evidence: "Planar geometry, fixed parameters, fixed output table and deterministic verification."
+      evidence: "Fixed planar geometry, fixed parameters, fixed table and deterministic limit checks."
     value:
       impact: medium
-      expected_gain_from_agent: "Low; autonomy would add cost without improving a fully specified derivation."
-    capability:
-      critical_capabilities:
-        - trigonometric_geometry
-        - unit_and_sign_check
-      evidence_of_reliability:
-        - multiple independent references use geometry-first solutions
+      expected_gain_from_agent: low
     error_control:
-      checks:
-        - flat_seabed_limit
-        - zero_slope_limit
-        - dimensional_check
-        - table_recalculation
+      checks: [flat_seabed_limit, dimensional_check, monotonic_depth_check, table_recalculation]
       silent_failure_risk: low
-    decision: workflow
     approval_required: false
 
   problem2:
     proposed_role: none
+    decision: workflow
     ambiguity:
       decision_tree_enumerable: true
-      evidence: "Three-dimensional extension can be specified through coordinate geometry and verified at special angles."
+      evidence: "Coordinate geometry and special-angle tests fully specify the calculation."
     value:
       impact: medium
-      expected_gain_from_agent: "Low after coordinate and beta definitions are fixed."
-    capability:
-      critical_capabilities:
-        - vector_geometry
-        - line_plane_angle
-      evidence_of_reliability:
-        - special-case checks at beta 0, 90, 180 and 270 degrees
+      expected_gain_from_agent: low
     error_control:
       checks:
-        - reduction_to_problem1
-        - symmetry_checks
-        - constant_width_case_at_expected_direction
+        - beta_0_180_depth_direction_check
+        - beta_45_315_symmetry
+        - beta_135_225_symmetry
+        - beta_90_270_constant_width
+        - nautical_mile_conversion_check
       silent_failure_risk: low
-    decision: workflow
     approval_required: false
 
   problem3:
     proposed_role: route_explorer
+    decision: human_checkpoint
     ambiguity:
       decision_tree_enumerable: mostly
-      evidence: "Orientation and recursive spacing admit a small set of mature routes; supplied references strongly converge on contour-parallel lines and 34 lines."
+      evidence: "The mature baseline is contour-parallel lines with recursive spacing; only boundary placement and proof strategy need bounded comparison."
     value:
       impact: high
-      expected_gain_from_agent: "Limited; an Agent may identify alternative proofs or boundary placement strategies, but the search space can be bounded manually."
-    capability:
-      critical_capabilities:
-        - compare_line_orientation_options
-        - prove_coverage_and_overlap
-        - identify_boundary_waste
-      evidence_of_reliability:
-        - problem1_and_problem2_models_can_supply deterministic evaluators
+      expected_gain_from_agent: limited
     error_control:
       checks:
-        - full_region_coverage
+        - complete_rectangle_coverage
         - every_adjacent_overlap_between_10_and_20_percent
         - total_length_recomputation
-        - comparison_with_34_line_reference_smoke_test
+        - boundary_waste_comparison
       silent_failure_risk: medium
-    decision: human_checkpoint
     scope:
       allowed_actions:
-        - propose_at_most_3_orientation_and_spacing_routes
-        - provide_cost_risk_and_validation_plan
+        - propose_at_most_3_boundary_and_spacing_routes
+        - compare_cost_risk_and_validation_plan
       forbidden_actions:
         - select_final_route
-        - write_final_paper
         - modify_registry
+        - write_final_paper
     budget:
       max_iterations: 2
       max_tool_calls: 4
       max_candidate_routes: 3
-    stop_conditions:
-      - candidates_are_substantively_repetitive
-      - route_choice_requires_time_risk_value_judgment
     approval_required: true
 
   problem4:
     proposed_role: route_explorer
+    decision: blocked
     ambiguity:
       decision_tree_enumerable: false
-      evidence: "Terrain reconstruction, partition, line geometry and multi-objective priority admit materially different valid routes; supplied references report widely different outcomes."
+      evidence: "Terrain representation, partition, line geometry and multi-objective priority admit materially different routes."
     value:
       impact: high
-      expected_gain_from_agent: "Potentially high if it produces a bounded comparison of terrain and routing strategies before implementation."
+      expected_gain_from_agent: potentially_high
     capability:
-      critical_capabilities:
-        - inspect_attachment_data
-        - compare_terrain_representations
-        - define_spatial_coverage_and_overlap_evaluators
-        - design_verifiable_candidate_routes
-      evidence_of_reliability: []
+      completed:
+        - original_attachment_inspected
+        - coordinate_grid_and_depth_range_verified
       unresolved_bottlenecks:
-        - attachment_not_readable
-        - independent_spatial_evaluator_not_yet_implemented
+        - independent_spatial_coverage_evaluator_not_implemented
+        - excessive_overlap_length_evaluator_not_implemented
+        - candidate_route_tool_contracts_not_defined
     error_control:
       detectable_failures:
-        - uncovered_grid_cells
+        - uncovered_grid_or_polygon_cells
         - overlap_above_threshold
         - line_outside_region
         - inconsistent_length_recomputation
-      checks:
-        - independent_grid_or_polygon_coverage_evaluator
-        - baseline_comparison
-        - perturbation_of_grid_resolution
+      required_checks:
+        - independent_grid_or_polygon_evaluator
+        - grid_resolution_perturbation
         - region_boundary_tests
-      rollback_point: "W1 verified intake before any terrain or route artifact is accepted"
+        - baseline_comparison
       silent_failure_risk: high
-    decision: blocked
     unblock_conditions:
-      - extract_and_inspect_attachment_xlsx
       - implement_independent_spatial_evaluator
       - define_agent_environment_and_tool_contracts
       - lower_silent_failure_risk_to_low_or_medium
     intended_future_decision: bounded_agent
-    scope:
-      allowed_actions:
-        - propose_at_most_4_candidate_terrain_and_route_strategies
-        - compare_baseline_failure_modes
-        - propose_validation_plan
-      forbidden_actions:
-        - choose_final_route
-        - directly edit_global_registry
-        - claim_best_result_without_evaluator
-    budget:
-      max_iterations: 4
-      max_tool_calls: 8
-      max_candidate_routes: 4
     approval_required: true
 
 summary:
@@ -150,4 +109,4 @@ summary:
   human_checkpoint: [problem3]
   blocked: [problem4]
   bounded_agent_now: []
-  rationale: "The test deliberately proves that an Agent is not automatically invoked for every question."
+  rationale: "Original-source verification did not change the workflow-first routing. Attachment availability closes ingestion but does not justify problem4 autonomy without an evaluator."
