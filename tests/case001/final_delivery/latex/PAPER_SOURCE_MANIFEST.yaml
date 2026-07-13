@@ -1,0 +1,66 @@
+schema_version: 1
+case_id: case001
+paper_source_policy: latex_only
+build_engine: xelatex
+delivery_format: pdf
+format_baseline: skills/math_modeling/support/CUMCM_2025_FORMAT.md
+paper_standard: skills/math_modeling/support/LATEX_PAPER_STANDARD.md
+
+source_files:
+  - path: main.tex
+    sha256: 4f8f2cfcac49151a9946ecb569798612d252d1cc35ac44ba0bc522a9a2b8f008
+  - path: shumo-cumcm2025.cls
+    sha256: f5af651b99a40fac03fe50c2a61180e0c7e3ec7a709c151cc6a7192465c39e4f
+  - path: solve_case001.py
+    sha256: ff447c960c514720d3d89f6ffbf343984b3500e0e10a0a51046d5539737f3a63
+  - path: make_figures.py
+    sha256: 0f5d34f2b1e120535446e9d2f921ee0b08a50f98ae447f63720776154b9966e4
+  - path: route_summary_rows.tex
+    sha256: e5eefc9c40593a21d58b0a968e7a56a6d9f9f5a127f686b8a5abddae159ff025
+  - path: data/problem4_final_metrics.json
+    sha256: 2757d89ea5b0f501e885bf664d2df09ec86f99c8e07f8f3bfab81c2b296aaadf
+  - path: data/problem4_route_station_matrix.csv
+    sha256: f07081db923dd3ba98b7d30a1aac2ec3bab0a1b13d004edb21234bdcddd56370
+
+local_delivery:
+  pdf:
+    filename: case001_多波束测线问题_LaTeX终稿.pdf
+    sha256: d6c0458a4f6386ad3ebb2a2ac255934710714f7af08fc45b00d3c68ed28d5fb4
+    size_bytes: 446838
+    pages: 20
+  source_package:
+    filename: case001_多波束测线问题_LaTeX源文件.zip
+    sha256: 7d2d94cd227fb9400dd67b6aa1ae4388482beb1cee55375e2f5e4e5cda213a5d
+    size_bytes: 124420
+
+format_checks:
+  a4: pass
+  margins_at_least_2_5_cm: pass
+  electronic_first_page_is_abstract: pass
+  abstract_fits_one_page: pass
+  table_of_contents_absent: pass
+  body_begins_on_page_2: pass
+  main_body_within_20_pages: pass
+  appendix_present: pass
+  source_code_listings_present: pass
+  centered_arabic_page_numbers: pass
+  identity_information_absent: pass
+  pdf_below_20_mb: pass
+  latex_policy_validator: pass_with_zero_warnings
+
+figure_source_disclosure:
+  requested_preferred_tools:
+    flowchart: Microsoft Visio
+    mind_map: MindMaster
+    vector_diagram: Edraw_or_AxGlyph
+    geographic_map: ArcGIS
+  automated_environment_availability: unavailable
+  declared_fallback:
+    flowcharts: TikZ
+    quantitative_vector_figures: Matplotlib_PDF
+  misrepresentation_of_proprietary_tool_use: false
+
+claim_boundaries:
+  global_optimality: false
+  continuous_coverage_proof: false
+  vessel_specific_turning_radius_compliance: false
