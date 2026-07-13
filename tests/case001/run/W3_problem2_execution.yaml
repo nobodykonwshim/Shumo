@@ -1,0 +1,35 @@
+schema_version: 1
+case_id: case001
+stage: W3
+problem_id: problem2
+status: complete
+execution_mode: deterministic_workflow
+
+matrix_axes:
+  rows_beta_degree: [0, 45, 90, 135, 180, 225, 270, 315]
+  columns_distance_nautical_mile: [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1]
+
+coverage_width_m:
+  beta_0: [415.692, 466.091, 516.490, 566.889, 617.288, 667.686, 718.085, 768.484]
+  beta_45: [416.192, 451.872, 487.552, 523.232, 558.912, 594.592, 630.273, 665.953]
+  beta_90: [416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692]
+  beta_135: [416.192, 380.511, 344.831, 309.151, 273.471, 237.791, 202.110, 166.430]
+  beta_180: [415.692, 365.293, 314.894, 264.496, 214.097, 163.698, 113.299, 62.900]
+  beta_225: [416.192, 380.511, 344.831, 309.151, 273.471, 237.791, 202.110, 166.430]
+  beta_270: [416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692, 416.692]
+  beta_315: [416.192, 451.872, 487.552, 523.232, 558.912, 594.592, 630.273, 665.953]
+
+local_output:
+  filename: case001_result2_validated.xlsx
+  sha256: "79908378b230e6be1298e2fee2749e623992291d2601bd266d8cee81dea35677"
+  size_bytes: 6929
+  template_schema_preserved: true
+  added_audit_sheet: Calculation
+  storage: local_artifact_not_committed_as_binary
+
+reference_anomaly:
+  cell: "beta=135 degree, distance=2.1 nautical mile"
+  independent_value_m: 166.430
+  reason: "It must equal beta=225 by symmetry and follows directly from the verified depth and cross-track-slope equations."
+  conflicting_reference_value_observed: 116.430
+  treatment: do_not_use_conflicting_value_as_ground_truth

@@ -1,0 +1,98 @@
+{
+  "admission_id": "ADM-P4-ROUTE-001",
+  "task_id": "A-P4-ROUTE-01",
+  "task": "Generate and independently evaluate at most three problem-4 route families.",
+  "agent_type": "route_explorer",
+  "decision": "bounded_agent",
+  "scope": {
+    "allowed_actions": [
+      "read authoritative terrain bundle",
+      "write candidate plans below the candidate directory",
+      "request independent evaluator reports",
+      "submit an evaluated candidate-set manifest"
+    ],
+    "forbidden_actions": [
+      "read same-problem references",
+      "search same-problem web solutions",
+      "select the final route",
+      "change evaluator or metric semantics",
+      "modify registries, frozen artifacts, paper or PR state"
+    ]
+  },
+  "budget": {
+    "max_iterations": 3,
+    "max_tool_calls": 8,
+    "max_candidate_routes": 3
+  },
+  "hard_caps": {
+    "max_iterations": 4,
+    "max_tool_calls": 12,
+    "max_candidate_routes": 4
+  },
+  "stop_conditions": [
+    "budget_exhausted",
+    "two_iterations_without_new_route_family",
+    "candidate_not_executable",
+    "independent_evaluator_failure",
+    "reference_access_required",
+    "human_value_judgment_required"
+  ],
+  "rollback_point": "tests/case001/run/problem4_evaluator_phase2_status.yaml",
+  "contracts": {
+    "environment_manifest": {
+      "status": "verified",
+      "path": "tests/case001/run/problem4_contracts/environment_manifest.json",
+      "sha256": "f968e868e6d790cff008a884e87b659f06eb1c8e45a59f2223297993930857c4"
+    },
+    "tool_contracts": {
+      "status": "verified",
+      "path": "tests/case001/run/problem4_contracts/tool_contracts.json",
+      "sha256": "69d5343f08b81b08d1ed67280ec37ad5204d8b92e8984c0cc9dd3672ad200f6f"
+    },
+    "prompt_contract": {
+      "status": "verified",
+      "path": "tests/case001/run/problem4_contracts/prompt_contract.json",
+      "sha256": "afd160ee6dd7c38897ff4c30b251da048249d959677c4a8ea96d3e0c45527013"
+    }
+  },
+  "error_control": {
+    "silent_failure_risk": "medium",
+    "detectable_failures": [
+      "uncovered area",
+      "excessive overlap length",
+      "boundary violation",
+      "inconsistent line length",
+      "grid resolution instability",
+      "candidate or report hash mismatch"
+    ],
+    "validators": [
+      {
+        "name": "analytic_and_adapter_test_suite",
+        "status": "pass",
+        "evidence": "13 evaluator/adapter tests and 6 gate tests pass locally"
+      },
+      {
+        "name": "real_attachment_grid_smoke",
+        "status": "pass",
+        "evidence": "tests/case001/run/problem4_real_grid_smoke_report.json"
+      },
+      {
+        "name": "independent_spatial_evaluator",
+        "status": "pass",
+        "evidence": "skills/math_modeling/evaluators/spatial_coverage.py"
+      }
+    ]
+  },
+  "reference_access": {
+    "state": "quarantined",
+    "same_problem_web_search": "forbidden",
+    "external_reference_paths_readable": false,
+    "exposure_label": "reference_aware_assisted_pilot"
+  },
+  "human_approval": {
+    "required": true,
+    "status": "approved",
+    "approved_by": "user",
+    "basis": "User authorized execution of subsequent GitHub operations, subject to existing safety gates."
+  }
+}

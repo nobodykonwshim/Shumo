@@ -1,0 +1,67 @@
+schema_version: 1
+case_id: case001
+stage: W2
+problem_id: problem3
+status: approved_for_execution
+execution_mode: deterministic_workflow
+reference_access_state: quarantined
+honest_label: reference_aware_assisted_pilot
+
+scope:
+  route_family: parallel_straight_lines
+  selected_direction: north_south_parallel_to_depth_contours
+  reason:
+    - depth is constant along each survey line
+    - every line crosses the shorter 2 nautical mile side of the rectangle
+    - overlap can be controlled by a one-dimensional cross-track recurrence
+  global_optimality_outside_this_route_family_claimed: false
+
+coordinate_convention:
+  x_axis: east_west_cross_track_coordinate
+  x_positive_direction: east_toward_shallower_water
+  west_boundary_m: -3704
+  east_boundary_m: 3704
+  line_direction: north_south
+
+parameters:
+  north_south_length_m: 3704
+  east_west_width_m: 7408
+  center_depth_m: 110
+  alpha_degree: 1.5
+  theta_degree: 120
+  overlap_lower_bound: 0.10
+  overlap_upper_bound: 0.20
+
+reused_formulas:
+  depth: D(x)=D0-x*tan(alpha)
+  deep_half_along_seabed: L_deep(D)=D*sin(theta/2)/sin((pi-theta)/2-alpha)
+  shallow_half_along_seabed: L_shallow(D)=D*sin(theta/2)/sin((pi-theta)/2+alpha)
+  ordered_overlap: eta_i=[L_deep(D_i)+L_shallow(D_{i-1})-(x_i-x_{i-1})/cos(alpha)]/[L_deep(D_i)+L_shallow(D_i)]
+
+construction:
+  first_line_equation: x_1-L_deep(D(x_1))*cos(alpha)=west_boundary
+  recurrence_equation: eta_i=0.10
+  recurrence_choice: use_the_largest_admissible_spacing
+  stop_condition: x_n+L_shallow(D(x_n))*cos(alpha)>=east_boundary
+
+objective_interpretation:
+  primary: minimize_total_survey_line_length
+  reduction: every selected line has length 3704 m, so minimizing length reduces to minimizing line count
+  overlap_policy: use 10 percent because it maximizes spacing while satisfying the stated interval
+
+predefined_validation:
+  - western_boundary_covered
+  - eastern_boundary_covered
+  - no_cross_track_gap
+  - every_adjacent_overlap_in_10_to_20_percent
+  - 33_line_best_case_infeasible
+  - 34_line_solution_feasible
+  - total_length_equals_line_count_times_3704
+  - nautical_mile_conversion_checked
+
+forbidden_inputs_during_execution:
+  - B477.pdf
+  - B226.pdf
+  - B311.pdf
+  - tests/case001/expected/reference_benchmarks.yaml
+  - same_problem_web_solutions

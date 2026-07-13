@@ -1,0 +1,230 @@
+schema_version: "1.0"
+decision_id: DECISION-CASE001-P3
+project_id: case001
+problem_id: case001_problem3
+status: frozen
+declared_before_implementation: true
+
+problem_profile:
+  task_types: [optimization]
+  objective: Minimize total survey-line length while fully covering the planar-slope region and keeping adjacent overlap between 10 and 20 percent.
+  hard_constraints:
+    - The entire rectangular survey region must be covered.
+    - Every adjacent overlap ratio must lie between 0.10 and 0.20.
+    - The selected route must support deterministic boundary and feasibility checks.
+  required_outputs:
+    - Survey-line count.
+    - Ordered line-position schedule.
+    - Total survey-line length.
+  data_profile:
+    availability: complete
+    structure: spatial
+    sample_size: small
+    temporal_ordering: false
+    spatial_structure: true
+    labels_available: null
+    missingness: All problem-3 geometric parameters are explicitly provided.
+    uncertainty: The main uncertainty is model-family restriction rather than missing input data.
+  evaluation_metrics:
+    - Feasibility of complete coverage.
+    - Compliance of every adjacent overlap ratio.
+    - Total survey-line length.
+  decision_uncertainties:
+    - Whether a more general curved or nonparallel route family could be shorter.
+
+candidate_routes:
+  - id: ROUTE-P3-CONTOUR-PARALLEL
+    name: Contour-parallel straight-line recurrence
+    model_family: deterministic one-dimensional geometric optimization
+    status: selected
+    rationale: Constant depth along each line reduces overlap control to a deterministic one-dimensional recurrence.
+    applicability_conditions:
+      - The seabed is represented by the declared planar slope.
+      - Survey lines are restricted to straight lines parallel to depth contours.
+    required_data:
+      - Region dimensions, slope, center depth, opening angle and overlap bounds.
+    assumptions:
+      - Route-family optimality is evaluated only among contour-parallel straight lines.
+    strengths:
+      - Constant swath geometry along each line.
+      - Direct overlap control and auditable boundary checks.
+      - Each line uses the shorter rectangle dimension.
+    risks:
+      - Does not establish global optimality over arbitrary route geometries.
+    computational_cost: low
+    novelty_role:
+      required: false
+      description: A transparent deterministic baseline is sufficient for the declared route family.
+    validation_plan:
+      - Verify western boundary tangency.
+      - Verify every adjacent overlap ratio.
+      - Verify 33 lines are infeasible and 34 lines are feasible.
+      - Recalculate total length independently.
+
+  - id: ROUTE-P3-CROSS-CONTOUR
+    name: Straight lines crossing depth contours
+    model_family: direction-dependent spatial line planning
+    status: rejected
+    rationale: A competing straight-line family could exploit a different orientation but creates varying depth and two-dimensional overlap control along each line.
+    applicability_conditions:
+      - Direction-dependent swath geometry is evaluated along every route.
+    required_data:
+      - Full directional swath model and global spatial evaluator.
+    assumptions:
+      - Variable depth along a line is evaluated without approximation bias.
+    strengths:
+      - Explores orientations beyond the contour-parallel family.
+    risks:
+      - Greater geometric complexity and no demonstrated length advantage for problem 3.
+      - A reliable arbitrary-route evaluator was not available at the decision point.
+    computational_cost: medium
+    novelty_role:
+      required: false
+      description: General orientation is unnecessary for the deterministic problem-3 baseline.
+    validation_plan:
+      - Require a global spatial coverage and overlap evaluator before reconsideration.
+    rejection_reason: It was not required for the declared baseline and lacked an independently validated global evaluator at the decision point.
+
+  - id: ROUTE-P3-ARBITRARY-CURVES
+    name: Arbitrary curved or nonparallel survey routes
+    model_family: continuous spatial route optimization
+    status: deferred
+    rationale: This is the broadest route family and could theoretically improve length, but it changes the problem into a substantially harder continuous optimization task.
+    applicability_conditions:
+      - Explicit route geometry, coverage evaluation and operational feasibility constraints are available.
+    required_data:
+      - Full spatial terrain and operational route constraints.
+    assumptions:
+      - Curvature, connectors and continuous coverage can be evaluated consistently.
+    strengths:
+      - Largest potential search space.
+    risks:
+      - High implementation and validation burden.
+      - Global optimality would still require stronger evidence than numerical search alone.
+    computational_cost: high
+    novelty_role:
+      required: false
+      description: Added complexity is not justified unless the simpler family fails the stated objective or constraints.
+    validation_plan:
+      - Defer until a reusable arbitrary-route evaluator and feasibility contract exist.
+
+comparison_criteria:
+  - id: CRIT-P3-COVERAGE
+    description: The route family supports complete-coverage verification.
+    kind: hard
+    direction: satisfy
+    authority: problem_statement
+  - id: CRIT-P3-OVERLAP
+    description: The route family supports verification of every adjacent overlap ratio.
+    kind: hard
+    direction: satisfy
+    authority: problem_statement
+  - id: CRIT-P3-EVALUATOR
+    description: An independent and deterministic evaluator is available at the decision point.
+    kind: hard
+    direction: satisfy
+    authority: skill_diagnostic
+  - id: CRIT-P3-LENGTH
+    description: Expected total survey-line length within the route family.
+    kind: soft
+    direction: minimize
+    authority: human_decision
+  - id: CRIT-P3-TRACEABILITY
+    description: Ease of explaining assumptions, recurrence and failure conditions.
+    kind: diagnostic
+    direction: inform
+    authority: skill_diagnostic
+
+comparison_matrix:
+  - candidate_id: ROUTE-P3-CONTOUR-PARALLEL
+    assessments:
+      - criterion_id: CRIT-P3-COVERAGE
+        rating: pass
+        justification: Boundary tangency and termination provide deterministic coverage checks.
+        evidence: tests/case001/run/problem3_independent_baseline.yaml
+      - criterion_id: CRIT-P3-OVERLAP
+        rating: pass
+        justification: Constant depth along each line allows direct adjacent-overlap recurrence.
+        evidence: tests/case001/run/problem3_independent_baseline.yaml
+      - criterion_id: CRIT-P3-EVALUATOR
+        rating: pass
+        justification: The one-dimensional equations and independent recalculation were available.
+      - criterion_id: CRIT-P3-LENGTH
+        rating: strong
+        value: 125936
+        justification: Thirty-four full-height lines produce a validated length of 125936 m.
+      - criterion_id: CRIT-P3-TRACEABILITY
+        rating: strong
+        justification: Every placement and stopping rule is explicit.
+
+  - candidate_id: ROUTE-P3-CROSS-CONTOUR
+    assessments:
+      - criterion_id: CRIT-P3-COVERAGE
+        rating: unknown
+        justification: Complete two-dimensional coverage had not been independently evaluated.
+      - criterion_id: CRIT-P3-OVERLAP
+        rating: unknown
+        justification: Overlap varies along each line as depth changes.
+      - criterion_id: CRIT-P3-EVALUATOR
+        rating: fail
+        justification: The required arbitrary-route evaluator was unavailable at the decision point.
+      - criterion_id: CRIT-P3-LENGTH
+        rating: unknown
+        justification: No validated shorter schedule was available.
+      - criterion_id: CRIT-P3-TRACEABILITY
+        rating: moderate
+        justification: The route is explainable but requires substantially more spatial accounting.
+
+  - candidate_id: ROUTE-P3-ARBITRARY-CURVES
+    assessments:
+      - criterion_id: CRIT-P3-COVERAGE
+        rating: unknown
+        justification: Continuous curved-route coverage was not proven.
+      - criterion_id: CRIT-P3-OVERLAP
+        rating: unknown
+        justification: A consistent overlap definition for arbitrary curves was unavailable.
+      - criterion_id: CRIT-P3-EVALUATOR
+        rating: fail
+        justification: Required geometry and feasibility contracts were not available.
+      - criterion_id: CRIT-P3-LENGTH
+        rating: unknown
+        justification: A larger search space does not itself prove a shorter feasible route.
+      - criterion_id: CRIT-P3-TRACEABILITY
+        rating: weak
+        justification: The broader route family would require many additional assumptions and checks.
+
+recommendation:
+  selected_candidate_id: ROUTE-P3-CONTOUR-PARALLEL
+  fallback_candidate_id: null
+  rationale: Select the contour-parallel recurrence as the deterministic problem-3 baseline because it satisfies all hard criteria and permits an auditable minimum-line-count proof within the declared route family.
+  unresolved_risks:
+    - A different route family might be globally shorter.
+  requires_human_decision: false
+
+human_checkpoint:
+  decision: Accept the contour-parallel deterministic route as the problem-3 baseline while limiting the optimality claim to that route family.
+  authority: user
+  status: approved
+  record: tests/case001/run/H1_problem3_route_decision.yaml
+
+provenance:
+  source_paths:
+    - tests/case001/problem/source_manifest.yaml
+    - tests/case001/run/W2_problem3_model_spec.yaml
+  evidence_paths:
+    - tests/case001/run/H1_problem3_route_decision.yaml
+    - tests/case001/run/problem3_independent_baseline.yaml
+    - tests/case001/review/problem3_reference_comparison.yaml
+  reference_exposure_status: contaminated_for_blind_claim
+
+stop_rule:
+  case_work_stops_when:
+    - The route-family decision, model specification, execution and validation evidence are frozen.
+    - Remaining work only searches broader routes without exposing a new reusable Skill gap.
+  reopen_requires:
+    - A named reusable route-selection or arbitrary-route validation gap.
+    - A generic Skill artifact and generic test to add or modify.
+    - Explicit human authorization.
+
+limitations:
+  - This decision proves suitability of the selected baseline, not global optimality across every survey geometry.

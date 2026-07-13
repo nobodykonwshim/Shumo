@@ -1,0 +1,102 @@
+{
+  "adapter": {
+    "output_local_only": "tests/case001/local/generated/attachment_terrain.json",
+    "path": "skills/math_modeling/evaluators/xlsx_depth_grid.py",
+    "route_generation": false,
+    "smoothing": false,
+    "terrain_fitting": false
+  },
+  "case_id": "case001",
+  "evaluation_report": {
+    "evaluator": "independent_multibeam_spatial_coverage",
+    "grid_sensitivity": [
+      {"grid_nx": 25, "grid_ny": 25, "multiply_covered_area_percent": 0.16, "uncovered_area_percent": 53.76},
+      {"grid_nx": 50, "grid_ny": 50, "multiply_covered_area_percent": 0.68, "uncovered_area_percent": 53.36},
+      {"grid_nx": 75, "grid_ny": 75, "multiply_covered_area_percent": 0.35555555555555557, "uncovered_area_percent": 54.026666666666664}
+    ],
+    "independence_contract": {
+      "candidate_score_reuse": false,
+      "contains_route_generation": false,
+      "input_is_precomputed_line_plan": true
+    },
+    "metric_semantics": {
+      "excess_overlap_length": "lines are ordered by spatial adjacency; for every line after the first, count its sampled centerline length once when more than the threshold fraction of its local swath is covered by the immediately preceding line",
+      "line_order_requirement": "input order must represent spatially adjacent survey strips",
+      "multiply_covered_area": "fraction of raster cell centers covered by at least two swaths",
+      "overlap_length_counting_policy": "ordered_previous_line",
+      "uncovered_area": "fraction of rectangular raster cell centers covered by zero swaths"
+    },
+    "results": {
+      "boundary_violation": false,
+      "excess_overlap_length_by_line_m": {
+        "SMOKE-01": 0.0, "SMOKE-02": 0.0, "SMOKE-03": 0.0, "SMOKE-04": 0.0,
+        "SMOKE-05": 0.0, "SMOKE-06": 0.0, "SMOKE-07": 0.0, "SMOKE-08": 0.0,
+        "SMOKE-09": 0.0, "SMOKE-10": 0.0, "SMOKE-11": 0.0, "SMOKE-12": 0.0,
+        "SMOKE-13": 0.0, "SMOKE-14": 0.0, "SMOKE-15": 0.0, "SMOKE-16": 0.0,
+        "SMOKE-17": 597.4193548387096
+      },
+      "excess_overlap_length_m": 597.4193548387096,
+      "multiply_covered_area_percent": 0.35,
+      "outside_region_line_length_by_line_m": {
+        "SMOKE-01": 0.0, "SMOKE-02": 0.0, "SMOKE-03": 0.0, "SMOKE-04": 0.0,
+        "SMOKE-05": 0.0, "SMOKE-06": 0.0, "SMOKE-07": 0.0, "SMOKE-08": 0.0,
+        "SMOKE-09": 0.0, "SMOKE-10": 0.0, "SMOKE-11": 0.0, "SMOKE-12": 0.0,
+        "SMOKE-13": 0.0, "SMOKE-14": 0.0, "SMOKE-15": 0.0, "SMOKE-16": 0.0,
+        "SMOKE-17": 0.0
+      },
+      "outside_region_line_length_m": 0.0,
+      "survey_line_count": 17,
+      "total_survey_line_length_m": 157420.0,
+      "uncovered_area_percent": 52.9
+    },
+    "schema_version": 2,
+    "settings": {
+      "along_step_m": 100.0,
+      "cross_track_samples": 31,
+      "grid_nx": 40,
+      "grid_ny": 50,
+      "opening_angle_deg": 120.0,
+      "overlap_length_policy": "ordered_previous_line",
+      "overlap_threshold": 0.2
+    }
+  },
+  "interpretation": [
+    "The high uncovered percentage is expected because the fixed smoke lines are not an optimized route.",
+    "The report validates deterministic ingestion, real-grid geometry, metric execution and resolution behavior only.",
+    "No candidate route ranking or problem4 answer is inferred from this smoke plan."
+  ],
+  "problem_id": "problem4",
+  "resolution_stability": {
+    "acceptance_threshold_percentage_points": 1.0,
+    "range_percentage_points": 0.6666666666666643,
+    "status": "pass",
+    "uncovered_area_percent_values": [53.76, 53.36, 54.026666666666664]
+  },
+  "runtime": {
+    "elapsed_seconds": 5.66,
+    "environment": "current_container_python_3_standard_library",
+    "max_rss_kb": 313828,
+    "status": "pass",
+    "thresholds": {"elapsed_seconds_max": 15.0, "max_rss_kb_max": 524288}
+  },
+  "schema_version": 1,
+  "smoke_plan": {
+    "line_count": 17,
+    "line_orientation": "north_south",
+    "line_spacing_nm": 0.25,
+    "ordered_west_to_east": true,
+    "path": "tests/case001/run/problem4_real_grid_smoke_plan.json",
+    "purpose": "runtime_and_resolution_validation_only"
+  },
+  "source": {
+    "coordinate_extent_nm": [4.0, 5.0],
+    "coordinate_step_nm": 0.02,
+    "depth_range_m": [20.0, 197.2],
+    "filename": "附件.xlsx",
+    "grid_shape": [251, 201],
+    "missing_values": 0,
+    "sha256": "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a"
+  },
+  "stage": "evaluator_phase2_real_grid_smoke",
+  "status": "pass_not_a_route_solution"
+}

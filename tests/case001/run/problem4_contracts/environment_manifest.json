@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "task_id": "A-P4-ROUTE-01",
+  "agent_type": "route_explorer",
+  "status": "verified",
+  "environment": {
+    "readable": [
+      "tests/case001/problem/source_manifest.yaml",
+      "tests/case001/run/W1_problem_intake.yaml",
+      "tests/case001/run/W1_attachment_profile.yaml",
+      "tests/case001/local/problem/B题.pdf",
+      "tests/case001/local/generated/attachment_terrain.json",
+      "tests/case001/run/problem4_evaluator_phase2_status.yaml",
+      "skills/math_modeling/evaluators/README.md"
+    ],
+    "writable": ["tests/case001/run/problem4_candidates/"],
+    "immutable": [
+      "tests/case001/registry/",
+      "tests/case001/artifacts/modeling/problem3.model.yaml",
+      "tests/case001/run/problem3_independent_baseline.yaml",
+      "tests/case001/expected/",
+      "tests/case001/local/references/",
+      "B477.pdf",
+      "B226.pdf",
+      "B311.pdf"
+    ],
+    "network": {
+      "same_problem_solution_search": "forbidden",
+      "general_domain_fact_search": "forbidden_for_this_run"
+    }
+  },
+  "known_state": {
+    "source_grid_sha256": "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a",
+    "source_grid_shape_y_by_x": [251, 201],
+    "region_m": [7408.0, 9260.0],
+    "opening_angle_degree": 120.0,
+    "independent_evaluator_phase2": "pass",
+    "overlap_policy": "ordered_previous_line",
+    "reference_exposure_label": "reference_aware_assisted_pilot"
+  },
+  "expected_outputs": [
+    "candidate route JSON files only",
+    "assumptions and expected tradeoffs for each candidate",
+    "independent evaluator reports produced outside route-generation logic"
+  ],
+  "rollback_point": "tests/case001/run/problem4_evaluator_phase2_status.yaml",
+  "forbidden_state_assumptions": [
+    "reference papers are unavailable during candidate generation",
+    "no candidate metric may be treated as valid before independent evaluation",
+    "no candidate may be called optimal"
+  ]
+}

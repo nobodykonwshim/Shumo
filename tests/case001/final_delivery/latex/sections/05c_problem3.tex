@@ -1,0 +1,66 @@
+\subsection{问题三：等深线平行直线族的显式递推模型}
+\subsubsection{路线族、常量系数与第一条测线}
+理想海域南北长 $H=2\times1852=\SI{3704}{m}$，东西宽 $B=4\times1852=\SI{7408}{m}$，中心水深 $D_0=\SI{110}{m}$。令西、东边界为 $x_w=-3704$ 和 $x_e=3704$。由于等深线沿南北方向，选择南北向直线后单条测线的水深不随 $y$ 变化，每条线长度均为 $H$。
+
+为简化递推，定义覆盖半宽的水深比例系数 $a_d=\sin\varphi/\cos(\varphi+\alpha)$、$a_s=\sin\varphi/\cos(\varphi-\alpha)$，则 $L_d(D)=a_dD$、$L_s(D)=a_sD$。深水侧水平投影为 $a_dD\cos\alpha$，首线与西边界相切，因此第一条线位置可直接求得
+\keyequation{eq:p3-first}{
+x_1=\frac{x_w+a_dD_0\cos\alpha}{1+a_d\sin\alpha}.}
+式~\eqref{eq:p3-first} 已把 $D(x_1)=D_0-x_1\tan\alpha$ 代回边界方程，因此无需数值迭代。
+
+\subsubsection{最大允许间距的显式递推}
+设目标重叠率下限为 $\eta_0=0.10$。将问题一的重叠率式~\eqref{eq:p1-overlap} 代入 $D_i=D_0-x_i\tan\alpha$，并记 $q=a_d-\eta_0(a_d+a_s)$，整理后得到
+\keyequation{eq:p3-step}{
+x_i=\frac{(\sec\alpha-a_s\tan\alpha)x_{i-1}+(a_s+q)D_0}
+{q\tan\alpha+\sec\alpha},\qquad i\ge2.}
+式~\eqref{eq:p3-step} 的右端只含已知常数和前一条线位置，因此能够逐线直接计算。由于每一步把重叠率固定在允许区间下限，所得间距是当前模型下的最大允许间距；若把任一步重叠率提高，后续所有测线只会整体向西移动，不可能减少条数。
+
+当第 $n$ 条线的浅水侧水平边界到达东边界时停止，即
+\keyequation{eq:p3-stop}{x_n+a_s\bigl(D_0-x_n\tan\alpha\bigr)\cos\alpha\ge x_e.}
+测线总长度由条数直接确定为 $L_{\mathrm{tot}}=nH$。式~\eqref{eq:p3-first}、\eqref{eq:p3-step} 和~\eqref{eq:p3-stop} 组成了无需黑箱优化器的完整求解系统。
+
+\begin{modelsummary}[问题三模型归纳]
+问题三被归纳为一维边界递推：第一条线由西边界相切唯一确定，后续线由固定重叠率 $\eta_0=0.10$ 的显式一次递推确定，停止条件由东边界覆盖判据给出。模型输入为矩形范围、中心水深、坡度、开角和目标重叠率；输出为全部 $x_i$、条数 $n$ 和总长度 $nH$。最少条数结论只在该等深线平行直线族内成立。
+\end{modelsummary}
+
+\begin{solvercontract}[问题三算法求解说明]
+\item[初始化] 计算 $\varphi,a_d,a_s$，用式~\eqref{eq:p3-first} 得到 $x_1$；检查首线深水边界与 $x_w$ 的误差不超过 $10^{-9}$ m。
+\item[递推] 按式~\eqref{eq:p3-step} 依次计算 $x_2,x_3,\ldots$，每得到一条线即复算 $\eta_i$；若 $\eta_i$ 与 $0.10$ 的差超过 $10^{-10}$，则判为实现错误。
+\item[停止区间] 每次递推后计算浅水侧边界 $b_i=x_i+a_sD_i\cos\alpha$；当 $b_i\ge x_e$ 时停止，否则继续。为避免异常循环，最大条数设为 $500$。
+\item[精度] 位置内部保留双精度，正文输出保留 $6$ 位小数；总长度按精确条数乘 \,\SI{3704}{m} 计算。
+\item[特殊情况] 若递推分母 $q\tan\alpha+\sec\alpha\le0$、水深非正或位置不再严格递增，则模型参数不可行；若 $\eta_0$ 不在 $[0,1)$ 内，则拒绝执行。
+\end{solvercontract}
+
+\subsubsection{求解过程、结果与最少性论证}
+计算得到 $x_1=-3345.478207$ m，之后按式~\eqref{eq:p3-step} 递推，测线间距由深水侧的 \,\SI{594.499}{m} 逐渐缩小到浅水侧的 \,\SI{43.029}{m}。这种递减不是人为设置，而是水深变浅导致覆盖宽度缩小的直接结果。第 $34$ 条线位于 $x_{34}=3697.574833$ m，其浅水边界超过东边界 \,\SI{15.405496}{m}；若只保留前 $33$ 条线，东侧仍有 \,\SI{25.756620}{m} 未覆盖。因此
+\keyequation{eq:p3-total}{L_{\mathrm{tot}}=34\times3704=\SI{125936}{m}=68\text{ 海里}.}
+式~\eqref{eq:p3-total} 给出满足覆盖约束后的最终测线总长度。
+
+图~\ref{fig:p3-layout} 展示 $34$ 条测线的空间分布。最少性论证包含两个单调事实：第一，首线与西边界相切已使首线位置尽可能向东；第二，每一步取 $10\%$ 重叠下限已使下一条线位置尽可能向东。在这两个最有利条件下，$33$ 条仍不能覆盖东边界，所以任何同路线族且满足重叠下限的 $33$ 条方案都不可行。该论证没有涉及其他航向或曲线，因此本文不把它扩展为全局最优。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{problem3_layout.pdf}
+\caption{问题三 $34$ 条等深线平行测线的位置}
+\label{fig:p3-layout}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{问题三递推过程的代表性节点}
+\label{tab:p3-samples}
+\begin{tabular}{rrrrr}
+\toprule
+测线编号 & 位置 $x_i$/m & 水深 $D_i$/m & 与前线间距/m & 东侧剩余距离/m \\
+\midrule
+1 & -3345.478207 & 197.604430 & -- & 6703.052 \\
+5 & -1234.026796 & 142.314129 & 464.771412 & 4366.410 \\
+10 & 594.991135 & 94.419609 & 308.356839 & 2368.945 \\
+20 & 2613.563286 & 41.561437 & 135.731904 & 659.536 \\
+30 & 3502.094386 & 18.294431 & 59.746201 & 144.617 \\
+33 & 3654.545795 & 14.302350 & 46.708810 & 25.756620 \\
+34 & 3697.574833 & 13.175595 & 43.029038 & -15.405496 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage

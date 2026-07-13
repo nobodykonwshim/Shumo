@@ -1,0 +1,31 @@
+schema_version: 1
+case_id: case001
+review_target: problem4_spatial_evaluator_phase1
+
+outcome: pass_with_remaining_gates
+
+positive_findings:
+  - The evaluator is structurally independent from candidate generation.
+  - Analytic flat-plane tests recover exact coverage, overlap and clipping results.
+  - Sloped-plane half-swaths match direct ray-plane intersection formulas.
+  - Invalid region and singular beam-terrain geometries fail explicitly.
+  - Grid sensitivity is a mandatory report field rather than an optional afterthought.
+
+remaining_risks:
+  - Raster cell-centre area estimates may miss narrow uncovered slivers at coarse resolution.
+  - Along-line overlap sampling depends on along_step_m and cross_track_samples.
+  - The per-line overlap-length convention is not necessarily identical to the competition organizers' intended convention.
+  - The current core does not directly ingest the supplied Excel attachment.
+  - Performance on a large real route set has not yet been benchmarked.
+
+framework_iteration:
+  keep_problem4_agent_blocked: true
+  next_deterministic_work:
+    - add_attachment_grid_adapter
+    - add_real_grid_smoke_evaluation_without_route_generation
+    - benchmark_runtime_and_resolution_stability
+    - approve_or_replace_overlap_length_semantics
+  do_not_do_yet:
+    - start_route_explorer
+    - claim_problem4_solution
+    - merge_draft_pr

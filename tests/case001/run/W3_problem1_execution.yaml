@@ -1,0 +1,64 @@
+schema_version: 1
+case_id: case001
+stage: W3
+problem_id: problem1
+status: complete
+execution_mode: deterministic_workflow
+
+inputs:
+  theta_degree: 120
+  alpha_degree: 1.5
+  center_depth_m: 70
+  line_spacing_m: 200
+  offsets_m: [-800, -600, -400, -200, 0, 200, 400, 600, 800]
+
+results:
+  water_depth_m:
+    - 90.9487372553
+    - 85.7115529415
+    - 80.4743686277
+    - 75.2371843138
+    - 70.0
+    - 64.7628156862
+    - 59.5256313723
+    - 54.2884470585
+    - 49.0512627447
+  coverage_width_m:
+    - 315.8133282933
+    - 297.6275605856
+    - 279.4417928778
+    - 261.2560251701
+    - 243.0702574623
+    - 224.8844897546
+    - 206.6987220469
+    - 188.5129543391
+    - 170.3271866314
+  overlap_with_previous_percent:
+    - null
+    - 35.6954425973
+    - 31.5105719971
+    - 26.7430921762
+    - 21.2622360542
+    - 14.8949375068
+    - 7.40722359197
+    - -1.52516372897
+    - -12.3649661151
+
+submission_rounding:
+  depth_decimal_places: 2
+  coverage_decimal_places: 2
+  overlap_percent_decimal_places: 2
+
+local_output:
+  filename: case001_result1_validated.xlsx
+  sha256: "6300a1d1f663ae640236070baddec12a1b62ea78fc13daba306c80900ffe60b8"
+  size_bytes: 6516
+  template_schema_preserved: true
+  added_audit_sheet: Calculation
+  storage: local_artifact_not_committed_as_binary
+
+observations:
+  first_missed_coverage_offset_m: 600
+  deepest_location_offset_m: -800
+  shallowest_location_offset_m: 800
+  coverage_decreases_monotonically_toward_shallow_water: true

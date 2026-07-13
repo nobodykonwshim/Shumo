@@ -1,0 +1,96 @@
+schema_version: 1
+case_id: case001
+stage: W0
+status: complete
+started_at: "2026-07-12"
+completed_at: "2026-07-12"
+
+inputs_received:
+  - filename: "B题.rar"
+    role: problem_package
+    hash_recorded: true
+  - filename: "B题.pdf"
+    role: original_problem_statement
+    hash_recorded: true
+    readable: true
+  - filename: "附件.xlsx"
+    role: required_problem4_attachment
+    hash_recorded: true
+    readable: true
+  - filename: "result1.xlsx"
+    role: official_problem1_template
+    hash_recorded: true
+    readable: true
+  - filename: "result2.xlsx"
+    role: official_problem2_template
+    hash_recorded: true
+    readable: true
+  - filename: "B477.pdf"
+    role: reference_paper
+    hash_recorded: true
+  - filename: "B226.pdf"
+    role: reference_paper
+    hash_recorded: true
+  - filename: "B311.pdf"
+    role: reference_paper
+    hash_recorded: true
+
+completed_checks:
+  repository:
+    test_branch_created: true
+    branch: "test/case001-multibeam-pilot"
+    base_ref: "agent/three-layer-math-modeling-architecture"
+    case_directory_tracked: true
+  configuration:
+    project_yaml_created: true
+    workflow_first_enabled: true
+    agent_slots_bounded: true
+    local_binary_policy_defined: true
+  source_inventory:
+    original_problem_read: true
+    problem_pdf_page_count: 3
+    attachment_schema_read: true
+    result1_template_schema_read: true
+    result2_template_schema_read: true
+    source_sha256_recorded: true
+  attachment_preflight:
+    sheet_count: 1
+    depth_grid_shape: [251, 201]
+    x_range_nautical_mile: [0.0, 4.0]
+    y_range_nautical_mile: [0.0, 5.0]
+    grid_step_nautical_mile: 0.02
+    missing_depth_values: 0
+    coordinate_duplicates: 0
+  reference_precheck:
+    paper_titles_identified: true
+    reported_results_compared: true
+    material_problem4_disagreement_detected: true
+
+rollback_point:
+  branch_base_sha: "30cf5a2754534fe4a4d06a5a03a88073adab00ed"
+  description: "Three-layer architecture PR head before case001 commits."
+
+closed_blockers:
+  - id: BLK-001
+    original_issue: missing_rar_extractor_backend
+    resolution: "User supplied the four archive entries separately; each was hashed and inspected."
+    regression_requirement: "W0 must continue to detect unsupported archives and offer a structured separate-file fallback."
+
+warnings:
+  - id: WARN-001
+    description: "Reference papers disagree materially on problem4 results and cannot be used as a single expected answer."
+  - id: WARN-002
+    description: "Reference and source binaries are local-only; reruns require files matching the recorded hashes."
+
+handoff_allowed:
+  W1_verified_intake: true
+  W2_problem1: true
+  W2_problem2: true
+  problem3_human_checkpoint: true
+  problem4_route_exploration: false
+
+next_actions:
+  - execute_problem1_W2_W4
+  - execute_problem2_W2_W4
+  - record_problem3_human_route_decision
+  - implement_problem4_independent_spatial_evaluator

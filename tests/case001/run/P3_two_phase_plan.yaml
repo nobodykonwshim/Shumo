@@ -1,0 +1,98 @@
+schema_version: 1
+case_id: case001
+problem_id: problem3
+plan: independent_first_reference_second
+
+purpose:
+  - "测试 Workflow 能否仅依赖题面和前两问已验证成果形成问题三方案"
+  - "把参考论文从建模输入降级为冻结后的对照材料"
+  - "记录当前 case001 已有参考暴露，避免虚假独立性声明"
+
+phase_R1:
+  name: reference_quarantined_reconstruction
+  status: ready
+  truthfulness_note: "This is not a true blind run because the current system previously saw reference results."
+  environment:
+    readable_paths:
+      - tests/case001/problem/source_manifest.yaml
+      - tests/case001/run/W1_problem_intake.yaml
+      - tests/case001/run/W2_problem1_model_spec.yaml
+      - tests/case001/run/W4_problem1_validation.yaml
+      - tests/case001/run/W2_problem2_model_spec.yaml
+      - tests/case001/run/W4_problem2_validation.yaml
+    forbidden_paths:
+      - tests/case001/expected/reference_benchmarks.yaml
+      - tests/case001/local/references/
+    writable_paths:
+      - tests/case001/run/
+      - tests/case001/results/
+      - tests/case001/figures/
+    immutable_paths:
+      - tests/case001/problem/
+      - tests/case001/run/W1_problem_intake.yaml
+      - tests/case001/run/W2_problem1_model_spec.yaml
+      - tests/case001/run/W2_problem2_model_spec.yaml
+  tools:
+    allowed:
+      - deterministic_numeric_calculation
+      - file_schema_validation
+      - geometry_and_overlap_validation
+      - plot_generation
+    forbidden:
+      - same_problem_web_search
+      - reference_pdf_reading
+      - reference_benchmark_lookup
+  workflow:
+    - derive_orientation_objective_from_problem2_geometry
+    - define_line_coverage_intervals_on_rectangle_boundaries
+    - define_overlap_for_ordered_adjacent_lines
+    - derive_or_search feasible spacing recursively
+    - compare boundary placement variants deterministically
+    - compute total length
+    - verify full coverage and every overlap constraint
+  stop_conditions:
+    - formula_or_sign_convention_unresolved
+    - no_independent_coverage_validator
+    - reference_material_accidentally_loaded
+    - result_depends_on_known_benchmark_instead_of_calculation
+
+baseline_freeze:
+  required: true
+  artifact: tests/case001/run/problem3_independent_baseline.yaml
+  include:
+    - model_spec_hash
+    - execution_artifact_hash
+    - validation_artifact_hash
+    - line_count
+    - line_positions
+    - total_length
+    - coverage_evidence
+    - overlap_evidence
+    - unresolved_limitations
+    - reference_exposure_status
+
+phase_HR:
+  name: reference_release_checkpoint
+  status: blocked_until_baseline_frozen
+  approved_by: user_or_team
+
+phase_R2:
+  name: reference_comparison
+  status: blocked_until_HR
+  comparison_dimensions:
+    - line_orientation
+    - first_and_last_line_boundary_placement
+    - overlap_definition
+    - recurrence_or_optimization_method
+    - line_count_and_total_length
+    - proof_of_complete_coverage
+    - sensitivity_and_robustness
+  adoption_rule: "No change is accepted solely because references agree; every change requires mathematical or validation evidence."
+
+future_true_blind_test:
+  required: true
+  recommendation:
+    - create tests/case002 with a previously unseen problem
+    - run in a fresh isolated session or Agent context
+    - do not mount or summarize reference solutions before baseline freeze
+    - compare references only after independent_baseline.yaml is hashed

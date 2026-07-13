@@ -1,0 +1,125 @@
+schema_version: 1
+case_id: case001
+
+summary:
+  open_critical: 0
+  open_major: 4
+  open_minor: 1
+  closed: 2
+
+defects:
+  - defect_id: D-001
+    status: closed_with_fallback
+    severity: critical
+    stage: W0
+    category: tool
+    observation: "The supplied RAR archive could be listed but not extracted in the runtime."
+    resolution: "The four archive entries were supplied separately, hashed and inspected."
+    remaining_framework_action:
+      - add source-ingestion preflight
+      - define archive extraction tool contract
+      - document separate-file fallback
+    regression_test: "Given an unsupported RAR, W0 must stop before verified intake and provide an actionable fallback."
+
+  - defect_id: D-002
+    status: open
+    severity: major
+    stage: W0
+    category: schema
+    observation: "project.yaml and stage artifacts follow documented shapes but the repository has no executable schema validator."
+    expected: "Invalid enum values, missing fields and broken paths should fail automatically."
+    actual: "YAML structure is enforced only by prose and manual review."
+    proposed_fix:
+      - add JSON Schema or Pydantic models
+      - add validate_case.py CLI
+      - run validation in CI
+    regression_test: "Delete a required field from a fixture and require non-zero validator exit status."
+
+  - defect_id: D-003
+    status: closed
+    severity: major
+    stage: W1
+    category: provenance
+    observation: "The first intake was inferred from reference papers because the original source was unavailable."
+    resolution: "B题.pdf and all Excel files were supplied separately; W1 was diffed and changed to verified."
+    positive_behavior: "The Workflow blocked W2 until original-source verification."
+    regression_test: "W1 cannot become verified while original_problem_read is false."
+
+  - defect_id: D-004
+    status: open
+    severity: major
+    stage: G1
+    category: enforcement
+    observation: "Agent admission decisions are recorded, but no executable gate prevents a blocked Agent from being invoked."
+    expected: "An orchestration command should reject problem4 route exploration until evaluator and tool-contract conditions are satisfied."
+    actual: "The gate remains a YAML record and Markdown rule."
+    proposed_fix:
+      - implement gate evaluator
+      - require admission ID in every Agent run
+      - verify decision, budgets and unblock conditions before execution
+    regression_test: "Attempt to start problem4 route_explorer while decision=blocked and require hard failure."
+
+  - defect_id: D-005
+    status: open
+    severity: minor
+    stage: W0
+    category: repository
+    observation: "An empty tests/case001 directory created in GitHub is not tracked by Git."
+    current_resolution: "Partially addressed by committed README, project configuration and stage artifacts."
+    proposed_fix:
+      - add case-init CLI
+      - create README.md and project.yaml atomically
+
+  - defect_id: D-006
+    status: open
+    severity: major
+    stage: W2-W4
+    category: workflow
+    observation: "Problem1 and problem2 were executed successfully, but the stage transitions and workbook generation were performed manually rather than through an executable Workflow command."
+    expected: "A reproducible CLI should read project.yaml, validate W1/G1, run the selected deterministic model, write the template, execute W4 checks and update status."
+    actual: "The architecture documents the flow but has no runner, status transition engine or automatic rollback."
+    evidence:
+      - W2_W4_text_artifacts_created: true
+      - validated_workbooks_created: true
+      - automated_orchestrator_used: false
+    proposed_fix:
+      - add shumo run --case tests/case001 --problem problem1
+      - add stage transition validation
+      - add deterministic workbook writer and verifier
+      - add CI smoke test for problem1 and problem2 fixtures
+    regression_test: "A clean checkout plus matching local sources must regenerate both workbook hashes or equivalent numeric tables with one documented command."
+
+  - defect_id: D-007
+    status: open
+    severity: major
+    stage: W0-H1
+    category: provenance_and_experimental_design
+    observation: "The three reference papers and their problem3 benchmark results were read before an independent problem3 baseline was frozen."
+    expected: "For unknown-problem validation, reference solutions must remain outside the readable environment until independent_baseline.yaml is frozen and a human release checkpoint is approved."
+    actual: "Reference methods, 34-line consensus and 68-NM result were already present in the current conversation and repository benchmark artifact."
+    impact:
+      - current_case_cannot_support_true_blind_independence_claim
+      - route_selection_may_be_anchored_by_known_reference_consensus
+      - originality_and_error_detection_metrics_are_confounded
+    positive_behavior:
+      - exposure_is_now_explicitly_logged
+      - current_run_is_labeled_reference_aware_assisted_pilot
+      - problem3_reference_access_is_quarantined_for_the_next_stage
+    proposed_fix:
+      - enforce REFERENCE_ISOLATION_PROTOCOL.md in project configuration
+      - require reference_exposure_log.yaml at W0
+      - exclude reference paths from Agent and Workflow environments during phase R1
+      - freeze and hash independent_baseline.yaml before reference release
+      - use a fresh unseen case or isolated session for true blind validation
+    regression_test: "Start a new case with reference paths mounted but forbidden; the runner must fail any pre-freeze attempt to read them and must record accidental exposure."
+
+benchmark_anomalies:
+  - anomaly_id: R-001
+    source: reference_paper
+    location: "problem2 beta=135 degree, distance=2.1 NM"
+    conflicting_value_m: 116.430
+    independently_verified_value_m: 166.430
+    evidence:
+      - beta_135_equals_beta_225_symmetry
+      - direct_formula_recalculation
+    treatment: "Flag as reference typo or transcription error; do not use as ground truth."

@@ -1,0 +1,105 @@
+schema_version: 1
+case_id: case001
+
+problem_archive:
+  filename: "B题.rar"
+  sha256: "1dfc6819efedb2d8c349276ef503dd1ceeee7a7ee2e15996b4ced37dc058d374"
+  size_bytes: 1168748
+  archive_format: RAR4
+  storage: local_only
+  listing_verified: true
+  extraction_status: resolved_via_separate_uploads
+  original_blocker: missing_rar_extractor_backend
+
+verified_sources:
+  - filename: "B题.pdf"
+    role: original_problem_statement
+    sha256: "e709e066139ea0a4bb64aa7e56ea097725a1f2b4e5161fc8c7e50c48be079396"
+    size_bytes: 899651
+    pages: 3
+    read_status: verified
+    storage: local_only
+  - filename: "附件.xlsx"
+    role: problem4_depth_grid
+    sha256: "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a"
+    size_bytes: 313543
+    read_status: verified
+    storage: local_only
+    workbook_schema:
+      sheets: [Sheet1]
+      used_range: "A1:GU253"
+      x_coordinates:
+        count: 201
+        range_nautical_mile: [0.0, 4.0]
+        step_nautical_mile: 0.02
+        direction: west_to_east
+      y_coordinates:
+        count: 251
+        range_nautical_mile: [0.0, 5.0]
+        step_nautical_mile: 0.02
+        direction: south_to_north
+      depth_grid:
+        shape: [251, 201]
+        unit: m
+        missing_values: 0
+        minimum_m: 20.0
+        minimum_location_nm: [0.5, 0.48]
+        maximum_m: 197.2
+        maximum_location_nm: [4.0, 0.0]
+        mean_m: 62.5386846643
+  - filename: "result1.xlsx"
+    role: official_problem1_output_template
+    sha256: "9a86f9f4b9755447bda0ab9c3d8f4123561a0bfa735ede7d0c08b1c457ae83bd"
+    size_bytes: 9222
+    read_status: verified
+    storage: local_only
+    workbook_schema:
+      sheets: [Sheet1]
+      used_range: "A1:J4"
+      template_blank_cells_verified: true
+      field_order_preserved: true
+  - filename: "result2.xlsx"
+    role: official_problem2_output_template
+    sha256: "426941a7da69da8694d73be68ba82b976af675f57618154f4b4fc11d19f6dbd8"
+    size_bytes: 9445
+    read_status: verified
+    storage: local_only
+    workbook_schema:
+      sheets: [Sheet1]
+      used_range: "A1:J10"
+      template_blank_cells_verified: true
+      field_order_preserved: true
+
+problem_identity:
+  value: "2023 高教社杯全国大学生数学建模竞赛 B 题：多波束测线问题"
+  verified_against_original_problem: true
+
+reference_files:
+  - filename: "B477.pdf"
+    title: "多波束测深合理探测方案的设计及效果分析"
+    sha256: "07329ac31d14177997c01035dcac29e1c03243ad71cb7ccaa381cf016595e1c6"
+    pages: 50
+    role: comparison_reference
+  - filename: "B226.pdf"
+    title: "多波束测线布设"
+    sha256: "6575167cc2cace9fc4f7a2d9e654128803b4270096fcb2e63b27ef05faf7a33d"
+    pages: 51
+    role: comparison_reference
+  - filename: "B311.pdf"
+    title: "基于主要目标法的测线设计问题"
+    sha256: "b939b88771b288865fef612c613eb1d6a5890049fade34578ba35a66a4e95095"
+    pages: 34
+    role: comparison_reference
+
+source_policy:
+  reference_papers_are_not_ground_truth: true
+  original_problem_controls_requirements: true
+  original_attachment_controls_problem4_data: true
+  no_reference_prose_copying: true
+  generated_binary_outputs_are_local_artifacts_with_hashes_recorded_in_git: true
+
+next_actions:
+  - complete_problem1_W2_W4
+  - complete_problem2_W2_W4
+  - request_human_route_decision_for_problem3
+  - build_independent_spatial_evaluator_before_problem4_agent_admission

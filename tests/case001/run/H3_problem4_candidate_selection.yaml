@@ -1,0 +1,68 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3
+status: candidate_c_retained_for_refinement
+
+candidate_set: tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+selection_authority: user
+agent_may_select: false
+resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+refinement_plan: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+
+human_decision:
+  primary_route_family: P4-CAND-C
+  decision: retain_and_improve
+  reason: >-
+    Problem 4 prioritizes short total survey-line length. Failure of the exact
+    piecewise-linear realization establishes that the current geometry needs
+    refinement; it does not justify rejecting the terrain-responsive route family.
+  conservative_reference_candidate: P4-CAND-A
+  final_selection_deferred: true
+
+candidate_c_status:
+  original_geometry_id: P4-CAND-C
+  original_exact_polyline_status: fails_hard_corner_gate
+  hard_corner_count: 548
+  route_family_status: active_refinement_primary
+  implicit_smoothing_allowed: false
+  explicit_new_geometry_required: true
+  required_follow_up:
+    - construct a finite-curvature C-derived route as a new versioned candidate
+    - independently re-evaluate length, coverage, overlap, boundary compliance and line crossings
+    - compare refined C against candidate A under the same evaluator settings
+
+candidate_a_status:
+  candidate_id: P4-CAND-A
+  role: conservative_reference_and_fallback_only
+  survey_line_count: 67
+  total_survey_line_length_m: 620420.0
+  uncovered_area_percent: 0.0
+  excess_overlap_length_m: 369055.8064516127
+  boundary_violation: false
+  baseline_state: reference_not_final
+
+selection_principles:
+  primary_objective: minimize_total_survey_line_length
+  constraints:
+    - sampled_uncovered_area_percent_must_equal_zero_at_frozen_settings
+    - boundary_violation_must_be_false
+    - route_geometry_must_have_no_instantaneous_heading_changes
+    - adjacent_survey_lines_must_not_cross
+  secondary_objectives:
+    - reduce_excess_overlap_length
+    - reduce_multiply_covered_area
+  claims:
+    global_optimality: false
+    continuous_coverage_proof: false
+
+handoff:
+  - execute candidate-C refinement plan
+  - generate one or more versioned C-derived finite-curvature candidates
+  - run full spatial and curvature evaluation
+  - return to H3 only after comparative evidence is available
+
+pr_policy:
+  ready_for_review: false
+  keep_draft: true
+  merge_allowed: false

@@ -1,0 +1,51 @@
+schema_version: 1
+case_id: case001
+stage: H1
+problem_id: problem3
+status: completed
+
+human_decision:
+  approved_by: user
+  approval_basis: "User approved the independent-first, reference-second process and later authorized all planned follow-up operations."
+  selected_process: two_phase_independent_then_reference_comparison
+  selected_mathematical_route: contour_parallel_straight_lines_with_recursive_spacing
+  final_route_confirmed: true
+
+reference_isolation:
+  protocol: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+  exposure_status: contaminated_for_blind_claim
+  blind_claim_allowed: false
+  honest_label: reference_aware_assisted_pilot
+  baseline_execution: reference_quarantined
+  baseline_frozen: true
+  baseline_artifact: tests/case001/run/problem3_independent_baseline.yaml
+  baseline_sha256: 19b1b4e4401876288426e66ace523dfab13aae02979c3481bae7ba282dc0a1d6
+  reference_release_record: tests/case001/run/H2_problem3_reference_release.yaml
+  reference_comparison: tests/case001/review/problem3_reference_comparison.yaml
+
+route_result:
+  line_direction: north_south_parallel_to_depth_contours
+  line_count: 34
+  total_length_m: 125936
+  total_length_nm: 68
+  target_overlap: 0.10
+  line_33_infeasible_within_scope: true
+  line_34_feasible: true
+
+validation:
+  complete_rectangle_coverage: pass
+  every_adjacent_overlap_between_10_and_20_percent: pass
+  boundary_coverage: pass
+  total_length_recalculation: pass
+  critical_findings: []
+
+agent_decision:
+  route_explorer_used: false
+  current_decision: workflow
+  rationale: deterministic geometry and validation were sufficient
+
+handoff:
+  modeling_packet: tests/case001/artifacts/modeling/problem3.model.yaml
+  allowed_to_W5: true
+  allowed_to_paper_architecture_for_problems_1_to_3: true
+  problem4_status: blocked_pending_independent_spatial_evaluator

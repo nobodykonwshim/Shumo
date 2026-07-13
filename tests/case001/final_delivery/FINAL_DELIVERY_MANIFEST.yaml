@@ -1,0 +1,77 @@
+schema_version: 1
+case_id: case001
+delivery_status: complete_pending_user_audit
+completed_at: 2026-07-13
+
+problem_status:
+  problem1: solved
+  problem2: solved
+  problem3: solved_with_route_family_limit
+  problem4: recommended_plan_completed_with_fallback_and_sensitivity_disclosure
+  paper: complete
+
+problem4:
+  selected_candidate: P4-CAND-C-SMOOTH-05
+  fallback_candidate: P4-CAND-A
+  survey_line_count: 61
+  explicit_geometry_length_m: 576726.6355123592
+  independent_spatial_evaluator_length_m: 576725.7292825343
+  nominal_uncovered_area_percent: 0.0
+  sensitivity_70x70_uncovered_area_percent: 0.04081632653061224
+  excess_overlap_length_m: 339556.4072993089
+  minimum_curvature_radius_m: 225.98306382015713
+  global_optimality_claimed: false
+  continuous_coverage_proved: false
+  vessel_specific_turning_radius_compliance_claimed: false
+
+local_artifacts:
+  - filename: case001_多波束测线问题_完整论文.docx
+    size_bytes: 1175934
+    sha256: f9a0a041d914561e69d3e4afabc7baf697f958381ae0cd9db6dc1de8430120b8
+  - filename: case001_多波束测线问题_完整论文.pdf
+    size_bytes: 1740415
+    sha256: 18f6b203988e26db71049865cee93071cd513d9b8ff3e914a83a94f62e42a3f1
+  - filename: case001_result1.xlsx
+    size_bytes: 4303
+    sha256: b89ca83f3671fc4ce428726a1520883fc2afc240a986d386e57f6bc938007537
+  - filename: case001_result2.xlsx
+    size_bytes: 4474
+    sha256: 541a2f998012282b66e041055abb28bae21f4bd6af014386009b4210633bfcf4
+  - filename: case001_problem4_route_and_metrics.xlsx
+    size_bytes: 15086
+    sha256: df9f051b971b1584b586e56d4ec620189a20fa9deeca69f7f03a8647ada07566
+  - filename: problem4_final_metrics.json
+    size_bytes: 2054
+    sha256: 2757d89ea5b0f501e885bf664d2df09ec86f99c8e07f8f3bfab81c2b296aaadf
+  - filename: problem4_route_station_matrix.csv
+    size_bytes: 7988
+    sha256: f07081db923dd3ba98b7d30a1aac2ec3bab0a1b13d004edb21234bdcddd56370
+  - filename: case001_最终交付清单与自检报告.md
+    size_bytes: 4792
+    sha256: 3dc992de8a8ed36d4a0de445ca7fa7307e76a49421837fa90c5f4309648d9839
+  - filename: case001_最终交付自检.json
+    size_bytes: 12417
+    sha256: 73907f04cf5c28ee5a44ad51293390213a4d6906af18e660a1f66d5dd0d12e51
+  - filename: case001_最终交付包.zip
+    size_bytes: 2400337
+    sha256: 2fb81ea8deefad911b1e3a5562b3ab55eec5b579920042b100243bca30966628
+
+quality_checks:
+  docx_archive_integrity: pass
+  docx_comments_or_tracked_changes: none
+  docx_visual_render_pages: 17
+  pdf_visual_render_pages: 17
+  result1_used_range: A1:J4
+  result2_used_range: A1:I10
+  problem4_route_matrix_used_range: A1:N62
+  spreadsheet_formula_error_scan: pass
+  route_count_consistency: pass
+  route_length_consistency: pass
+  curvature_consistency: pass
+  adverse_sensitivity_result_disclosed: pass
+
+repository_policy:
+  branch: test/case001-multibeam-pilot
+  pull_request: 2
+  pull_request_state: draft
+  merge_authorized: false

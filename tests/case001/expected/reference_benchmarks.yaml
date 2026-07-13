@@ -1,0 +1,161 @@
+schema_version: 1
+case_id: case001
+purpose: "对照常见建模路线、结果量级和验证方式；不作为唯一标准答案"
+
+comparison_rules:
+  ground_truth: false
+  exact_result_matching_required: false
+  require_method_independence: true
+  require_disagreement_analysis: true
+  prohibit_copying_reference_text: true
+  acceptable_use:
+    - identify_common_baselines
+    - compare_result_order_of_magnitude
+    - identify_missing_validation
+    - design_counterexamples_and_sensitivity_checks
+
+references:
+  B477:
+    filename: "B477.pdf"
+    title: "多波束测深合理探测方案的设计及效果分析"
+    pages: 50
+    sha256: "07329ac31d14177997c01035dcac29e1c03243ad71cb7ccaa381cf016595e1c6"
+    reported_methods:
+      problem1:
+        - slope-adjusted overlap definition
+        - planar trigonometric geometry
+      problem2:
+        - three-dimensional slope and direction geometry
+      problem3:
+        - greedy line placement
+      problem4:
+        - interpolation and random-forest terrain treatment
+        - regional partition
+        - modified moth-flame search
+    reported_results:
+      problem3:
+        line_count: 34
+      problem4:
+        total_line_length_m: 434662
+        uncovered_area_percent: 0.04
+        over_20_percent_overlap_length_m: 21998
+        effective_coverage_percent: 99.956
+        line_count: 94
+    verification_signals:
+      - reports regional line lengths and covered areas
+      - compares overlap settings qualitatively
+    benchmark_risks:
+      - complex learning and metaheuristic pipeline may be hard to reproduce
+      - reported coverage-area accounting requires independent geometry verification
+
+  B226:
+    filename: "B226.pdf"
+    title: "多波束测线布设"
+    pages: 51
+    sha256: "6575167cc2cace9fc4f7a2d9e654128803b4270096fcb2e63b27ef05faf7a33d"
+    reported_methods:
+      problem1:
+        - similar triangles and sine law
+        - general overlap geometry
+      problem2:
+        - vector analysis and line-plane angle
+      problem3:
+        - proof favoring lines parallel to contours
+        - greedy iterative placement
+        - simulated annealing comparison
+      problem4:
+        - contour-based regional partition
+        - least-squares plane fitting
+        - particle-swarm-assisted fitting
+        - regional greedy line placement
+    reported_results:
+      problem3:
+        line_count: 34
+        total_line_length_m: 125936
+        total_line_length_nautical_mile: 68
+      problem4:
+        total_line_length_nautical_mile: 622
+        total_line_length_m_derived: 1151944
+        uncovered_area_percent: 3.48
+        over_20_percent_overlap_length_m: 55560
+        over_20_percent_overlap_length_nautical_mile: 30
+        line_count: 437
+    verification_signals:
+      - compares greedy result with simulated annealing for problem3
+      - includes regional result table for problem4
+      - includes sensitivity analysis for beam angle and slope
+    benchmark_risks:
+      - problem4 line length is far larger than other supplied references
+      - fitted regional planes and partition choices may dominate the outcome
+
+  B311:
+    filename: "B311.pdf"
+    title: "基于主要目标法的测线设计问题"
+    pages: 34
+    sha256: "b939b88771b288865fef612c613eb1d6a5890049fade34578ba35a66a4e95095"
+    reported_methods:
+      problem1:
+        - two competing overlap definitions
+        - geometric comparison and CAD inspection
+      problem2:
+        - geometric extension using projected line angles
+      problem3:
+        - contour-parallel lines
+        - recursive spacing at 10 percent overlap
+      problem4:
+        - three-region terrain partition
+        - primary-objective method prioritizing missed-area reduction
+        - contour/elevation recursion
+    reported_results:
+      problem3:
+        line_count: 34
+        total_line_length_nautical_mile: 68
+        total_line_length_m_derived: 125936
+      problem4:
+        total_line_length_m: 466394.4
+        uncovered_area_percent: 2.3
+        over_20_percent_overlap_length: not_reported_in_summary
+    verification_signals:
+      - checks qualitative consistency between terrain flatness and line density
+      - compares two overlap definitions in problem1
+    benchmark_risks:
+      - problem4 does not report all three requested metrics in the abstract/result summary
+      - priority ordering may sacrifice line length or high-overlap performance
+
+cross_reference_observations:
+  common_consensus:
+    - problems1_and_2_are_geometry_first_workflows
+    - problem3_commonly_uses_lines_parallel_to_depth_contours
+    - all_three_report_34_lines_for_problem3
+    - problem3_total_length_is_consistent_at_68_nautical_miles_or_125936_m
+    - problem4_requires terrain reconstruction or partition before line optimization
+  material_disagreements:
+    problem4_total_line_length_m:
+      B477: 434662
+      B226: 1151944
+      B311: 466394.4
+    problem4_uncovered_area_percent:
+      B477: 0.04
+      B226: 3.48
+      B311: 2.3
+    problem4_over_20_percent_overlap_length_m:
+      B477: 21998
+      B226: 55560
+      B311: unknown
+  required_interpretation:
+    - do_not_average_the_three_problem4_results
+    - trace differences to terrain representation, partition, objective priority, and overlap computation
+    - use original attachment and independent verification to judge candidate routes
+
+initial_expected_ranges_for_smoke_testing:
+  problem1_and_2:
+    note: "Exact official table values must be taken from result1.xlsx and result2.xlsx after extraction."
+  problem3:
+    expected_line_count_reference: 34
+    expected_total_length_m_reference: 125936
+    tolerance_policy: "A different result is allowed only with explicit objective/constraint interpretation and independent coverage verification."
+  problem4:
+    total_line_length_m_reference_envelope: [434662, 1151944]
+    uncovered_area_percent_reference_envelope: [0.04, 3.48]
+    over_20_percent_overlap_length_m_known_envelope: [21998, 55560]
+    tolerance_policy: "These are comparison envelopes, not acceptance targets. The final solution must pass independent geometry and file-based validation."

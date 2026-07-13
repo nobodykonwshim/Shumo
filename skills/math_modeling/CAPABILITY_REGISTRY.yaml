@@ -1,0 +1,233 @@
+schema_version: 1
+registry_id: shumo_math_modeling_capabilities
+product_boundary: reusable_mathematical_modeling_skill
+case_studies_are: validation_fixtures
+
+status_values:
+  - planned
+  - prototype
+  - validated
+  - reusable
+  - deprecated
+
+capabilities:
+  - capability_id: workflow_orchestration
+    name: workflow-first staged modeling
+    status: reusable
+    owner_path: skills/math_modeling/workflows/README.md
+    contract:
+      inputs: problem_sources_and_project_config
+      outputs: staged_artifacts_and_human_gates
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/
+    limits:
+      - workflow quality still depends on explicit artifact schemas
+
+  - capability_id: modeling_decision_system
+    name: pre-implementation problem classification and model-route decision
+    status: validated
+    owner_path: skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md
+    validator: skills/math_modeling/validation/modeling_decision_validator.py
+    contract:
+      inputs: problem_profile_candidate_routes_comparison_criteria_evidence_and_human_authority
+      outputs: machine_validated_modeling_route_recommendation_decision_record_and_stop_rule
+    generic_tests:
+      - tests/specs/test_modeling_decision_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/modeling_decision.example.yaml
+      - tests/case001/artifacts/modeling/problem3.model-decision.yaml
+    limits:
+      - the validator checks decision completeness and consistency but cannot determine the objectively best model family
+      - candidate generation quality still depends on model knowledge and problem understanding
+      - status remains validated until the contract is exercised on a second materially different real case
+      - primary objective assumptions accepted risk and final model choice remain human decisions
+
+  - capability_id: project_status_orchestration
+    name: cross-artifact project consistency and lifecycle status calculation
+    status: validated
+    owner_path: skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md
+    validator: skills/math_modeling/validation/project_status_calculator.py
+    contract:
+      inputs: project_status_record_modeling_decisions_model_specs_sensitivity_policies_evidence_blueprints_and_stop_records
+      outputs: calculated_project_state_reasons_blockers_pending_decisions_completed_items_and_valid_next_actions
+    generic_tests:
+      - tests/specs/test_project_status_calculator.py
+    demonstrated_by:
+      - tests/case001/project_status.yaml
+    limits:
+      - calculated status proves contract consistency rather than mathematical correctness
+      - demonstration_complete closes a bounded cycle and does not imply every case subproblem or final paper is complete
+      - lifecycle goals and nonblocking external dependencies remain explicit project declarations
+      - status remains validated until exercised on a second materially different real case
+
+  - capability_id: generic_model_spec_schema
+    name: generic executable mathematical model specification
+    status: validated
+    owner_path: skills/math_modeling/specs/model_spec.schema.json
+    validator: skills/math_modeling/validation/model_spec_validator.py
+    contract:
+      inputs: objective_inputs_symbols_assumptions_components_formulas_constraints_algorithm_outputs_and_validation
+      outputs: machine_validated_model_specification_with_provenance_limits_and_human_checkpoints
+    generic_tests:
+      - tests/specs/test_model_spec_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/model_spec.example.yaml
+      - tests/case001/artifacts/modeling/problem3.model.v2.yaml
+    limits:
+      - YAML authoring requires PyYAML while JSON is directly supported
+      - status remains validated until the contract is exercised on a second unrelated real case
+      - mathematical correctness still depends on the declared validation evidence, not schema conformance alone
+
+  - capability_id: capability_registry_validation
+    name: capability registry structure and evidence-path validation
+    status: validated
+    owner_path: skills/math_modeling/specs/capability_registry.schema.json
+    validator: skills/math_modeling/validation/capability_registry_validator.py
+    contract:
+      inputs: capability_registry_status_contract_tests_demonstrations_limits_and_backlog
+      outputs: machine_report_for_structure_ids_statuses_ownership_backlog_and_repository_paths
+    generic_tests:
+      - tests/specs/test_capability_registry_validator.py
+    demonstrated_by:
+      - skills/math_modeling/CAPABILITY_REGISTRY.yaml
+    limits:
+      - validation proves registry consistency but not that a capability deserves promotion
+      - missing generic tests on legacy validated capabilities are warnings until migrated
+      - promotion from validated to reusable remains a human governance decision
+
+  - capability_id: generic_sensitivity_policy
+    name: pre-result case-specific sensitivity declaration and audit
+    status: validated
+    owner_path: skills/math_modeling/support/SENSITIVITY_POLICY.md
+    validator: skills/math_modeling/validation/sensitivity_policy_validator.py
+    contract:
+      inputs: model_or_evaluation_artifact_case_specific_perturbations_metrics_acceptance_rules_and_governance
+      outputs: machine_validated_pre_result_policy_execution_results_evidence_and_amendment_history
+    generic_tests:
+      - tests/specs/test_sensitivity_policy_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/sensitivity_policy.example.yaml
+      - tests/case001/problem4_evaluator.sensitivity.yaml
+    limits:
+      - the Skill supplies no universal numerical threshold
+      - perturbation magnitudes and acceptance rules remain case-specific human or authoritative-source decisions
+      - schema conformance does not prove that the chosen sensitivity scope is sufficient
+
+  - capability_id: paper_blueprint_validation
+    name: paper architecture ownership and writing-boundary validation
+    status: validated
+    owner_path: skills/math_modeling/support/PAPER_BLUEPRINT.md
+    validator: skills/math_modeling/validation/paper_blueprint_validator.py
+    contract:
+      inputs: frozen_model_specs_section_plan_numbering_ownership_output_placements_claims_and_writing_constraints
+      outputs: machine_validated_paper_blueprint_with_unique_owners_locked_labels_and_traceable_claim_boundaries
+    generic_tests:
+      - tests/specs/test_paper_blueprint_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/paper_blueprint.example.yaml
+      - tests/case001/artifacts/architecture/problem3.paper-blueprint.yaml
+    limits:
+      - the validator cannot choose the best chapter structure or page allocation
+      - final section ownership labels and presentation choices require human approval
+      - status remains validated until exercised on a second unrelated real case
+
+  - capability_id: agent_admission
+    name: bounded agent admission and runtime token
+    status: reusable
+    owner_path: skills/math_modeling/orchestration/agent_gate.py
+    contract:
+      inputs: admission_record_agent_type_task_and_environment
+      outputs: admitted_or_blocked_token
+    generic_tests:
+      - tests/orchestration/test_agent_gate.py
+    demonstrated_by:
+      - tests/case001/run/problem4_agent_admission.json
+    limits:
+      - admission does not prove the agent output is mathematically correct
+
+  - capability_id: reference_isolation
+    name: independent-first reference isolation
+    status: reusable
+    owner_path: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+    contract:
+      inputs: source_classification_and_release_state
+      outputs: exposure_log_and_reference_access_policy
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/review/reference_exposure_log.yaml
+    limits:
+      - a contaminated context cannot support a true blind-solution claim
+
+  - capability_id: structured_grid_ingestion
+    name: deterministic XLSX depth-grid ingestion
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/xlsx_depth_grid.py
+    contract:
+      inputs: xlsx_workbook_with_coordinate_and_depth_matrix
+      outputs: normalized_si_terrain_bundle
+    generic_tests:
+      - tests/evaluators/test_xlsx_depth_grid.py
+    demonstrated_by:
+      - tests/case001/run/problem4_real_grid_smoke_report.json
+    limits:
+      - the current adapter targets rectangular numeric grids rather than arbitrary workbooks
+
+  - capability_id: independent_spatial_evaluation
+    name: independent coverage overlap and boundary evaluator
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/spatial_coverage.py
+    contract:
+      inputs: precomputed_plan_terrain_region_instrument_and_sampling_policy
+      outputs: length_coverage_overlap_boundary_and_sensitivity_report
+    generic_tests:
+      - tests/evaluators/test_spatial_coverage.py
+    demonstrated_by:
+      - tests/case001/run/problem4_real_grid_smoke_report.json
+      - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+    limits:
+      - coverage is sampling-based unless a separate continuous proof is supplied
+      - overlap semantics must be frozen by the case contract
+
+  - capability_id: explicit_route_geometry
+    name: explicit line and Bezier route geometry
+    status: reusable
+    owner_path: skills/math_modeling/geometry/route_geometry.py
+    contract:
+      inputs: versioned_straight_and_bezier_segments
+      outputs: length_tangent_curvature_and_sampling_operations
+    generic_tests:
+      - tests/evaluators/test_route_geometry.py
+    demonstrated_by:
+      - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+    limits:
+      - operational vessel constraints must be supplied by the case
+
+  - capability_id: route_feasibility_validation
+    name: tangent continuity and finite-curvature validation
+    status: reusable
+    owner_path: skills/math_modeling/evaluators/route_feasibility.py
+    contract:
+      inputs: precomputed_explicit_route_and_optional_operational_limits
+      outputs: feasibility_report_with_detectable_failure_reasons
+    generic_tests:
+      - tests/evaluators/test_route_feasibility.py
+    demonstrated_by:
+      - tests/case001/run/problem4_candidates/curvature_validation.yaml
+    limits:
+      - no minimum turning radius may be invented when the case does not provide one
+
+  - capability_id: case_to_skill_promotion
+    name: case-to-skill extraction and stop policy
+    status: validated
+    owner_path: skills/math_modeling/support/CASE_TO_SKILL_PROMOTION.md
+    contract:
+      inputs: case_gap_reusable_candidate_and_evidence
+      outputs: promote_refine_or_stop_decision
+    generic_tests: []
+    demonstrated_by:
+      - tests/case001/run/S0_skill_extraction_handoff.yaml
+    limits:
+      - the promotion decision still requires human judgment
+
+backlog: []

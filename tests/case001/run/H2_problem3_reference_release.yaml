@@ -1,0 +1,46 @@
+schema_version: 1
+case_id: case001
+stage: H2
+problem_id: problem3
+status: approved_and_executed
+
+human_decision:
+  approved_by: user
+  instruction: "同意并执行后续的所有操作"
+  interpreted_scope:
+    - complete_problem3_quarantined_workflow
+    - freeze_problem3_baseline
+    - release_listed_reference_materials_after_freeze
+    - perform_structured_reference_comparison
+  excluded_without_separate_explicit_instruction:
+    - merge_pull_requests
+    - weaken_problem4_agent_gate
+    - delete_or_rewrite_frozen_baseline
+
+release_preconditions:
+  W2_complete: true
+  W3_complete: true
+  W4_pass: true
+  baseline_frozen: true
+  baseline_hash_recorded: true
+
+released_reference_sets:
+  - B477.pdf
+  - B226.pdf
+  - B311.pdf
+  - tests/case001/expected/reference_benchmarks.yaml
+
+allowed_uses:
+  - compare_method_structure
+  - compare_result_scale
+  - identify_disagreement
+  - add_validation_ideas
+  - detect_possible_errors
+
+forbidden_uses:
+  - overwrite_frozen_baseline
+  - copy_reference_prose
+  - treat_consensus_result_as_ground_truth
+  - claim_true_blind_independence
+
+next_stage: problem3_structured_reference_comparison

@@ -1,0 +1,61 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3_candidate_feasibility_resolution
+status: superseded_by_human_review
+
+workflow:
+  name: Problem4 candidate feasibility resolution
+  run_id: 29193104720
+  head_sha: 2bd846b6ffb216798135db010bdf1150837be987
+  conclusion: success
+  artifact_id: 8260127103
+  artifact_digest: sha256:9a1ab410a79e4e3307a48905a48d74442d0f8b41be3fde0c3736f53d2ffc0c12
+
+source_verification:
+  attachment_sha256: 5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a
+  candidate_c_sha256: 1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189
+  candidate_a_sha256: adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4
+  all_hash_checks_passed: true
+
+original_candidate_c_result:
+  candidate_id: P4-CAND-C
+  exact_polyline_feasibility_status: fail
+  hard_corner_count: 548
+  minimum_three_point_circumradius_m: 2397.1959212741776
+  failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  interpretation: >-
+    The exact piecewise-linear realization is not directly executable. This is a
+    geometry-version failure, not a rejection of the terrain-responsive route family.
+
+candidate_a_reference:
+  candidate_id: P4-CAND-A
+  exact_polyline_feasibility_status: pass
+  role: conservative_reference_and_fallback_only
+  survey_line_count: 67
+  total_survey_line_length_m: 620420.0
+  uncovered_area_percent: 0.0
+  excess_overlap_length_m: 369055.8064516127
+  boundary_violation: false
+
+human_review_override:
+  date_utc: 2026-07-12
+  decision: do_not_freeze_candidate_a_as_final
+  retain_candidate_c_route_family: true
+  reason: >-
+    The problem's central objective is short total survey-line length. Candidate C
+    remains the shortest tested family, so it must be explicitly refined rather than
+    discarded solely because its first polyline representation contains hard corners.
+  next_record: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+
+current_decision:
+  final_selected_candidate: null
+  candidate_c_route_family_state: active_refinement_primary
+  candidate_a_state: reference_not_final
+  problem4_baseline_state: reopened
+  merge_pr: false
+
+scope_and_limits:
+  vessel_specific_minimum_turn_radius_m: null
+  inter_line_connectors_checked: false
+  global_optimality_claimed: false

@@ -1,0 +1,48 @@
+schema_version: 1
+case_id: case001
+stage: W4
+problem_id: problem1
+status: pass
+
+checks:
+  source_parameter_match:
+    status: pass
+    evidence: "theta=120 deg, alpha=1.5 deg, D0=70 m, d=200 m and offsets match B题.pdf page 2."
+  dimensions:
+    status: pass
+    evidence: "All trigonometric functions use angles; all length expressions return metres; eta is dimensionless."
+  zero_slope_limit:
+    status: pass
+    evidence: "alpha=0 gives W=2D*tan(theta/2) and eta=1-d/W."
+  center_depth:
+    status: pass
+    expected_m: 70.0
+    actual_m: 70.0
+  monotonicity:
+    status: pass
+    evidence: "D and W strictly decrease as x moves uphill from -800 m to 800 m."
+  overlap_boundary:
+    status: pass
+    evidence: "eta changes from 7.4072% at x=400 m to -1.5252% at x=600 m, correctly identifying the first gap."
+  template_schema:
+    status: pass
+    input_range: A1:J4
+    output_range: A1:J4
+    field_order_changed: false
+  numerical_recalculation:
+    status: pass
+    max_abs_depth_residual: 0.0
+    max_abs_coverage_residual: 0.0
+    max_abs_overlap_residual: 0.0
+
+reference_comparison:
+  B477:
+    status: agrees_to_reported_precision
+  B226_and_B311:
+    status: overlap_definition_differs
+    interpretation: "Reference disagreement is a modeling-definition difference, not a reason to overwrite the independently stated definition."
+
+handoff:
+  modeling_packet_ready: true
+  critical_open_findings: 0
+  allowed_to_problem2: true

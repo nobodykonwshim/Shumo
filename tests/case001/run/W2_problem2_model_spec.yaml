@@ -1,0 +1,50 @@
+schema_version: 1
+case_id: case001
+stage: W2
+problem_id: problem2
+status: approved_for_execution
+execution_mode: workflow
+
+coordinate_convention:
+  beta_definition: "angle from the horizontal projection of the seabed normal to the survey-line direction"
+  beta_zero_direction: increasing_depth_downslope
+  distance_direction: forward_along_survey_line
+
+parameters:
+  theta_degree: 120
+  alpha_degree: 1.5
+  center_depth_m: 120
+  nautical_mile_to_m: 1852
+  distance_nautical_mile: [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1]
+  beta_degree: [0, 45, 90, 135, 180, 225, 270, 315]
+
+formula_registry_candidates:
+  F-P2-DEPTH:
+    expression: "D(l,beta)=D0+l*1852*tan(alpha)*cos(beta)"
+    purpose: local_vertical_depth_along_heading
+  F-P2-CROSS-SLOPE:
+    expression: "gamma(beta)=atan(|tan(alpha)*sin(beta)|)"
+    purpose: effective_slope_in_the_vertical_plane_perpendicular_to_the_survey_line
+  F-P2-COVERAGE:
+    expression: "W=D*sin(theta/2)*[1/sin((pi-theta)/2+gamma)+1/sin((pi-theta)/2-gamma)]"
+    purpose: directional_swath_width
+
+validity_conditions:
+  - planar_uniform_seabed
+  - local_depth_positive
+  - gamma_less_than_90_degree_minus_theta_over_2
+  - beta_and_distance_use_declared_orientation
+
+predefined_validation:
+  - beta_0_and_180_have_zero_cross_track_slope
+  - beta_90_and_270_have_constant_depth_along_track
+  - beta_45_equals_beta_315
+  - beta_135_equals_beta_225
+  - center_distance_values_depend_only_on_cross_track_slope
+  - nautical_mile_is_converted_to_1852_m
+
+expected_output_schema:
+  workbook: result2.xlsx
+  sheet: Sheet1
+  range: A1:J10
+  field_order_locked: true

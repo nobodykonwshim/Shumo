@@ -1,0 +1,18 @@
+\section{结论}
+本文围绕多波束测深中“覆盖完整、重叠适度、航程较短”的共同目标，建立了从理想剖面到真实地形的完整模型链。问题一通过声束射线与斜坡的交点推导两侧覆盖半宽，并定义可表示漏测的有向重叠率。计算结果表明，固定 \,\SI{200}{m} 间距在深水区造成过度重叠，在浅水侧 $x=600$ m 和 $800$ m 处分别出现 $-1.53\%$ 和 $-12.36\%$ 的负重叠率，因此该方案不能完整覆盖。
+
+问题二把坡度正交分解为航向和横航向两个分量，建立 $D(l,\beta)$、$\gamma(\beta)$ 和 $W(l,\beta)$ 的可计算关系，得到 $8$ 个方向和 $8$ 个距离下的覆盖宽度矩阵。结果的单调性、常值行和成对对称均能由解析公式解释，说明方向定义、单位换算和数值实现保持一致。
+
+问题三在等深线平行直线族内建立首线显式方程、最大间距递推和东边界停止条件，求得 $34$ 条测线，总长度为 \,\SI{125936}{m}。在首线尽可能向东、每一步间距尽可能大的条件下，$33$ 条仍留下 \,\SI{25.756620}{m} 缺口，因此 $34$ 条为该路线族内的最少条数。
+
+问题四利用双线性插值和解析梯度计算局部非对称条带，通过保守直线、站位自适应折线和二次 Bézier 平滑形成候选集，并用独立空间评估器重新计算题目指标。最终推荐 $61$ 条有限曲率测线，显式几何总长度为 \,\SI{576726.636}{m}，名义 $50\times60$ 网格漏测率为 $0$，重叠率超过 $20\%$ 的累计长度为 \,\SI{339556.407}{m}，最小曲率半径为 \,\SI{225.983}{m}。$70\times70$ 网格出现 $0.040816\%$ 的微小漏测，因此最终结论限定为已评估候选中的综合推荐，并保留 $67$ 条、总长度 \,\SI{620420}{m} 的保守直线方案作为覆盖鲁棒性回退。
+
+\begin{thebibliography}{99}
+\bibitem{problem} 全国大学生数学建模竞赛组委会. 2023 年高教社杯全国大学生数学建模竞赛 B 题：多波束测线问题[R]. 2023.
+\bibitem{iho} International Hydrographic Organization. IHO Standards for Hydrographic Surveys, S-44, 6th ed.[S]. Monaco: IHO, 2020.
+\bibitem{farin} Farin G. Curves and Surfaces for CAGD: A Practical Guide[M]. 5th ed. San Francisco: Morgan Kaufmann, 2002.
+\bibitem{deboor} de Boor C. A Practical Guide to Splines[M]. New York: Springer, 2001.
+\bibitem{numerical} Press W H, Teukolsky S A, Vetterling W T, Flannery B P. Numerical Recipes: The Art of Scientific Computing[M]. 3rd ed. Cambridge: Cambridge University Press, 2007.
+\end{thebibliography}
+
+\clearpage

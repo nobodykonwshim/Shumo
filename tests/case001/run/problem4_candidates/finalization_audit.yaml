@@ -1,0 +1,67 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: post_h3_finalization_audit
+status: reopened_after_human_review
+
+scope:
+  purpose: record that the earlier candidate-A freeze was not accepted as a final problem-4 decision
+  merge_authorized: false
+  pr_state: draft
+
+human_review:
+  decision: reject_final_freeze_of_candidate_a
+  date_utc: 2026-07-12
+  reason: >-
+    Candidate C is the shortest tested route family. Its hard-corner defect should
+    trigger explicit geometric refinement and full re-evaluation, not immediate
+    rejection of the route family.
+
+baseline_consistency:
+  final_selected_candidate: null
+  candidate_a_state: conservative_reference_not_final
+  candidate_c_route_family_state: active_refinement_primary
+  authoritative_records:
+    - tests/case001/run/H3_problem4_candidate_selection.yaml
+    - tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+    - tests/case001/run/problem4_candidates/curvature_validation.yaml
+    - tests/case001/run/problem4_candidates/candidate_set_manifest.yaml
+    - tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+
+preserved_verified_facts:
+  original_candidate_c:
+    total_survey_line_length_m: 576755.7023466643
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 339673.0975448946
+    boundary_violation: false
+    exact_polyline_hard_corner_count: 548
+    exact_polyline_status: fail
+  candidate_a_reference:
+    total_survey_line_length_m: 620420.0
+    uncovered_area_percent: 0.0
+    excess_overlap_length_m: 369055.8064516127
+    boundary_violation: false
+    exact_polyline_status: pass
+
+interpretation_correction:
+  - the 548 hard corners invalidate only the original exact-polyline realization
+  - they do not establish that all finite-curvature routes derived from candidate C are infeasible
+  - any smooth replacement is a new candidate and must be independently evaluated
+  - shortest-length comparison remains open until refined-C evidence exists
+
+remaining_limits:
+  - no vessel-specific minimum turning radius is provided or invented
+  - inter-line connecting transit turns are not modeled
+  - sampled zero uncovered area is not a continuous mathematical coverage proof
+  - no global optimality claim is made
+
+review_readiness:
+  technical_blockers:
+    - refined candidate-C geometry has not yet been generated
+    - refined candidate-C spatial and curvature evaluation is pending
+  documentation_blockers: []
+  ready_for_human_review: false
+  pr_transition_performed: true
+  pr_state: draft
+  merge_authorized: false
+  merge_performed: false

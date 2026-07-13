@@ -1,0 +1,107 @@
+name: Case001 candidate C refinement demonstration
+
+# This workflow is a real-case demonstration, not a reusable Skill gate.
+# Pull-request triggers are intentionally disabled because GitHub evaluates path
+# filters against the whole PR diff and would rerun this case on unrelated Skill work.
+# Refresh evidence manually or when the case-specific refinement pipeline is pushed.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tests/case001/run/problem4_candidates/refine_candidate_c.py"
+      - "tests/case001/run/problem4_candidates/evaluate_refined_candidates.py"
+      - "tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml"
+      - ".github/workflows/problem4-candidate-c-refinement.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  demonstrate-refined-c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run reusable geometry and evaluator regression tests
+        run: python -m unittest discover -s tests/evaluators -v
+
+      - name: Download hash-verified official attachment mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests/case001/local/problem tests/case001/local/generated
+          curl --fail --location --retry 3 --retry-delay 2 \
+            "https://media.githubusercontent.com/media/yushugulao/CUMCM-Archive/ef5fa17360e7ea37547320849eac1469403cda97/%E7%AB%9E%E8%B5%9B%E8%B5%84%E6%96%99/2023/B/%E8%B5%9B%E9%A2%98/B%E9%A2%98/%E9%99%84%E4%BB%B6.xlsx" \
+            --output tests/case001/local/problem/附件.xlsx
+          echo "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a  tests/case001/local/problem/附件.xlsx" | sha256sum --check
+
+      - name: Rebuild terrain and original candidate C
+        shell: bash
+        run: |
+          set -euo pipefail
+          python skills/math_modeling/evaluators/xlsx_depth_grid.py \
+            --input tests/case001/local/problem/附件.xlsx \
+            --output tests/case001/local/generated/attachment_terrain.json
+          mkdir -p tests/case001/run/problem4_candidates/generated
+          python tests/case001/run/problem4_candidates/generate_candidates.py \
+            --terrain tests/case001/local/generated/attachment_terrain.json \
+            --evaluator skills/math_modeling/evaluators/spatial_coverage.py \
+            --output-dir tests/case001/run/problem4_candidates/generated \
+            --gate-token fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c
+          echo "1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189  tests/case001/run/problem4_candidates/generated/P4-CAND-C.json" | sha256sum --check
+
+      - name: Generate bounded finite-curvature C variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/case001/run/problem4_candidates/refine_candidate_c.py \
+            --source tests/case001/run/problem4_candidates/generated/P4-CAND-C.json \
+            --output-dir tests/case001/run/problem4_candidates/generated/refined \
+            --trim-fractions 0.05,0.10,0.20,0.30,0.40 \
+            --curve-subdivisions 4 \
+            --crossing-y-samples 401
+
+      - name: Evaluate every refined C variant
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/case001/run/problem4_candidates/evaluate_refined_candidates.py \
+            --variants-dir tests/case001/run/problem4_candidates/generated/refined \
+            --spatial-evaluator skills/math_modeling/evaluators/spatial_coverage.py \
+            --feasibility-validator skills/math_modeling/evaluators/route_feasibility.py \
+            --output tests/case001/run/problem4_candidates/generated/refined/refinement_evaluation_summary.json \
+            --candidate-a-length-m 620420.0
+
+      - name: Verify demonstration output without final selection
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("tests/case001/run/problem4_candidates/generated/refined/refinement_evaluation_summary.json")
+          report = json.loads(path.read_text())
+          best = report["best_feasible_refined_c"]
+          assert best is not None, "no feasible refined-C demonstration variant"
+          assert best["hard_corner_count"] == 0
+          assert best["crossing_count"] == 0
+          assert best["boundary_violation"] is False
+          assert best["exact_total_survey_line_length_m"] < report["candidate_a_reference_length_m"]
+          assert report["human_gate_required"] is True
+          assert report["final_selection_made"] is False
+          print(json.dumps({
+              "evidence_role": "case_demonstration_not_skill_gate_or_final_selection",
+              "best_demonstrated_variant": best,
+          }, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload case demonstration evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: case001-candidate-c-refinement-demonstration
+          path: tests/case001/run/problem4_candidates/generated/refined/**
+          if-no-files-found: error

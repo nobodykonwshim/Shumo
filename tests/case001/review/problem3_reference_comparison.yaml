@@ -1,0 +1,84 @@
+schema_version: 1
+case_id: case001
+problem_id: problem3
+stage: reference_comparison
+status: complete
+baseline_artifact: tests/case001/run/problem3_independent_baseline.yaml
+baseline_sha256: 19b1b4e4401876288426e66ace523dfab13aae02979c3481bae7ba282dc0a1d6
+reference_release_record: tests/case001/run/H2_problem3_reference_release.yaml
+
+baseline_summary:
+  route: north_south_lines_parallel_to_depth_contours
+  placement: western_boundary_tangent_then_eta_0_10_recurrence
+  line_count: 34
+  total_length_m: 125936
+  total_length_nm: 68
+  independent_validation:
+    - 33_line_best_case_shortfall_25_756620_m
+    - 34_line_eastern_overshoot_15_405496_m
+    - all_33_adjacent_overlaps_equal_0_10
+
+reference_comparisons:
+  B477:
+    common_elements:
+      - parallel_line_direction
+      - greedy_or_recursive_spacing
+      - reported_34_lines
+    differences:
+      - baseline_records_explicit_boundary_tangent_equation
+      - baseline_records_a_33_line_infeasibility_margin
+    result_relation: consistent_line_count
+  B226:
+    common_elements:
+      - lines_parallel_to_depth_contours
+      - greedy_iterative_placement
+      - reported_34_lines
+      - reported_total_length_125936_m
+    additional_reference_validation:
+      - simulated_annealing_comparison
+    result_relation: exact_consistency_on_line_count_and_total_length
+  B311:
+    common_elements:
+      - lines_parallel_to_depth_contours
+      - recursive_spacing_at_10_percent_overlap
+      - reported_34_lines
+      - reported_total_length_68_nautical_miles
+    differences:
+      - baseline_uses_the_project_ordered_overlap_definition_explicitly
+      - baseline_records_hash_and_provenance_freeze
+    result_relation: exact_consistency_on_line_count_and_total_length
+
+interpretation:
+  consensus_is_ground_truth: false
+  result_match_strengthens_confidence: true
+  match_proves_independence: false
+  reason_independence_not_proven: references_were_seen_before_the_quarantined_reconstruction
+  no_reference_value_was_used_to_change_the_frozen_baseline: true
+
+adoption_decisions:
+  - item: contour_parallel_route
+    decision: retain_existing_baseline
+    source_effect: none
+    rationale: already_derived_and_frozen_before_reference_release
+  - item: 34_lines_and_68_nm
+    decision: retain_existing_baseline
+    source_effect: corroboration_only
+    rationale: exact_match_but_not_treated_as_target_or_ground_truth
+  - item: simulated_annealing_comparison
+    decision: optional_future_validation
+    source_effect: not_added_to_current_baseline
+    rationale: may_test_route_robustness_but_is_not_needed_for_the_deterministic_scope_proof
+  - item: reference_prose_or_equation_numbering
+    decision: reject
+    source_effect: none
+    rationale: copying_is_forbidden_and_project_formula_ids_remain_authoritative
+
+remaining_limitations:
+  - no_true_blind_independence_claim_for_case001
+  - global_optimum_over_arbitrary_curved_or_nonparallel_routes_not_proven
+  - reference_access_gate_is_documented_but_not_yet_executable
+
+final_disposition:
+  baseline_changed_after_reference_comparison: false
+  problem3_modeling_status: validated
+  handoff_to_modeling_packet: allowed

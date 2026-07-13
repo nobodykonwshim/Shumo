@@ -1,0 +1,307 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shumo.local/schemas/model_spec.schema.json",
+  "title": "Shumo Mathematical Model Specification",
+  "description": "Case-independent executable contract for a mathematical-modeling solution before implementation and paper writing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "spec_id", "problem_id", "title", "status",
+    "objective", "inputs", "symbols", "assumptions", "model_components",
+    "formulas", "constraints", "algorithm", "outputs", "validation",
+    "provenance", "human_checkpoints", "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "spec_id": {"$ref": "#/$defs/id"},
+    "problem_id": {"$ref": "#/$defs/id"},
+    "title": {"$ref": "#/$defs/nonempty"},
+    "status": {"enum": ["draft", "partial", "solved", "blocked", "deprecated"]},
+    "objective": {"$ref": "#/$defs/objective"},
+    "inputs": {"type": "array", "items": {"$ref": "#/$defs/input"}},
+    "symbols": {"$ref": "#/$defs/symbols"},
+    "assumptions": {"type": "array", "items": {"$ref": "#/$defs/assumption"}},
+    "model_components": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/component"}},
+    "formulas": {"type": "array", "items": {"$ref": "#/$defs/formula"}},
+    "constraints": {"type": "array", "items": {"$ref": "#/$defs/constraint"}},
+    "algorithm": {"$ref": "#/$defs/algorithm"},
+    "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/output"}},
+    "validation": {"$ref": "#/$defs/validation"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "human_checkpoints": {"type": "array", "items": {"$ref": "#/$defs/checkpoint"}},
+    "limitations": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+    "blockers": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+    "claims": {"$ref": "#/$defs/claims"},
+    "implementation": {"$ref": "#/$defs/implementation"},
+    "extensions": {"type": "object"}
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]*$",
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "nonempty": {"type": "string", "minLength": 1},
+    "unit": {"type": ["string", "null"], "minLength": 1},
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sense", "description", "metrics"],
+      "properties": {
+        "sense": {"enum": ["minimize", "maximize", "satisfy", "estimate", "predict", "classify", "simulate", "multi_objective"]},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "metrics": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "description", "priority"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "description": {"$ref": "#/$defs/nonempty"},
+              "priority": {"enum": ["primary", "secondary", "diagnostic"]},
+              "formula_id": {"$ref": "#/$defs/id"},
+              "unit": {"$ref": "#/$defs/unit"},
+              "target": {}
+            }
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "description", "data_type", "required", "source"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "data_type": {"enum": ["number", "integer", "boolean", "string", "vector", "matrix", "table", "file", "geometry", "timeseries", "object"]},
+        "unit": {"$ref": "#/$defs/unit"},
+        "required": {"type": "boolean"},
+        "source": {"$ref": "#/$defs/nonempty"},
+        "value": {},
+        "schema": {"type": "object"}
+      }
+    },
+    "symbols": {
+      "type": "object", "additionalProperties": false,
+      "required": ["variables", "parameters"],
+      "properties": {
+        "variables": {"type": "array", "items": {"$ref": "#/$defs/symbolVariable"}},
+        "parameters": {"type": "array", "items": {"$ref": "#/$defs/symbolParameter"}}
+      }
+    },
+    "symbolVariable": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "description", "role", "domain"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "role": {"enum": ["decision", "state", "auxiliary", "output", "latent"]},
+        "domain": {"$ref": "#/$defs/nonempty"},
+        "unit": {"$ref": "#/$defs/unit"},
+        "shape": {"type": "array", "items": {"type": ["integer", "string"]}}
+      }
+    },
+    "symbolParameter": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "description", "source"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "unit": {"$ref": "#/$defs/unit"},
+        "source": {"$ref": "#/$defs/nonempty"},
+        "value": {},
+        "range": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}
+      }
+    },
+    "assumption": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "statement", "status", "impact"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "statement": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["accepted", "testable", "unverified", "rejected"]},
+        "impact": {"$ref": "#/$defs/nonempty"},
+        "validation_check_id": {"$ref": "#/$defs/id"}
+      }
+    },
+    "component": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "type", "purpose"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "type": {"enum": ["geometry", "equation", "optimization", "statistical", "simulation", "algorithm", "data_transform", "decision_rule", "other"]},
+        "purpose": {"$ref": "#/$defs/nonempty"},
+        "depends_on": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "formula": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "expression", "description", "symbols"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "expression": {"$ref": "#/$defs/nonempty"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "symbols": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "unit_check": {"enum": ["pass", "fail", "not_applicable", "planned"]}
+      }
+    },
+    "constraint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "description", "symbols"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["hard", "soft"]},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "expression": {"type": "string"},
+        "symbols": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "tolerance": {"type": ["number", "null"]},
+        "penalty": {"type": ["string", "number", "null"]},
+        "failure_signal": {"type": "string"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "hard"}}, "required": ["kind"]},
+          "then": {"required": ["failure_signal"], "properties": {"failure_signal": {"minLength": 1}}}
+        }
+      ]
+    },
+    "algorithm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["method", "deterministic", "steps", "termination"],
+      "properties": {
+        "method": {"$ref": "#/$defs/nonempty"},
+        "deterministic": {"type": "boolean"},
+        "steps": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "description"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "description": {"$ref": "#/$defs/nonempty"},
+              "uses": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+              "produces": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+            }
+          }
+        },
+        "termination": {"$ref": "#/$defs/nonempty"},
+        "randomness": {
+          "type": "object", "additionalProperties": false,
+          "required": ["seed_policy", "replications"],
+          "properties": {
+            "seed_policy": {"$ref": "#/$defs/nonempty"},
+            "replications": {"type": "integer", "minimum": 1}
+          }
+        },
+        "complexity_note": {"type": "string"}
+      }
+    },
+    "output": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "description", "data_type", "acceptance"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "data_type": {"enum": ["number", "integer", "boolean", "string", "vector", "matrix", "table", "file", "geometry", "timeseries", "object"]},
+        "unit": {"$ref": "#/$defs/unit"},
+        "depends_on": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "destination": {"type": "string"},
+        "acceptance": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "validation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["checks"],
+      "properties": {
+        "checks": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "type", "description", "target_ids", "acceptance", "required", "status"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "type": {"enum": ["unit", "dimension", "constraint", "residual", "boundary", "analytic_case", "sensitivity", "cross_validation", "integrity", "reference_comparison", "other"]},
+              "description": {"$ref": "#/$defs/nonempty"},
+              "target_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/id"}},
+              "acceptance": {"$ref": "#/$defs/nonempty"},
+              "required": {"type": "boolean"},
+              "status": {"enum": ["planned", "pass", "fail", "blocked", "not_run", "not_applicable"]},
+              "evidence": {"type": "string"}
+            }
+          }
+        },
+        "sensitivity_policy": {
+          "type": "object", "additionalProperties": false,
+          "required": ["declared_before_final_result", "parameters", "acceptance"],
+          "properties": {
+            "declared_before_final_result": {"type": "boolean"},
+            "parameters": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+            "acceptance": {"$ref": "#/$defs/nonempty"}
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reference_exposure_status", "source_artifacts", "evidence_paths"],
+      "properties": {
+        "reference_exposure_status": {"enum": ["independent", "reference_quarantined", "reference_released", "assisted", "contaminated_for_blind_claim", "not_applicable"]},
+        "source_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "location", "availability", "role"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "location": {"$ref": "#/$defs/nonempty"},
+              "availability": {"enum": ["repository", "local", "external"]},
+              "role": {"enum": ["authoritative_input", "derived_input", "reference", "evidence", "implementation"]},
+              "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+            }
+          }
+        },
+        "evidence_paths": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "derived_from_spec_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "checkpoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "decision", "authority", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "decision": {"$ref": "#/$defs/nonempty"},
+        "authority": {"enum": ["user", "team", "judge_rule", "domain_expert", "not_required"]},
+        "status": {"enum": ["pending", "approved", "rejected", "not_required"]},
+        "record": {"type": "string"}
+      }
+    },
+    "claims": {
+      "type": "object", "additionalProperties": false,
+      "required": ["allowed", "forbidden"],
+      "properties": {
+        "allowed": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "forbidden": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}}
+      }
+    },
+    "implementation": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "entrypoints": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["path", "role"],
+            "properties": {
+              "path": {"$ref": "#/$defs/nonempty"},
+              "role": {"enum": ["solver", "evaluator", "adapter", "validator", "workflow"]},
+              "availability": {"enum": ["repository", "local", "external"]}
+            }
+          }
+        },
+        "environment": {"type": "object"},
+        "reproduction_command": {"type": "string"}
+      }
+    }
+  }
+}

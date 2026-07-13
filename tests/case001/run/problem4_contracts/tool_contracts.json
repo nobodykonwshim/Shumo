@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "task_id": "A-P4-ROUTE-01",
+  "status": "verified",
+  "tools": {
+    "read_terrain_bundle": {
+      "purpose": "Read the normalized official depth grid and immutable source profile.",
+      "inputs": {"path": "tests/case001/local/generated/attachment_terrain.json"},
+      "outputs": ["source hash", "coordinate arrays", "depth grid", "profile"],
+      "side_effects": "none",
+      "failure_signals": ["missing file", "hash mismatch", "schema mismatch"],
+      "verification": "source SHA-256 must equal the registered attachment hash",
+      "retry_limit": 0
+    },
+    "write_candidate_plan": {
+      "purpose": "Write one precomputed line-plan candidate for later independent evaluation.",
+      "inputs": {
+        "candidate_id": "unique string",
+        "route_family": "string",
+        "lines": "ordered list of unique-id polylines in metres",
+        "assumptions": "non-empty list",
+        "expected_tradeoffs": "non-empty list"
+      },
+      "outputs": ["candidate JSON path", "content SHA-256"],
+      "side_effects": "write only below tests/case001/run/problem4_candidates/",
+      "failure_signals": ["duplicate line id", "zero-length segment", "non-finite coordinate", "write outside allowed path"],
+      "verification": "re-read JSON, validate unique ids and positive segment lengths, record hash",
+      "retry_limit": 1
+    },
+    "evaluate_candidate_plan": {
+      "purpose": "Evaluate a precomputed candidate with the route-independent spatial evaluator.",
+      "implementation": "skills/math_modeling/evaluators/spatial_coverage.py",
+      "inputs": ["candidate JSON", "immutable terrain bundle", "frozen evaluation settings"],
+      "outputs": ["total length", "uncovered percentage", "multiply-covered percentage", "excess-overlap length", "boundary violations", "grid sensitivity"],
+      "side_effects": "write report beside candidate only",
+      "failure_signals": ["non-zero exit", "singular geometry", "terrain bounds violation", "missing sensitivity results"],
+      "verification": "report independence contract must forbid route generation and candidate-score reuse",
+      "retry_limit": 0
+    },
+    "submit_candidate_set": {
+      "purpose": "Submit at most three evaluated candidates for deterministic comparison and human selection.",
+      "inputs": ["candidate hashes", "evaluation report hashes", "limitations"],
+      "outputs": ["candidate-set manifest"],
+      "side_effects": "no registry, paper or frozen-baseline changes",
+      "failure_signals": ["candidate count exceeds budget", "missing report", "hash mismatch", "optimality claim"],
+      "verification": "all candidate and report hashes resolve and no final route is selected",
+      "retry_limit": 0
+    }
+  },
+  "forbidden_tools": [
+    "same-problem web search",
+    "reference-paper reader",
+    "global registry writer",
+    "paper writer",
+    "merge or PR state mutation"
+  ]
+}

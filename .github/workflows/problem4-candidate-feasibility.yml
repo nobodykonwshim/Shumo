@@ -1,0 +1,119 @@
+name: Case001 problem4 legacy feasibility demonstration
+
+# This is an expensive case-study evidence workflow, not a reusable Skill gate.
+# Pull-request triggers are intentionally disabled because GitHub evaluates path
+# filters against the whole PR diff and would rerun this case on unrelated Skill work.
+# Refresh evidence manually or when the case-specific pipeline itself is pushed.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tests/case001/run/problem4_candidates/generate_candidates.py"
+      - "tests/case001/run/problem4_candidates/resolve_candidate_selection.py"
+      - ".github/workflows/problem4-candidate-feasibility.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  demonstrate-legacy-resolution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download hash-verified official attachment mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests/case001/local/problem tests/case001/local/generated
+          curl --fail --location --retry 3 --retry-delay 2 \
+            "https://media.githubusercontent.com/media/yushugulao/CUMCM-Archive/ef5fa17360e7ea37547320849eac1469403cda97/%E7%AB%9E%E8%B5%9B%E8%B5%84%E6%96%99/2023/B/%E8%B5%9B%E9%A2%98/B%E9%A2%98/%E9%99%84%E4%BB%B6.xlsx" \
+            --output tests/case001/local/problem/附件.xlsx
+          echo "5f92dee1af5906869bd7dca45d73b90090bb971d882beb7d8461c6b563eee40a  tests/case001/local/problem/附件.xlsx" | sha256sum --check
+
+      - name: Rebuild terrain bundle and bounded candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python skills/math_modeling/evaluators/xlsx_depth_grid.py \
+            --input tests/case001/local/problem/附件.xlsx \
+            --output tests/case001/local/generated/attachment_terrain.json
+          mkdir -p tests/case001/run/problem4_candidates/generated
+          python tests/case001/run/problem4_candidates/generate_candidates.py \
+            --terrain tests/case001/local/generated/attachment_terrain.json \
+            --evaluator skills/math_modeling/evaluators/spatial_coverage.py \
+            --output-dir tests/case001/run/problem4_candidates/generated \
+            --gate-token fb6ad580bf4ed679cea0714eb64e1d65ebaa20e4367be38bf4584db83ffc051c
+          echo "1a38dec7773864a1b418c9f2ee7be3f8b92ed925098d3152dc73a89e52949189  tests/case001/run/problem4_candidates/generated/P4-CAND-C.json" | sha256sum --check
+          echo "adc943bd6347b222b4e10e412fba5c3a8b6aef5b4b4260d717cba62a4c72bef4  tests/case001/run/problem4_candidates/generated/P4-CAND-A.json" | sha256sum --check
+
+      - name: Reproduce historical exact-polyline resolution record
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/case001/run/problem4_candidates/resolve_candidate_selection.py \
+            --validator skills/math_modeling/evaluators/route_feasibility.py \
+            --primary tests/case001/run/problem4_candidates/generated/P4-CAND-C.json \
+            --fallback tests/case001/run/problem4_candidates/generated/P4-CAND-A.json \
+            --output tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
+          cat tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
+
+      - name: Reconfirm historical selected-route spatial metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests/case001/run/local/generated
+          cp tests/case001/local/generated/attachment_terrain.json \
+            tests/case001/run/local/generated/attachment_terrain.json
+          SELECTED=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json").read_text())
+          print(report["selected_candidate"])
+          PY
+          )
+          python skills/math_modeling/evaluators/spatial_coverage.py \
+            --config "tests/case001/run/problem4_candidates/generated/${SELECTED}.json" \
+            --output "tests/case001/run/problem4_candidates/generated/${SELECTED}_spatial_recheck.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          resolution = json.loads(Path("tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json").read_text())
+          selected = resolution["selected_candidate"]
+          spatial = json.loads(Path(f"tests/case001/run/problem4_candidates/generated/{selected}_spatial_recheck.json").read_text())
+          results = spatial["results"]
+          assert results["uncovered_area_percent"] == 0.0
+          assert results["boundary_violation"] is False
+          summary = {
+              "evidence_role": "historical_case_demonstration_not_final_selection",
+              "selected_candidate": selected,
+              "resolution": resolution["resolution"],
+              "primary_hard_corner_count": resolution["primary_feasibility"]["results"]["hard_corner_count"],
+              "total_survey_line_length_m": results["total_survey_line_length_m"],
+              "uncovered_area_percent": results["uncovered_area_percent"],
+              "excess_overlap_length_m": results["excess_overlap_length_m"],
+              "boundary_violation": results["boundary_violation"],
+              "final_case_selection_made": False,
+          }
+          Path("tests/case001/run/problem4_candidates/generated/problem4_selection_summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(summary, indent=2))
+          PY
+
+      - name: Upload legacy case evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: case001-problem4-legacy-feasibility-demonstration
+          path: |
+            tests/case001/run/problem4_candidates/generated/P4-CAND-A.json
+            tests/case001/run/problem4_candidates/generated/P4-CAND-C.json
+            tests/case001/run/problem4_candidates/generated/problem4_selection_resolution.json
+            tests/case001/run/problem4_candidates/generated/problem4_selection_summary.json
+            tests/case001/run/problem4_candidates/generated/*_spatial_recheck.json
+          if-no-files-found: error

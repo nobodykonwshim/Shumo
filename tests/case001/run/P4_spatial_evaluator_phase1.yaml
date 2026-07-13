@@ -1,0 +1,54 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: evaluator_phase1
+status: complete_agent_still_blocked
+
+implementation:
+  evaluator: skills/math_modeling/evaluators/spatial_coverage.py
+  documentation: skills/math_modeling/evaluators/README.md
+  analytic_tests: tests/evaluators/test_spatial_coverage.py
+  fixture: tests/evaluators/fixtures/flat_complete.json
+  ci_workflow: .github/workflows/spatial-evaluator.yml
+
+independence_contract:
+  route_generation_code_present: false
+  candidate_scoring_imported: false
+  input_requires_precomputed_line_plan: true
+
+metrics_implemented:
+  - total_survey_line_length_m
+  - uncovered_area_percent
+  - multiply_covered_area_percent
+  - excess_overlap_length_m_per_line_policy
+  - outside_region_line_length_m
+  - grid_resolution_sensitivity
+
+analytic_regression_tests:
+  count: 7
+  local_status: pass
+  cases:
+    - flat_plane_complete_coverage_without_overlap
+    - flat_plane_overlap_above_twenty_percent
+    - rectangular_boundary_clipping
+    - regular_grid_bilinear_interpolation_and_gradient
+    - sloped_plane_ray_intersection
+    - singular_geometry_rejection
+    - cli_success_and_invalid_input_failure
+
+problem4_agent_gate:
+  decision: blocked
+  completed_unblock_conditions:
+    - independent_spatial_evaluator_phase1_implemented
+    - analytic_planar_tests_pass
+  remaining_unblock_conditions:
+    - direct_or_deterministic_adapter_for_attachment_xlsx
+    - freeze_problem4_excess_overlap_length_reporting_semantics
+    - run_performance_and_resolution_tests_on_251x201_attachment_grid
+    - define_candidate_route_environment_and_tool_contracts
+    - implement_executable_agent_admission_gate
+  route_explorer_started: false
+
+notes:
+  - Synthetic tests establish basic geometry and accounting correctness only.
+  - The per-line excess-overlap length convention can double-count a physical overlap on both participating lines and must be explicitly accepted or replaced before final problem4 reporting.

@@ -1,0 +1,74 @@
+schema_version: 1
+case_id: case001
+stage: G1_reassessment
+problem_id: problem4
+status: approved_for_bounded_route_exploration
+
+previous_decision: blocked
+previous_blockers:
+  - independent_spatial_coverage_evaluator_not_implemented
+  - excessive_overlap_length_evaluator_not_implemented
+  - candidate_route_tool_contracts_not_defined
+
+closed_blockers:
+  independent_spatial_coverage_evaluator:
+    status: closed
+    evidence: tests/case001/tools/problem4_spatial_evaluator.py
+  excessive_overlap_length_evaluator:
+    status: closed_with_declared_scope
+    evidence: midpoint ordered-overlap intervals are summed within each parallel band family
+  candidate_route_tool_contracts:
+    status: closed
+    evidence: tests/case001/run/problem4_tool_contracts.yaml
+
+admission:
+  ambiguity:
+    decision_tree_enumerable: false
+    evidence: terrain partition count materially changes line length, high-overlap length and operational fragmentation
+  value:
+    impact: high
+    expected_gain: bounded comparison can reveal a Pareto knee without allowing unrestricted route invention
+  capability:
+    critical_capabilities:
+      - generate equal-width band candidates
+      - evaluate coverage, total line length, excessive-overlap length and segment count
+    evidence_of_reliability:
+      - deterministic repeated output on the 0.02 NM grid
+      - 0.04 NM perturbation preserves zero uncovered area, segment count and total length for the selected candidate
+  error_control:
+    checks:
+      - cell-centre coverage
+      - coordinate bounds
+      - line-length recomputation
+      - grid-resolution perturbation
+      - candidate comparison before route selection
+    rollback_point: problem3_complete_before_problem4_tooling
+    silent_failure_risk: medium
+  decision: bounded_agent
+
+scope:
+  proposed_role: route_explorer
+  allowed_actions:
+    - generate exactly four predefined band-count candidates: 1, 2, 4 and 8
+    - compare official metrics and segment-count complexity
+    - identify diminishing returns and model loopholes
+  forbidden_actions:
+    - generate arbitrary curved routes
+    - read same-problem references before candidate metrics are frozen
+    - choose the final route without the recorded checkpoint rule
+    - modify original attachment or prior frozen baselines
+    - claim global optimality
+  budget:
+    max_iterations: 1
+    max_tool_calls: 4
+    max_candidate_routes: 4
+  stop_conditions:
+    - four candidate metric records exist
+    - evaluator produces a structural or validity failure
+    - comparison requires an undefined turning-cost preference
+  approval_required: true
+
+remaining_risks:
+  - turning and transit cost are absent from the official three reported metrics
+  - increasing partition count creates progressively shorter but more numerous disconnected segments
+  - the run remains reference-aware and cannot establish blind independence

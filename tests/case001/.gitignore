@@ -1,0 +1,10 @@
+# Local-only source and reference binaries
+local/
+
+# Temporary extraction and rendering outputs
+work/
+_renders/
+
+# Generated runtime caches
+__pycache__/
+*.pyc

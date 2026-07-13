@@ -1,0 +1,165 @@
+name: Skill contract validation
+
+on:
+  pull_request:
+    paths:
+      - "shumo.py"
+      - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
+      - "skills/math_modeling/specs/**"
+      - "skills/math_modeling/validation/**"
+      - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
+      - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
+      - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
+      - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_STATUS_SCHEMA.md"
+      - "tests/specs/**"
+      - "tests/**/artifacts/modeling/**"
+      - "tests/**/artifacts/architecture/**"
+      - "tests/**/project_status.yaml"
+      - "tests/**/*.sensitivity.yaml"
+      - "tests/**/*.paper-blueprint.yaml"
+      - ".github/workflows/model-spec.yml"
+  push:
+    paths:
+      - "shumo.py"
+      - "skills/math_modeling/CAPABILITY_REGISTRY.yaml"
+      - "skills/math_modeling/specs/**"
+      - "skills/math_modeling/validation/**"
+      - "skills/math_modeling/support/SENSITIVITY_POLICY.md"
+      - "skills/math_modeling/support/PAPER_BLUEPRINT.md"
+      - "skills/math_modeling/support/SKILL_CONSTITUTION.md"
+      - "skills/math_modeling/workflows/MODELING_DECISION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_VALIDATION_SYSTEM.md"
+      - "skills/math_modeling/workflows/PROJECT_STATUS_SCHEMA.md"
+      - "tests/specs/**"
+      - "tests/**/artifacts/modeling/**"
+      - "tests/**/artifacts/architecture/**"
+      - "tests/**/project_status.yaml"
+      - "tests/**/*.sensitivity.yaml"
+      - "tests/**/*.paper-blueprint.yaml"
+      - ".github/workflows/model-spec.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skill-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validation dependencies
+        run: python -m pip install -r skills/math_modeling/validation/requirements.txt
+
+      - name: Run contract validator regression tests
+        run: python -m unittest discover -s tests/specs -p 'test_*.py' -v
+
+      - name: Validate capability registry and registered evidence paths
+        run: |
+          python skills/math_modeling/validation/capability_registry_validator.py \
+            --registry skills/math_modeling/CAPABILITY_REGISTRY.yaml \
+            --repo-root . \
+            --check-paths
+
+      - name: Validate case-independent modeling-decision example
+        run: |
+          python skills/math_modeling/validation/modeling_decision_validator.py \
+            --decision skills/math_modeling/specs/modeling_decision.example.yaml
+
+      - name: Validate case-independent model-spec example
+        run: |
+          python skills/math_modeling/validation/model_spec_validator.py \
+            --spec skills/math_modeling/specs/model_spec.example.yaml
+
+      - name: Validate case-independent sensitivity-policy example
+        run: |
+          python skills/math_modeling/validation/sensitivity_policy_validator.py \
+            --policy skills/math_modeling/specs/sensitivity_policy.example.yaml \
+            --repo-root . \
+            --check-paths
+
+      - name: Validate case-independent paper-blueprint example
+        run: |
+          python skills/math_modeling/validation/paper_blueprint_validator.py \
+            --blueprint skills/math_modeling/specs/paper_blueprint.example.yaml \
+            --repo-root . \
+            --check-paths
+
+      - name: Validate repository modeling decisions and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' decision; do
+            found=1
+            echo "Validating ${decision}"
+            python skills/math_modeling/validation/modeling_decision_validator.py \
+              --decision "${decision}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.model-decision.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Validate repository model specifications and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' spec; do
+            found=1
+            echo "Validating ${spec}"
+            python skills/math_modeling/validation/model_spec_validator.py \
+              --spec "${spec}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.model.v2.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Validate repository sensitivity policies and evidence paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' policy; do
+            found=1
+            echo "Validating ${policy}"
+            python skills/math_modeling/validation/sensitivity_policy_validator.py \
+              --policy "${policy}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.sensitivity.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Validate repository paper blueprints and source ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' blueprint; do
+            found=1
+            echo "Validating ${blueprint}"
+            python skills/math_modeling/validation/paper_blueprint_validator.py \
+              --blueprint "${blueprint}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name '*.paper-blueprint.yaml' -print0)
+          test "${found}" -eq 1
+
+      - name: Calculate repository project states and validate cross-artifact consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' project; do
+            found=1
+            echo "Calculating ${project}"
+            python shumo.py validate-project "${project}" \
+              --repo-root . \
+              --check-paths
+          done < <(find tests -type f -name 'project_status.yaml' -print0)
+          test "${found}" -eq 1

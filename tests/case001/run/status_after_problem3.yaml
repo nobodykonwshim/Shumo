@@ -1,0 +1,43 @@
+schema_version: 1
+case_id: case001
+status_record: after_problem3
+state: partial_case_complete
+
+completed:
+  W0_source_verification: true
+  W1_problem_intake: true
+  problem1_W2_W4: pass
+  problem2_W2_W4: pass
+  problem3_H1: complete
+  problem3_W2_W4: pass
+  problem3_baseline_freeze: complete
+  problem3_reference_release: complete
+  problem3_reference_comparison: complete
+  problem3_W5_modeling_packet: complete
+
+problem3_result:
+  line_count: 34
+  total_length_m: 125936
+  total_length_nm: 68
+  baseline_changed_after_reference_release: false
+  blind_claim_allowed: false
+  honest_label: reference_aware_assisted_pilot
+
+current_stop:
+  stage: G1_problem4
+  decision: blocked
+  reason:
+    - independent_spatial_coverage_evaluator_not_implemented
+    - excessive_overlap_length_evaluator_not_implemented
+    - candidate_route_tool_contracts_not_defined
+  safety_rule: agent_autonomy_cannot_exceed_error_detectability
+
+next_engineering_actions:
+  - implement_executable_schema_validator
+  - implement_reference_access_gate
+  - implement_agent_admission_evaluator
+  - implement_deterministic_stage_runner
+  - implement_problem4_independent_spatial_evaluator
+
+human_action_required_now: false
+merge_authorized: false

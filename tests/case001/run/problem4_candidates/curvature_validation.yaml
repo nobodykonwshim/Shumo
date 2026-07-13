@@ -1,0 +1,60 @@
+schema_version: 1
+case_id: case001
+problem_id: problem4
+stage: H3_candidate_feasibility
+status: original_candidate_c_geometry_failed_refinement_required
+
+primary_route_family: P4-CAND-C
+reference_candidate: P4-CAND-A
+validator: skills/math_modeling/evaluators/route_feasibility.py
+resolution_record: tests/case001/run/problem4_candidates/problem4_selection_resolution.yaml
+refinement_plan: tests/case001/run/problem4_candidates/candidate_c_refinement_plan.yaml
+
+frozen_checks:
+  exact_polyline_requires_c1_continuity: true
+  heading_tolerance_deg: 0.000001
+  minimum_turn_radius_m: null
+  minimum_turn_radius_policy: >-
+    No numerical vessel-turning radius appears in the problem statement or current
+    contracts, so no operational radius is invented. Refined candidates must still
+    remove instantaneous heading changes and report curvature diagnostics.
+  inter_line_connectors_checked: false
+
+verified_execution:
+  workflow_run_id: 29193104720
+  workflow_conclusion: success
+  official_attachment_hash_verified: true
+  regenerated_candidate_hashes_verified: true
+
+original_geometry_result:
+  candidate_id: P4-CAND-C
+  status: fail
+  hard_corner_count: 548
+  minimum_three_point_circumradius_m: 2397.1959212741776
+  failure_reason: nonzero_heading_change_at_polyline_vertices_requires_unbounded_curvature
+  conclusion_scope: exact_piecewise_linear_geometry_only
+
+route_family_interpretation:
+  status: retained_for_explicit_refinement
+  rationale:
+    - candidate C has the shortest tested survey-line length
+    - hard-corner failure identifies a geometry defect that may be repaired by constructing a new smooth route
+    - a smoothed route is a new candidate and must be independently re-evaluated
+  forbidden_shortcut: silently_treating_polyline_vertices_as_smoothed
+
+refined_candidate_requirements:
+  - use explicit finite-curvature geometry rather than an unlabelled polyline approximation
+  - preserve line ordering and prevent adjacent-line crossings
+  - rerun full spatial coverage, boundary and overlap evaluation
+  - recompute total survey-line length after smoothing
+  - compare refined-C length against the 620420.0 m candidate-A reference
+  - record minimum curvature-radius diagnostics without inventing a vessel limit
+
+candidate_a_reference:
+  status: pass_exact_straight_geometry
+  role: conservative_reference_and_fallback_only
+  final_selected: false
+
+limitations:
+  - connecting turns between separate survey lines remain outside current reported metrics
+  - no global optimality claim is permitted

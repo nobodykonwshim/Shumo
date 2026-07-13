@@ -1,0 +1,77 @@
+schema_version: "1.0"
+policy_id: SENS-CASE001-P4-EVALUATOR-RESOLUTION
+problem_id: case001_problem4_evaluator
+model:
+  artifact_id: CONTRACT-CASE001-P4-EVALUATOR
+  artifact_path: tests/case001/run/P4_spatial_evaluator_phase1.yaml
+  artifact_kind: evaluation_contract
+status: executed
+
+governance:
+  declared_before_final_result: true
+  thresholds_are_case_specific: true
+  default_thresholds_used: false
+  declared_at_stage: W3_before_final_result
+  decision_authority: team
+  rationale: >-
+    Phase 1 required a real-grid resolution test before the route explorer could
+    proceed. The policy reports resolution behavior without inventing a universal
+    stability percentage or using the smoke plan as a route-quality result.
+  freeze_record: tests/case001/run/P4_spatial_evaluator_phase1.yaml
+
+scope:
+  perturbations:
+    - id: PERT-P4-GRID-RESOLUTION
+      target_id: SETTING-GRID-RESOLUTION
+      target_type: numerical_setting
+      method: grid
+      values: [25, 50, 75]
+      unit: cells_per_axis
+      one_at_a_time: true
+      rationale: Evaluate whether raster estimates materially depend on grid resolution.
+  metrics:
+    - id: SENS-METRIC-P4-UNCOVERED-RANGE
+      target_id: METRIC-UNCOVERED-AREA
+      statistic: absolute_change
+      aggregation: range in uncovered-area percentage points across all declared grids
+      unit: percentage_point
+      rationale: Expose numerical-resolution dependence of the smoke evaluation.
+    - id: SENS-METRIC-P4-TRACE
+      target_id: REPORT-GRID-SENSITIVITY
+      statistic: custom
+      aggregation: complete table of grid size and reported coverage metrics
+      unit: null
+      rationale: Preserve every declared run so an unfavorable resolution is not hidden.
+  acceptance_rules:
+    - id: SENS-RULE-P4-COMPLETE
+      metric_ids: [SENS-METRIC-P4-UNCOVERED-RANGE, SENS-METRIC-P4-TRACE]
+      rule: Execute every declared grid size and report the full metric table and observed range.
+      threshold_source: not_numeric
+      source_record: tests/case001/run/P4_spatial_evaluator_phase1.yaml
+      required: true
+    - id: SENS-RULE-P4-NO-RANKING
+      metric_ids: [SENS-METRIC-P4-TRACE]
+      rule: The smoke-plan sensitivity result must not be used to rank or select a problem-4 route.
+      threshold_source: not_numeric
+      source_record: tests/case001/run/P4_spatial_evaluator_phase1.yaml
+      required: true
+
+execution:
+  status: completed
+  run_id: case001-problem4-real-grid-smoke
+  evidence_paths:
+    - tests/case001/run/problem4_real_grid_smoke_report.json
+    - tests/case001/run/problem4_evaluator_phase2_status.yaml
+  results:
+    - rule_id: SENS-RULE-P4-COMPLETE
+      status: pass
+      summary: All three declared grid sizes were executed and the full range was recorded.
+      evidence: tests/case001/run/problem4_real_grid_smoke_report.json
+    - rule_id: SENS-RULE-P4-NO-RANKING
+      status: pass
+      summary: The evidence explicitly labels the run as a smoke test and forbids route ranking.
+      evidence: tests/case001/run/problem4_real_grid_smoke_report.json
+
+limitations:
+  - This executed policy validates evaluator resolution behavior, not route quality.
+  - No universal allowable percentage-point range is inferred from this case.

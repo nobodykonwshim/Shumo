@@ -1,0 +1,151 @@
+schema_version: 1
+case_id: case001
+stage: W1
+status: verified
+
+provenance:
+  original_problem_read: true
+  original_problem_file: "B题.pdf"
+  original_problem_sha256: "e709e066139ea0a4bb64aa7e56ea097725a1f2b4e5161fc8c7e50c48be079396"
+  original_attachment_read: true
+  template_files_read: [result1.xlsx, result2.xlsx]
+  references_used_only_for_comparison: [B477.pdf, B226.pdf, B311.pdf]
+
+problem_context:
+  competition: "2023 高教社杯全国大学生数学建模竞赛"
+  problem: "B 题 多波束测线问题"
+  domain: multibeam_echo_sounding
+  official_definitions:
+    flat_seabed_overlap_rate: "eta = 1 - d/W"
+    negative_overlap_meaning: missed_coverage
+    preferred_overlap_percent_range: [10, 20]
+    nautical_mile_to_m: 1852
+
+questions:
+  problem1:
+    source_pointer: "B题.pdf page 2"
+    objective:
+      - establish a planar-slope model for swath coverage width
+      - establish a model for adjacent-swath overlap rate
+      - calculate the official table values
+    known_parameters:
+      transducer_opening_angle_degree: 120
+      seabed_slope_degree: 1.5
+      center_depth_m: 70
+      line_spacing_m: 200
+      line_offsets_m: [-800, -600, -400, -200, 0, 200, 400, 600, 800]
+    required_outputs:
+      - water_depth_at_each_offset_m
+      - coverage_width_at_each_offset_m
+      - overlap_rate_with_previous_line_percent
+      - result1.xlsx_preserving_A1_J4_schema
+    modeling_choice_required:
+      - define overlap consistently on a sloping seabed
+      - state line-order and slope-sign convention
+    expected_execution: workflow
+
+  problem2:
+    source_pointer: "B题.pdf page 3"
+    objective:
+      - establish a three-dimensional coverage-width model for varying survey-line direction
+      - calculate the official coverage-width matrix
+    known_parameters:
+      transducer_opening_angle_degree: 120
+      seabed_slope_degree: 1.5
+      center_depth_m: 120
+      distance_nautical_mile: [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1]
+      beta_degree: [0, 45, 90, 135, 180, 225, 270, 315]
+      nautical_mile_to_m: 1852
+    required_outputs:
+      - depth_relation_along_heading
+      - effective_cross_track_slope_relation
+      - coverage_width_matrix
+      - result2.xlsx_preserving_A1_J10_schema
+    expected_execution: workflow
+
+  problem3:
+    source_pointer: "B题.pdf page 3"
+    objective:
+      - design the shortest survey-line set for a rectangular planar-slope region
+      - completely cover the region
+      - keep every adjacent overlap between 10 and 20 percent
+    known_parameters:
+      north_south_length_nautical_mile: 2
+      east_west_width_nautical_mile: 4
+      center_depth_m: 110
+      west_is_deeper_than_east: true
+      seabed_slope_degree: 1.5
+      transducer_opening_angle_degree: 120
+      overlap_rate_percent_range: [10, 20]
+    decision_variables:
+      - survey_line_orientation
+      - line_count
+      - ordered_line_positions_or_spacings
+    required_outputs:
+      - reproducible_line_geometry
+      - line_count
+      - total_line_length
+      - complete_coverage_evidence
+      - overlap_constraint_evidence
+      - layout_figure
+    expected_execution: workflow_with_human_route_confirmation
+
+  problem4:
+    source_pointer: "B题.pdf page 3 and 附件.xlsx"
+    objective:
+      - use single-beam depth data to support a multibeam survey plan
+      - maximize covered area
+      - keep adjacent overlap preferably at or below 20 percent
+      - minimize total line length
+    region:
+      north_south_length_nautical_mile: 5
+      east_west_width_nautical_mile: 4
+    attachment:
+      filename: "附件.xlsx"
+      sheet: Sheet1
+      x_direction: west_to_east
+      y_direction: south_to_north
+      x_count: 201
+      y_count: 251
+      grid_step_nautical_mile: 0.02
+      depth_unit: m
+      missing_values: 0
+      depth_range_m: [20.0, 197.2]
+    required_outputs:
+      - complete_reproducible_line_plan
+      - total_line_length
+      - uncovered_area_percentage
+      - total_length_where_overlap_exceeds_20_percent
+      - independent_spatial_validation
+    interpretation_notes:
+      - "尽可能覆盖" and "尽量控制在20%以下" define a multi-objective problem rather than hard universal constraints
+      - candidate objectives must be stated before optimization
+      - references are comparison baselines only
+    expected_execution: blocked_until_independent_evaluator_then_bounded_route_exploration_candidate
+
+cross_question_dependencies:
+  - problem2_extends_problem1_geometry
+  - problem3_uses_problem1_overlap_and_problem2_directional_coverage
+  - problem4_reuses_swath_geometry_but_requires_new_terrain_and_spatial_evaluation
+
+resolved_issues:
+  - id: OI-001
+    resolution: "All question wording and numeric parameters verified against B题.pdf."
+  - id: OI-002
+    resolution: "附件.xlsx is a complete 251x201 depth grid over 4x5 NM with 0.02 NM spacing and no missing values."
+  - id: OI-003
+    resolution: "Problem1 adopts overlap length divided by the current line's total swath width, with line order from x=-800 m to x=800 m. The definition reduces to 1-d/W on flat seabed."
+
+open_issues:
+  - id: OI-004
+    severity: major
+    question: "Which problem3 boundary placement strategy should be approved at the human checkpoint?"
+  - id: OI-005
+    severity: critical
+    question: "Which independent grid/polygon evaluator will define problem4 coverage, excessive overlap and line length before any route Agent is admitted?"
+
+handoff:
+  allowed_to_W2_problem1: true
+  allowed_to_W2_problem2: true
+  allowed_to_problem3_human_checkpoint: true
+  allowed_to_problem4_route_agent: false

@@ -1,0 +1,124 @@
+schema_version: "1.0"
+blueprint_id: PAPER-DEMO-TRANSPORT-01
+project_id: demo_transport
+title: Transport model paper blueprint
+status: draft
+
+source_specs:
+  - spec_id: MODEL-DEMO-TRANSPORT-01
+    path: skills/math_modeling/specs/model_spec.example.yaml
+    role: primary
+    required_for_writing: true
+
+numbering_policy:
+  equations: global
+  figures: chapter
+  tables: chapter
+  algorithms: chapter
+  locked_before_writing: true
+
+sections:
+  - id: SEC-DEMO-ASSUMPTIONS
+    title: Problem statement, assumptions and symbols
+    order: 1
+    purpose: State the problem boundary and shared notation once.
+    content_blocks:
+      - id: BLOCK-DEMO-ASSUMPTIONS
+        type: assumptions
+        source_ids: [A-BALANCED]
+        disposition: body
+      - id: BLOCK-DEMO-SYMBOLS
+        type: symbol_table
+        source_ids: [VAR-X, VAR-Z, PAR-SUPPLY, PAR-DEMAND, PAR-COST]
+        disposition: body
+  - id: SEC-DEMO-MODEL
+    title: Minimum-cost transport model
+    order: 2
+    purpose: Define the model and objective exactly once.
+    content_blocks:
+      - id: BLOCK-DEMO-MODEL
+        type: model_definition
+        source_ids: [M-TRANSPORT-LP]
+        disposition: body
+      - id: BLOCK-DEMO-FORMULA
+        type: formula
+        source_ids: [F-TOTAL-COST]
+        disposition: body
+  - id: SEC-DEMO-RESULTS
+    title: Solution outputs and validation
+    order: 3
+    purpose: Present outputs and the checks required before interpretation.
+    content_blocks:
+      - id: BLOCK-DEMO-RESULTS
+        type: result
+        source_ids: [OUT-ALLOCATION, OUT-TOTAL-COST]
+        disposition: body
+      - id: BLOCK-DEMO-VALIDATION
+        type: validation
+        source_ids: [V-DIMENSION, V-BALANCE, V-RECALCULATE]
+        disposition: body
+  - id: SEC-DEMO-LIMITS
+    title: Limitations and claim boundary
+    order: 4
+    purpose: Separate supported claims from prohibited generalizations.
+    content_blocks:
+      - id: BLOCK-DEMO-LIMITS
+        type: limitation
+        source_ids: []
+        disposition: body
+
+model_placements:
+  - model_id: M-TRANSPORT-LP
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-MODEL
+    mode: define
+
+formula_placements:
+  - formula_id: F-TOTAL-COST
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-MODEL
+    mode: define
+    label: eq:demo-total-cost
+
+output_placements:
+  - output_id: OUT-ALLOCATION
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-RESULTS
+    representation: table
+    label: tab:demo-allocation
+    precision_policy: Use the input quantity precision.
+  - output_id: OUT-TOTAL-COST
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-RESULTS
+    representation: text
+    precision_policy: Match the declared currency precision.
+
+claims:
+  - id: CLAIM-DEMO-ALLOWED
+    text: The specification defines a deterministic minimum-cost transport model.
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-RESULTS
+    status: allowed
+  - id: CLAIM-DEMO-FORBIDDEN
+    text: The model is universally suitable for every logistics problem.
+    source_spec_id: MODEL-DEMO-TRANSPORT-01
+    owner_section_id: SEC-DEMO-LIMITS
+    status: forbidden
+
+writing_constraints:
+  new_modeling_content_forbidden: true
+  recomputation_forbidden: true
+  renumbering_forbidden: true
+  unverified_claims_forbidden: true
+  duplicate_definition_forbidden: true
+
+human_checkpoints:
+  - id: H-DEMO-PAPER-STRUCTURE
+    decision: Approve section ownership and output presentation before writing.
+    authority: user
+    status: pending
+
+evidence_paths: []
+
+limitations:
+  - This is a contract demonstration, not a finished logistics paper.

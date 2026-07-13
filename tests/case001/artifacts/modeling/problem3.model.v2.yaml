@@ -1,0 +1,275 @@
+schema_version: "1.0"
+spec_id: MODEL-CASE001-P3
+problem_id: case001_problem3
+title: Parallel contour-line survey planning model
+status: solved
+
+objective:
+  sense: minimize
+  description: Minimize total survey-line length within the declared parallel contour-line route family while maintaining complete coverage and adjacent overlap between 10 and 20 percent.
+  metrics:
+    - id: METRIC-P3-LENGTH
+      description: Total survey-line length
+      priority: primary
+      formula_id: F-P3-TOTAL-LENGTH
+      unit: m
+
+inputs:
+  - id: IN-P3-NORTH-SOUTH-LENGTH
+    description: North-south side length of the rectangular survey region
+    data_type: number
+    unit: m
+    required: true
+    source: original problem
+    value: 3704
+  - id: IN-P3-EAST-WEST-WIDTH
+    description: East-west width of the rectangular survey region
+    data_type: number
+    unit: m
+    required: true
+    source: original problem
+    value: 7408
+  - id: IN-P3-CENTER-DEPTH
+    description: Center water depth
+    data_type: number
+    unit: m
+    required: true
+    source: original problem
+    value: 110
+  - id: IN-P3-SLOPE
+    description: Seabed slope angle
+    data_type: number
+    unit: degree
+    required: true
+    source: original problem
+    value: 1.5
+  - id: IN-P3-OPENING-ANGLE
+    description: Multibeam opening angle
+    data_type: number
+    unit: degree
+    required: true
+    source: original problem
+    value: 120
+  - id: IN-P3-OVERLAP-RANGE
+    description: Required adjacent overlap interval
+    data_type: vector
+    unit: ratio
+    required: true
+    source: original problem
+    value: [0.10, 0.20]
+
+symbols:
+  variables:
+    - id: VAR-P3-LINE-POSITIONS
+      description: East-west coordinates of north-south survey lines
+      role: decision
+      domain: strictly increasing finite vector
+      unit: m
+    - id: VAR-P3-LINE-COUNT
+      description: Number of survey lines
+      role: decision
+      domain: positive integer
+      unit: null
+    - id: VAR-P3-TOTAL-LENGTH
+      description: Total survey-line length
+      role: output
+      domain: positive real
+      unit: m
+  parameters:
+    - id: PAR-P3-NS-LENGTH
+      description: North-south route length per survey line
+      unit: m
+      source: IN-P3-NORTH-SOUTH-LENGTH
+      value: 3704
+    - id: PAR-P3-EW-WIDTH
+      description: East-west coverage width
+      unit: m
+      source: IN-P3-EAST-WEST-WIDTH
+      value: 7408
+    - id: PAR-P3-OVERLAP-MIN
+      description: Minimum allowed adjacent overlap
+      unit: ratio
+      source: IN-P3-OVERLAP-RANGE
+      value: 0.10
+    - id: PAR-P3-OVERLAP-MAX
+      description: Maximum allowed adjacent overlap
+      unit: ratio
+      source: IN-P3-OVERLAP-RANGE
+      value: 0.20
+
+assumptions:
+  - id: A-P3-PLANAR-SLOPE
+    statement: The seabed is represented by the planar slope specified by the problem.
+    status: accepted
+    impact: Swath geometry is deterministic along every contour-parallel line.
+  - id: A-P3-CONTOUR-PARALLEL
+    statement: Candidate survey lines are straight, north-south and parallel to depth contours.
+    status: accepted
+    impact: Optimization is restricted to one declared route family and does not establish global optimality over arbitrary curves.
+
+model_components:
+  - id: M-P3-CONTOUR-FAMILY
+    type: geometry
+    purpose: Define straight north-south survey lines parallel to depth contours.
+  - id: M-P3-BOUNDARY-PLACEMENT
+    type: decision_rule
+    purpose: Place the first line tangent to western boundary coverage.
+    depends_on: [F-P3-FIRST-LINE]
+  - id: M-P3-SPACING-RECURRENCE
+    type: algorithm
+    purpose: Select the largest feasible successive spacing at the minimum overlap limit.
+    depends_on: [F-P3-SPACING, C-P3-OVERLAP]
+  - id: M-P3-TERMINATION
+    type: decision_rule
+    purpose: Stop at the first line count that covers the eastern boundary.
+    depends_on: [F-P3-TERMINATION, C-P3-COVERAGE]
+
+formulas:
+  - id: F-P3-FIRST-LINE
+    expression: x_1 - L_deep(D(x_1)) cos(alpha) = x_west
+    description: Western boundary tangency equation for the first line.
+    symbols: [VAR-P3-LINE-POSITIONS]
+    unit_check: pass
+  - id: F-P3-SPACING
+    expression: eta_i(x_{i-1}, x_i) = 0.10
+    description: Adjacent spacing recurrence at the minimum overlap boundary.
+    symbols: [VAR-P3-LINE-POSITIONS, PAR-P3-OVERLAP-MIN]
+    unit_check: pass
+  - id: F-P3-TERMINATION
+    expression: x_n + L_shallow(D(x_n)) cos(alpha) >= x_east
+    description: Eastern boundary coverage termination condition.
+    symbols: [VAR-P3-LINE-POSITIONS, PAR-P3-EW-WIDTH]
+    unit_check: pass
+  - id: F-P3-TOTAL-LENGTH
+    expression: L_total = n * 3704
+    description: Total length for n full-height north-south lines.
+    symbols: [VAR-P3-TOTAL-LENGTH, VAR-P3-LINE-COUNT, PAR-P3-NS-LENGTH]
+    unit_check: pass
+
+constraints:
+  - id: C-P3-OVERLAP
+    kind: hard
+    description: Every adjacent line overlap must lie between 10 and 20 percent.
+    expression: 0.10 <= eta_i <= 0.20
+    symbols: [VAR-P3-LINE-POSITIONS, PAR-P3-OVERLAP-MIN, PAR-P3-OVERLAP-MAX]
+    tolerance: 1.0e-9
+    failure_signal: any adjacent overlap lies outside the declared interval
+  - id: C-P3-COVERAGE
+    kind: hard
+    description: The selected line family must cover both east-west boundaries and the whole declared planar region.
+    expression: western tangency and eastern termination both hold
+    symbols: [VAR-P3-LINE-POSITIONS, PAR-P3-EW-WIDTH]
+    tolerance: 1.0e-9
+    failure_signal: a boundary shortfall or uncovered interval is detected
+
+algorithm:
+  method: bracketed scalar root sequence
+  deterministic: true
+  steps:
+    - id: STEP-P3-FIRST
+      description: Solve the western tangency equation for the first line.
+      uses: [F-P3-FIRST-LINE]
+      produces: [VAR-P3-LINE-POSITIONS]
+    - id: STEP-P3-RECUR
+      description: Repeatedly solve the minimum-overlap recurrence for the next line.
+      uses: [F-P3-SPACING, C-P3-OVERLAP]
+      produces: [VAR-P3-LINE-POSITIONS]
+    - id: STEP-P3-STOP
+      description: Stop when the eastern boundary coverage condition first passes.
+      uses: [F-P3-TERMINATION, C-P3-COVERAGE]
+      produces: [VAR-P3-LINE-COUNT]
+    - id: STEP-P3-LENGTH
+      description: Recalculate total line length from line count and fixed route length.
+      uses: [F-P3-TOTAL-LENGTH]
+      produces: [VAR-P3-TOTAL-LENGTH, OUT-P3-LENGTH]
+  termination: Stop at the first feasible line count whose eastern boundary coverage check passes.
+
+outputs:
+  - id: OUT-P3-LINE-COUNT
+    description: Validated number of survey lines
+    data_type: integer
+    unit: null
+    depends_on: [VAR-P3-LINE-COUNT]
+    acceptance: The count is feasible and one fewer line is infeasible within the declared route family.
+  - id: OUT-P3-LENGTH
+    description: Validated total survey-line length
+    data_type: number
+    unit: m
+    depends_on: [VAR-P3-TOTAL-LENGTH, F-P3-TOTAL-LENGTH]
+    acceptance: Independent recalculation equals 125936 m.
+  - id: OUT-P3-SCHEDULE
+    description: Ordered line placement schedule
+    data_type: file
+    unit: null
+    depends_on: [VAR-P3-LINE-POSITIONS]
+    destination: tests/case001/run/problem3_independent_baseline.yaml
+    acceptance: The file records all line positions and declared validation evidence.
+
+validation:
+  checks:
+    - id: V-P3-COVERAGE
+      type: constraint
+      description: Verify complete rectangle coverage and both boundary conditions.
+      target_ids: [C-P3-COVERAGE, OUT-P3-SCHEDULE]
+      acceptance: No boundary shortfall or uncovered interval is detected.
+      required: true
+      status: pass
+      evidence: tests/case001/run/problem3_independent_baseline.yaml
+    - id: V-P3-OVERLAP
+      type: constraint
+      description: Verify every adjacent overlap lies within the declared interval.
+      target_ids: [C-P3-OVERLAP, OUT-P3-SCHEDULE]
+      acceptance: Every overlap is between 0.10 and 0.20 inclusive.
+      required: true
+      status: pass
+      evidence: tests/case001/run/problem3_independent_baseline.yaml
+    - id: V-P3-MINIMUM-COUNT
+      type: boundary
+      description: Verify 33 lines are insufficient and 34 lines are feasible within the route family.
+      target_ids: [OUT-P3-LINE-COUNT, M-P3-TERMINATION]
+      acceptance: The 33-line case has a positive eastern shortfall and the 34-line case covers the boundary.
+      required: true
+      status: pass
+      evidence: tests/case001/run/problem3_independent_baseline.yaml
+    - id: V-P3-LENGTH
+      type: residual
+      description: Independently recalculate total survey-line length.
+      target_ids: [OUT-P3-LENGTH, F-P3-TOTAL-LENGTH]
+      acceptance: The recalculated value equals 125936 m.
+      required: true
+      status: pass
+      evidence: tests/case001/run/problem3_independent_baseline.yaml
+
+provenance:
+  reference_exposure_status: contaminated_for_blind_claim
+  source_artifacts:
+    - id: SRC-P3-MANIFEST
+      location: tests/case001/problem/source_manifest.yaml
+      availability: repository
+      role: authoritative_input
+    - id: SRC-P3-EVIDENCE
+      location: tests/case001/run/problem3_independent_baseline.yaml
+      availability: repository
+      role: evidence
+  evidence_paths:
+    - tests/case001/run/H1_problem3_route_decision.yaml
+    - tests/case001/run/problem3_independent_baseline.yaml
+    - tests/case001/review/problem3_reference_comparison.yaml
+
+human_checkpoints:
+  - id: H-P3-ROUTE
+    decision: Accept the contour-parallel deterministic route as the problem-3 baseline.
+    authority: user
+    status: approved
+    record: tests/case001/run/H1_problem3_route_decision.yaml
+
+limitations:
+  - Optimality is established only inside the declared contour-parallel straight-line route family.
+  - The result does not prove global optimality over arbitrary curved or nonparallel routes.
+
+claims:
+  allowed:
+    - Thirty-four contour-parallel lines are feasible within the declared route family.
+    - Thirty-three lines are insufficient within the declared route family.
+  forbidden:
+    - The route is globally shortest among every possible survey geometry.
