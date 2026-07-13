@@ -39,13 +39,19 @@ jobs:
       - name: Validate generic LaTeX paper template
         run: |
           python skills/math_modeling/validation/latex_paper_validator.py \
-            --tex skills/math_modeling/templates/latex/main.tex
+            --tex skills/math_modeling/templates/latex/main.tex \
+            --fail-on-warning
 
       - name: Validate committed case LaTeX sources
         shell: bash
         run: |
           set -euo pipefail
+          found=0
           while IFS= read -r -d '' tex; do
+            found=1
             echo "Validating ${tex}"
-            python skills/math_modeling/validation/latex_paper_validator.py --tex "${tex}"
+            python skills/math_modeling/validation/latex_paper_validator.py \
+              --tex "${tex}" \
+              --fail-on-warning
           done < <(find tests -type f -path '*/final_delivery/latex/main.tex' -print0)
+          test "${found}" -eq 1
