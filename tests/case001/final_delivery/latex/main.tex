@@ -1,0 +1,400 @@
+\documentclass{shumo-cumcm2025}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\papertitle{基于方向等效坡度与有限曲率优化的多波束测线规划}
+
+\begin{cnabstract}
+多波束测深的核心矛盾在于：测线过疏会造成漏测，测线过密又会增加重复覆盖和航行成本。本文围绕理想斜坡与真实海底地形下的覆盖计算和测线设计，依次建立二维扇形声束几何模型、任意航向等效坡度模型、最大允许间距递推模型和地形自适应有限曲率路线模型。
+
+针对问题一，在垂直测线的斜坡剖面内分别求得深水侧和浅水侧覆盖半宽，并以当前条带宽度为基准定义有向重叠率。计算表明，水深由 \SI{90.95}{m} 降至 \SI{49.05}{m} 时，覆盖宽度由 \SI{315.81}{m} 降至 \SI{170.33}{m}；固定 \SI{200}{m} 间距下，浅水侧 \SI{600}{m} 与 \SI{800}{m} 位置的重叠率分别为 $-1.53\%$ 和 $-12.36\%$，已出现漏测。针对问题二，将坡度分解到航向与横航向，利用沿航向深度变化和横航向等效坡度构造三维覆盖宽度模型，得到 $8$ 个方向、$8$ 个距离下的完整矩阵；结果满足 $45^\circ$ 与 $315^\circ$、$135^\circ$ 与 $225^\circ$ 的对称关系，且 $90^\circ$、$270^\circ$ 方向的水深沿程不变。
+
+针对问题三，将候选限制为平行等深线的南北向直线族，以西边界相切确定首线，以相邻重叠率取下限 $10\%$ 确定后续最大间距，并以首次覆盖东边界为终止条件。求得 $34$ 条测线，总长度为 \SI{125936}{m}；在同一规则下，$33$ 条测线仍留下 \SI{25.756620}{m} 的东侧缺口，因此 $34$ 条为该路线族内的最少条数。针对问题四，读取 $251\times201$ 深度网格，采用双线性插值与局部梯度计算任意位置的横航向等效坡度，构造独立空间覆盖评估器，并比较南北保守直线、东西保守直线、地形自适应折线和有限曲率平滑曲线。最终推荐 $61$ 条地形自适应有限曲率测线，几何总长度为 \SI{576726.636}{m}，名义网格漏测率为 $0$，重叠率超过 $20\%$ 的累计测线长度为 \SI{339556.407}{m}，最小曲率半径为 \SI{225.983}{m}。在 $70\times70$ 敏感性网格上出现 $0.040816\%$ 的微小漏测，故本文不作连续全覆盖或全局最优声明，并保留总长度 \SI{620420}{m} 的保守直线方案作为工程回退。
+
+所建模型将解析推导、独立复算、结构对称性、边界检查和网格敏感性结合起来，能够直接回答四个问题，同时明确结论适用范围和剩余风险。
+\end{cnabstract}
+
+\keywords{多波束测深；方向等效坡度；最大间距递推；有限曲率路线；敏感性分析}
+
+\clearpage
+
+\section{问题重述}
+多波束测深系统通过扇形声束一次获取测线两侧一定宽度内的水深信息。覆盖宽度随水深、海底坡度和测线方向变化，因此固定间距并不能保证全区域均匀覆盖。实际测线设计既要避免漏测，又要限制过度重叠，还要减少总航程。题目由理想斜坡逐步推广到真实海底地形，要求完成以下任务：其一，计算等间距测线的水深、覆盖宽度和相邻重叠率；其二，建立任意航向下的覆盖宽度模型；其三，在规则矩形斜坡海域内设计满足 $10\%$--$20\%$ 重叠约束的最短方案；其四，利用附件深度网格给出真实海域的具体测线及漏测率、总长度和过度重叠长度。
+
+\section{问题分析}
+\subsection{总体思路}
+四个问题共享同一条建模主线。首先在垂直测线的二维剖面中推导声束与斜坡的交点，得到覆盖半宽；随后将三维坡面梯度分解到航向和横航向，使二维公式适用于任意航向；在理想海域中，利用覆盖边界和重叠下限构造一维递推；在真实海域中，则把局部覆盖模型嵌入地形插值、候选路线生成、有限曲率平滑和独立空间评估。图~\ref{fig:flow} 给出整体流程。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+node distance=7mm and 8mm,
+box/.style={draw,rounded corners,align=center,minimum width=31mm,minimum height=8mm,font=\small},
+arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[box] (input) {题面与附件\\参数、网格、约束};
+\node[box,right=of input] (p1) {二维斜坡\\覆盖几何};
+\node[box,right=of p1] (p2) {方向分解\\等效坡度};
+\node[box,below=of p1] (p3) {最大允许间距\\递推布线};
+\node[box,right=of p3] (p4) {地形插值与\\有限曲率路线};
+\node[box,left=of p3] (check) {独立复算\\边界与敏感性};
+\node[box,below=of p3] (out) {结果表、测线方案\\结论边界};
+\draw[arr] (input)--(p1);
+\draw[arr] (p1)--(p2);
+\draw[arr] (p1)--(p3);
+\draw[arr] (p2)--(p4);
+\draw[arr] (p3)--(p4);
+\draw[arr] (p4)--(check);
+\draw[arr] (check)--(out);
+\end{tikzpicture}
+\caption{四个问题的总体建模流程}
+\label{fig:flow}
+\end{figure}
+
+\subsection{各问题的关键矛盾}
+问题一的关键是区分深水侧与浅水侧覆盖半宽，并使用沿坡面距离计算相邻条带的真实交叠。问题二的关键是区分沿航向坡度与横航向坡度：前者改变沿程水深，后者改变声束扇面内的有效坡角。问题三的关键是把二维覆盖约束转化为可递推的最大间距，并限定最优性范围。问题四同时包含覆盖、重叠和长度三个目标，题目未给出权重，因此采用主次序法：先控制漏测，再降低过度重叠，最后比较总长度。
+
+\section{模型假设}
+\begin{enumerate}[label=\arabic*)]
+\item 题面给出的换能器开角、坡度、中心水深和附件深度数据真实有效；该假设使模型输入具有确定性，避免在缺少误差分布时任意引入噪声。
+\item 问题一至问题三的海底为均匀平面坡面，声束扇面始终垂直于测线；该假设与题面理想条件一致，可将三维几何化为横航向剖面几何。
+\item 问题四采用附件网格的双线性插值表示网格间水深，并用中心差分估计局部梯度；该处理保留原网格尺度上的地形变化，同时避免构造无依据的高频起伏。
+\item 忽略声速剖面、船体横摇纵摇、换能器安装误差和海况影响；题目未提供相关参数，纳入这些因素会引入不可标定的不确定量。
+\item 题目未给出具体船型的最小转弯半径，因此曲线方案仅要求切向连续和曲率有限，不据此宣称满足某一船舶的动力学约束。
+\end{enumerate}
+
+\section{符号说明}
+\begin{table}[H]
+\centering
+\caption{主要符号及含义}
+\label{tab:symbols}
+\begin{tabularx}{\textwidth}{C{2.2cm}LC{2.3cm}}
+\toprule
+符号 & 含义 & 单位 \\
+\midrule
+$D,D_0$ & 测量位置水深与海域中心水深 & m \\
+$\alpha$ & 理想海底坡度角 & $(^\circ)$ \\
+$\theta,\varphi$ & 换能器开角与半开角，$\varphi=\theta/2$ & $(^\circ)$ \\
+$\beta$ & 测线方向与坡面法向水平投影的夹角 & $(^\circ)$ \\
+$\gamma$ & 横航向剖面的等效坡度角 & $(^\circ)$ \\
+$L_d,L_s$ & 深水侧、浅水侧沿坡面覆盖半宽 & m \\
+$W$ & 单条测线总覆盖宽度 & m \\
+$\eta_i$ & 第 $i$ 条测线与前一条测线的有向重叠率 & -- \\
+$x_i$ & 第 $i$ 条测线的横向位置 & m \\
+$L_{\mathrm{tot}}$ & 全部测线总长度 & m \\
+$\Omega$ & 问题四待测海域 & -- \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{模型建立与求解}
+\subsection{问题一：斜坡剖面覆盖与重叠模型}
+\subsubsection{覆盖宽度模型}
+取横向坐标 $x$ 向浅水侧为正，中心水深为 $D_0$。均匀坡面上，位置 $x$ 处的垂直水深为关键状态量
+\keyequation{eq:p1-depth}{D(x)=D_0-x\tan\alpha.}
+式~\eqref{eq:p1-depth} 给出了后续覆盖宽度计算所需的局部水深。在垂直测线的剖面内，声束两侧分别与斜坡相交。记 $\varphi=\theta/2$，由三角关系可得深水侧和浅水侧沿坡面覆盖半宽
+\keyequation{eq:p1-half}{
+L_d(D)=\frac{D\sin\varphi}{\sin\!\left(\frac{\pi-\theta}{2}-\alpha\right)},\qquad
+L_s(D)=\frac{D\sin\varphi}{\sin\!\left(\frac{\pi-\theta}{2}+\alpha\right)},\qquad
+W(D)=L_d(D)+L_s(D).}
+当 $\alpha=0$ 时，式~\eqref{eq:p1-half} 退化为平底公式 $W=2D\tan\varphi$，说明模型满足零坡度极限。
+
+\subsubsection{相邻条带重叠率}
+相邻测线水平间距为 $d$，其沿坡面距离为 $d/\cos\alpha$。按照“当前条带与前一条条带的交叠长度占当前条带宽度”的定义，有
+\keyequation{eq:p1-overlap}{
+\eta_i=\frac{L_s(D_{i-1})+L_d(D_i)-d/\cos\alpha}{W(D_i)}.}
+由式~\eqref{eq:p1-overlap} 可知，$\eta_i<0$ 时，负值绝对量对应两条覆盖边界之间的间隙，因此该定义能够同时表示重叠和漏测。
+
+\subsubsection{计算结果与直接回答}
+将 $D_0=\SI{70}{m}$、$\alpha=1.5^\circ$、$\theta=120^\circ$、$d=\SI{200}{m}$ 代入上述模型，得到表~\ref{tab:p1-result}。图~\ref{fig:p1-width} 表明水深和覆盖宽度均随向浅水侧移动而单调减小；图~\ref{fig:p1-overlap} 显示固定间距下重叠率持续下降，并在 $x=\SI{600}{m}$ 后转为负值。
+
+\begin{table}[H]
+\centering
+\caption{问题一计算结果}
+\label{tab:p1-result}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{c*{9}{r}}
+\toprule
+距中心位置/m & -800 & -600 & -400 & -200 & 0 & 200 & 400 & 600 & 800 \\
+\midrule
+水深/m & 90.95 & 85.71 & 80.47 & 75.24 & 70.00 & 64.76 & 59.53 & 54.29 & 49.05 \\
+覆盖宽度/m & 315.81 & 297.63 & 279.44 & 261.26 & 243.07 & 224.88 & 206.70 & 188.51 & 170.33 \\
+与前一条重叠率/\% & -- & 35.70 & 31.51 & 26.74 & 21.26 & 14.89 & 7.41 & -1.53 & -12.36 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}\centering
+\includegraphics[width=\linewidth]{problem1_depth.pdf}
+\caption{水深变化}\label{fig:p1-depth}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}\centering
+\includegraphics[width=\linewidth]{problem1_width.pdf}
+\caption{覆盖宽度变化}\label{fig:p1-width-sub}
+\end{subfigure}
+\caption{问题一水深与覆盖宽度随位置的变化}
+\label{fig:p1-width}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{problem1_overlap.pdf}
+\caption{问题一相邻条带重叠率；阴影为题目要求的 $10\%$--$20\%$ 区间}
+\label{fig:p1-overlap}
+\end{figure}
+
+因此，题目给定的等间距方案在深水区存在过度重叠，在浅水区出现漏测；仅采用固定间距不能保证全区域满足覆盖要求。
+
+\subsection{问题二：任意航向下的方向等效坡度模型}
+\subsubsection{坡度分解}
+设 $\beta=0^\circ$ 表示测线沿坡面向深水方向。坡度在航向上的分量决定沿程水深变化，船舶距中心沿测线前进 $l$ 后，水深为
+\keyequation{eq:p2-depth}{D(l,\beta)=D_0+l\tan\alpha\cos\beta.}
+声束扇面垂直于测线，影响覆盖宽度的是坡度在横航向上的分量。其等效坡度角为
+\keyequation{eq:p2-gamma}{\gamma(\beta)=\arctan\!\left(\left|\tan\alpha\sin\beta\right|\right).}
+将式~\eqref{eq:p2-gamma} 给出的 $\gamma$ 代入二维覆盖关系，并使用当前位置水深，可得任意航向下的覆盖宽度
+\keyequation{eq:p2-width}{
+W(l,\beta)=D(l,\beta)\sin\varphi\left[
+\frac{1}{\sin\!\left(\frac{\pi-\theta}{2}-\gamma\right)}+
+\frac{1}{\sin\!\left(\frac{\pi-\theta}{2}+\gamma\right)}
+\right].}
+
+\subsubsection{结果矩阵与一致性检验}
+取 $D_0=\SI{120}{m}$、$\alpha=1.5^\circ$、$\theta=120^\circ$，计算结果见表~\ref{tab:p2-result}，其分布以热力图形式展示于图~\ref{fig:p2-heatmap}。
+
+\begin{table}[H]
+\centering
+\caption{不同测线方向和距离下的覆盖宽度（m）}
+\label{tab:p2-result}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{c*{8}{r}}
+\toprule
+$\beta/(^\circ)$ & 0 & 0.3 & 0.6 & 0.9 & 1.2 & 1.5 & 1.8 & 2.1 \\
+\midrule
+0   & 415.692 & 466.091 & 516.490 & 566.889 & 617.288 & 667.686 & 718.085 & 768.484 \\
+45  & 416.192 & 451.872 & 487.552 & 523.232 & 558.912 & 594.592 & 630.273 & 665.953 \\
+90  & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 \\
+135 & 416.192 & 380.511 & 344.831 & 309.151 & 273.471 & 237.791 & 202.110 & 166.430 \\
+180 & 415.692 & 365.293 & 314.894 & 264.496 & 214.097 & 163.698 & 113.299 & 62.900 \\
+225 & 416.192 & 380.511 & 344.831 & 309.151 & 273.471 & 237.791 & 202.110 & 166.430 \\
+270 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 \\
+315 & 416.192 & 451.872 & 487.552 & 523.232 & 558.912 & 594.592 & 630.273 & 665.953 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.76\textwidth]{problem2_heatmap.pdf}
+\caption{不同航向与距离下覆盖宽度的分布}
+\label{fig:p2-heatmap}
+\end{figure}
+
+式~\eqref{eq:p2-depth}--\eqref{eq:p2-width} 直接解释了矩阵结构：$\beta=90^\circ,270^\circ$ 时沿航向坡度分量为零，故同一行水深不变；$45^\circ$ 与 $315^\circ$、$135^\circ$ 与 $225^\circ$ 具有相同的 $\cos\beta$ 和 $|\sin\beta|$ 组合，结果成对相等。该对称性与数值结果完全一致。
+
+\subsection{问题三：等深线平行直线族的最大间距递推}
+\subsubsection{路线族与边界条件}
+理想海域南北长 $2$ 海里、东西宽 $4$ 海里，等深线沿南北方向。选择与等深线平行的南北向直线，可使单条测线沿程水深恒定，同时每条线长度固定为 \SI{3704}{m}。设西、东边界分别为 $x_w=-3704$ 和 $x_e=3704$，第 $i$ 条测线位置为 $x_i$。
+
+首线取深水侧覆盖边界与西边界相切；后续每一步在满足下限重叠率 $10\%$ 的条件下取最大间距；当前测线浅水侧覆盖边界首次到达东边界时停止。由于 $L_d,L_s$ 为沿坡面长度，其水平投影需要乘 $\cos\alpha$，故递推规则为
+\keyequation{eq:p3-recursion}{
+\begin{aligned}
+x_1-L_d(D(x_1))\cos\alpha &= x_w,\\
+\eta(x_{i-1},x_i)&=0.10,\qquad i=2,3,\ldots,\\
+x_n+L_s(D(x_n))\cos\alpha &\ge x_e.
+\end{aligned}}
+
+\subsubsection{求解结果与路线族内最少性}
+二分求解式~\eqref{eq:p3-recursion} 得到 $34$ 条测线，位置分布见图~\ref{fig:p3-layout}，总长度为
+\keyequation{eq:p3-total}{L_{\mathrm{tot}}=34\times3704=\SI{125936}{m}=68\text{ 海里}.}
+式~\eqref{eq:p3-total} 直接给出该方案的总长度。第 $34$ 条线超过东边界 \SI{15.405496}{m}；若仅保留前 $33$ 条线，则东侧仍缺少 \SI{25.756620}{m}。首线相切已经最大化初始向东覆盖，每一步取 $10\%$ 重叠下限又最大化允许间距，因此 $33$ 条线在该路线族中不可能覆盖整个矩形，$34$ 条为最少条数。该结论仅限于平行等深线的直线族，不扩展为任意曲线的全局最优。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{problem3_layout.pdf}
+\caption{问题三 $34$ 条等深线平行测线的位置}
+\label{fig:p3-layout}
+\end{figure}
+
+\subsection{问题四：真实地形下的有限曲率测线规划}
+\subsubsection{地形表示与局部覆盖}
+附件包含东西向 $201$ 个坐标、南北向 $251$ 个坐标，步长均为 $0.02$ 海里，海域范围为 $4\times5$ 海里，深度范围为 \SI{20.0}{m}--\SI{197.2}{m}。统一换算到米制后，记待测区域为
+\[
+\Omega=[0,7408]\times[0,9260].
+\]
+采用双线性插值得到任意点的水深 $D(x,y)$，并以中心差分估计 $\nabla D$。若测线切向单位向量为 $\bm t=(t_x,t_y)$，横航向单位向量为 $\bm n=(-t_y,t_x)$，则局部横航向坡度和等效坡角为
+\keyequation{eq:p4-local}{g(x,y)=\nabla D(x,y)\cdot\bm n,\qquad \gamma(x,y)=\arctan |g(x,y)|.}
+将式~\eqref{eq:p4-local} 得到的 $D(x,y)$ 与 $\gamma(x,y)$ 代入式~\eqref{eq:p1-half}，即可计算曲线任意位置两侧的局部覆盖半宽。
+
+\subsubsection{目标层级与候选方案}
+题目未给出三个目标的权重，本文采用字典序目标：首先最小化漏测面积比例 $r_u$；在可接受覆盖方案中，再最小化重叠率超过 $20\%$ 的累计测线长度 $L_{20+}$；最后比较测线总长度 $L_{\mathrm{tot}}$。该目标层级写为
+\keyequation{eq:p4-objective}{\min\;\bigl(r_u,\;L_{20+},\;L_{\mathrm{tot}}\bigr)\quad\text{按字典序比较}.}
+式~\eqref{eq:p4-objective} 确定了候选比较的先后顺序。候选 A 为从西向东布置的南北向保守直线，每一步按整条测线上的最不利位置确定最大间距；候选 B 为正交的东西向保守直线；候选 C 在 $11$ 个南北站位分别完成局部最大间距布线，再按归一化线序连接为 $61$ 条地形自适应折线。原候选 C 含有硬拐角，因此在每个折点两侧截取相邻段长度的 $5\%$，使用二次 Bézier 曲线连接，得到候选 C-05。二次 Bézier 段
+\[
+\bm B(t)=(1-t)^2\bm P_0+2t(1-t)\bm P_1+t^2\bm P_2,\qquad t\in[0,1],
+\]
+在连接点与相邻直线具有一致切向，从而消除方向突变。图~\ref{fig:p4-flow} 展示了问题四的执行链。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+node distance=6mm and 8mm,
+box/.style={draw,rounded corners,align=center,minimum width=32mm,minimum height=8mm,font=\small},
+dec/.style={draw,diamond,aspect=2.2,align=center,font=\small,inner sep=1.5pt},
+arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[box] (grid) {读取深度网格\\双线性插值};
+\node[box,right=of grid] (grad) {局部梯度与\\横航向坡度};
+\node[box,right=of grad] (cand) {生成 A、B、C\\三类候选};
+\node[dec,below=of cand] (corner) {是否存在\\硬拐角};
+\node[box,left=of corner] (smooth) {二次 Bézier\\有限曲率平滑};
+\node[box,left=of smooth] (eval) {独立空间评估\\覆盖、重叠、长度};
+\node[box,below=of smooth] (sens) {边界、交叉、曲率\\网格敏感性};
+\node[box,right=of sens] (select) {按目标层级比较\\推荐与回退};
+\draw[arr] (grid)--(grad)--(cand)--(corner);
+\draw[arr] (corner)--node[above,font=\scriptsize]{是}(smooth);
+\draw[arr] (corner.east)--++(8mm,0)|-node[pos=.25,right,font=\scriptsize]{否}(eval.east);
+\draw[arr] (smooth)--(eval);
+\draw[arr] (eval)--(sens)--(select);
+\end{tikzpicture}
+\caption{问题四候选生成、平滑和独立评估流程}
+\label{fig:p4-flow}
+\end{figure}
+
+\subsubsection{独立评估指标}
+路线生成器只输出几何方案，评估器重新计算：其一，所有曲线的弧长和；其二，冻结网格上未被任何条带覆盖的点比例；其三，被两条及以上条带覆盖的点比例；其四，有序相邻测线中重叠率超过 $20\%$ 的累计路线长度。可行性检查还包括边界外长度、硬拐角数、相邻线交叉数、最小相邻间距和最小曲率半径。
+
+\subsubsection{候选比较与最终方案}
+表~\ref{tab:p4-compare} 和图~\ref{fig:p4-compare} 给出候选比较。候选 B 在长度和过度重叠上均劣于 A；原候选 C 最短，但含 $548$ 个硬拐角，不能作为最终路线；C-05 消除硬拐角后，总长度与过度重叠长度均略低于原 C，并显著优于 A。
+
+\begin{table}[H]
+\centering
+\caption{问题四候选方案比较}
+\label{tab:p4-compare}
+\begin{tabularx}{\textwidth}{C{1.5cm}C{1.5cm}C{2.6cm}C{2.4cm}L}
+\toprule
+方案 & 条数 & 总长度/m & $L_{20+}$/m & 可行性与角色 \\
+\midrule
+A & 67 & 620420.000 & 369055.806 & 全部声明的敏感性网格均为零漏测，保守回退 \\
+B & 95 & 703760.000 & 452776.960 & 可行，但在主要指标上被 A 支配 \\
+C & 61 & 576755.702 & 339673.098 & 名义零漏测，但含 $548$ 个硬拐角 \\
+C-05 & 61 & 576726.636 & 339556.407 & 切向连续、无交叉、无边界违规，最终推荐 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{problem4_comparison.pdf}
+\caption{问题四候选方案总长度与过度重叠长度比较}
+\label{fig:p4-compare}
+\end{figure}
+
+最终推荐方案的具体路线见图~\ref{fig:p4-routes}，其规定指标为：测线总数 $61$，显式几何总长度 \SI{576726.636}{m}，独立空间评估器复算长度 \SI{576725.729}{m}，两种积分方式仅相差 \SI{0.906}{m}；名义 $50\times60$ 评估网格漏测比例为 $0$；重叠率超过 $20\%$ 的累计测线长度为 \SI{339556.407}{m}。与 A 相比，C-05 的总长度降低 $7.043\%$，过度重叠长度降低 $7.993\%$。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.68\textwidth]{problem4_routes.pdf}
+\caption{问题四最终推荐的 $61$ 条地形自适应有限曲率测线}
+\label{fig:p4-routes}
+\end{figure}
+
+曲率检查结果见图~\ref{fig:p4-curvature}。最小曲率半径为 \SI{225.983}{m}，硬拐角数为 $0$，相邻线交叉数为 $0$，最小相邻间距为 \SI{59.474}{m}。由于题目未提供船舶最小转弯半径，该结果只说明几何曲率有限，不作船型合规结论。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{problem4_curvature.pdf}
+\caption{最终方案各测线的最小曲率半径}
+\label{fig:p4-curvature}
+\end{figure}
+
+\section{模型检验与讨论}
+\subsection{解析与结构一致性检验}
+问题一中，$\alpha=0$ 时覆盖公式退化为平底公式；覆盖宽度与水深成正比，数值结果满足单调性。问题二中，方向对称关系和 $90^\circ$、$270^\circ$ 行的常值性均与解析式一致。问题三中，所有相邻重叠率均为 $10\%$，首线与西边界相切，第 $34$ 条覆盖东边界，而第 $33$ 条仍留有缺口，边界和递推条件同时满足。
+
+\subsection{问题四的几何与复算检验}
+最终路线的显式几何长度与独立评估器长度相差 \SI{0.906}{m}，相对误差约为 $1.57\times10^{-6}$；路线全部位于区域内，没有交叉和硬拐角。上述检验说明路线数据、几何表达和评估器之间保持一致。
+
+\subsection{网格敏感性}
+对推荐方案分别采用 $30\times30$、$50\times50$ 和 $70\times70$ 网格复算。前两组漏测比例均为 $0$，$70\times70$ 网格出现 $0.040816\%$ 的微小漏测，结果见图~\ref{fig:p4-sensitivity}。这一结果说明名义网格零漏测不等同于连续区域覆盖证明，局部边界附近仍可能存在尺度较小的缺口。为避免夸大结论，本文保留该不利结果，并把 A 方案作为更保守的工程回退。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.68\textwidth]{problem4_sensitivity.pdf}
+\caption{推荐方案的漏测率网格敏感性}
+\label{fig:p4-sensitivity}
+\end{figure}
+
+\section{模型评价}
+\subsection{模型优点}
+第一，四问共享统一的覆盖几何，避免各问公式彼此割裂。第二，问题三不仅给出数值方案，还在明确路线族内给出最少条数论证。第三，问题四把路线生成和独立评估分离，原折线失败后先修复几何，再重新评估全部指标，过程可追溯。第四，最终结果同时报告名义结果、敏感性不利结果和保守回退，没有用单一有利网格替代完整讨论。
+
+\subsection{模型局限与改进}
+问题四的覆盖比例来自离散采样，不能替代连续覆盖的解析下界；双线性插值也会平滑原网格内的局部地形。未来可采用自适应加密网格或区间算术验证覆盖边界，并加入船舶速度、加速度和最小转弯半径约束。候选路线族仍有限，可在 A 的可行域内对 C-05 节点进行连续约束优化，以进一步消除高分辨率网格上的局部漏测。
+
+\section{结论}
+本文完成了多波束测线问题的四项任务。问题一揭示固定 \SI{200}{m} 间距在浅水侧造成漏测；问题二给出任意航向下的覆盖宽度矩阵并通过方向对称性检验；问题三在等深线平行直线族内得到 $34$ 条测线和 \SI{125936}{m} 总长度，并证明 $33$ 条不足以覆盖东边界；问题四推荐 $61$ 条有限曲率地形自适应测线，总长度为 \SI{576726.636}{m}，名义漏测率为 $0$，过度重叠累计长度为 \SI{339556.407}{m}。敏感性分析表明高分辨率网格仍有 $0.040816\%$ 漏测，因此最终结论被限定为“已评估候选中的综合推荐”，而非全局最优或连续全覆盖证明。
+
+\begin{thebibliography}{99}
+\bibitem{problem} 全国大学生数学建模竞赛组委会. 2023 年高教社杯全国大学生数学建模竞赛 B 题：多波束测线问题[R]. 2023.
+\bibitem{iho} International Hydrographic Organization. IHO Standards for Hydrographic Surveys, S-44, 6th ed.[S]. Monaco: IHO, 2020.
+\bibitem{farin} Farin G. Curves and Surfaces for CAGD: A Practical Guide[M]. 5th ed. San Francisco: Morgan Kaufmann, 2002.
+\bibitem{deboor} de Boor C. A Practical Guide to Splines[M]. New York: Springer, 2001.
+\bibitem{numerical} Press W H, Teukolsky S A, Vetterling W T, Flannery B P. Numerical Recipes: The Art of Scientific Computing[M]. 3rd ed. Cambridge: Cambridge University Press, 2007.
+\end{thebibliography}
+
+\clearpage
+\appendix
+\section{支撑材料文件列表}
+\begin{longtable}{p{0.37\textwidth}p{0.56\textwidth}}
+\caption{支撑材料文件及用途}\label{tab:support-files}\\
+\toprule
+文件 & 用途 \\
+\midrule
+\endfirsthead
+\toprule
+文件 & 用途 \\
+\midrule
+\endhead
+\texttt{main.tex}、\texttt{shumo-cumcm2025.cls} & 论文的 LaTeX 唯一正文源和 2025 电子版格式类文件 \\
+\texttt{solve\_case001.py} & 复现问题一至问题三，并审计问题四冻结路线的条数、总长度和最小曲率半径 \\
+\texttt{make\_figures.py} & 从冻结数值和路线数据生成正文所用矢量 PDF 图 \\
+\texttt{data/problem4\_final\_metrics.json} & 问题四最终指标、敏感性结果和结论边界 \\
+\texttt{data/problem4\_route\_station\_matrix.csv} & $61$ 条路线在 $11$ 个站位上的横向坐标、单线长度和最小曲率半径 \\
+\texttt{figures/*.pdf} & 正文引用的矢量图形 \\
+\bottomrule
+\end{longtable}
+
+\section{问题四路线摘要}
+表~\ref{tab:route-summary} 给出每条测线在南端、中部和北端的横向坐标，以及显式几何长度和最小曲率半径。完整 $11$ 站位数据见支撑材料 CSV 文件。
+
+\begin{longtable}{C{1.4cm}C{1.65cm}C{1.65cm}C{1.65cm}C{2.15cm}C{2.15cm}}
+\caption{问题四 $61$ 条推荐测线摘要}\label{tab:route-summary}\\
+\toprule
+测线 & $x(0)$ /海里 & $x(2.5)$ /海里 & $x(5)$ /海里 & 长度/m & 最小曲率半径/m \\
+\midrule
+\endfirsthead
+\multicolumn{6}{c}{表~\thetable\ （续）}\\
+\toprule
+测线 & $x(0)$ /海里 & $x(2.5)$ /海里 & $x(5)$ /海里 & 长度/m & 最小曲率半径/m \\
+\midrule
+\endhead
+\midrule
+\multicolumn{6}{r}{续下页}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\input{route_summary_rows.tex}
+\end{longtable}
+
+\section{核心复现程序}
+以下程序使用标准 Python 3 库即可运行，复现问题一至问题三的数值结果，并检查问题四最终路线包的关键一致性。
+\lstinputlisting[caption={问题一至问题四核心结果复现与审计程序}]{solve_case001.py}
+
+\section{绘图程序}
+\lstinputlisting[caption={正文矢量图生成程序}]{make_figures.py}
+
+\end{document}
