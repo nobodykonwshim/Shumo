@@ -71,6 +71,16 @@ The LaTeX source directory includes:
 
 The route generator and evaluator remain separate. Geometry feasibility, spatial coverage, sensitivity and final claim boundaries are recorded independently.
 
+## Problem 3 MATLAB visualizations
+
+The frozen 34-line contour-parallel solution now has reproducible MATLAB R2023b figures under:
+
+```text
+tests/case001/final_delivery/visualizations/problem3/
+```
+
+The directory contains the frozen route coordinates, a MATLAB plotting script, a water-surface plan view and a seabed-elevation view with route projections. Both figures are committed as 300-dpi PNG and vector PDF. See the directory README for provenance, scope and reproduction instructions.
+
 ## Figure-source disclosure
 
 Visio, MindMaster, Edraw/AxGlyph and ArcGIS are the preferred editable drawing tools established by the user. They were not available in the automated execution environment. The current paper uses TikZ for flowcharts and Matplotlib vector PDF for quantitative figures, and this fallback is disclosed rather than misrepresented as proprietary-tool output.
