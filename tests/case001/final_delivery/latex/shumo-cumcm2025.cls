@@ -101,13 +101,38 @@
   \begin{equation}\label{#1}#2\end{equation}
 }
 
+\newenvironment{modelsummary}[1][模型归纳]{%
+  \par\medskip\noindent
+  \begin{center}\begin{minipage}{0.94\textwidth}
+  \hrule\vspace{0.45em}\noindent\textbf{#1}\par\smallskip
+}{%
+  \vspace{0.35em}\hrule
+  \end{minipage}\end{center}\medskip
+}
+
+\newenvironment{solvercontract}[1][算法求解说明]{%
+  \par\medskip\noindent
+  \begin{center}\begin{minipage}{0.94\textwidth}
+  \hrule\vspace{0.45em}\noindent\textbf{#1}\par\smallskip
+  \begin{description}[leftmargin=4.8em,style=nextline,font=\normalfont\bfseries]
+}{%
+  \end{description}
+  \vspace{0.35em}\hrule
+  \end{minipage}\end{center}\medskip
+}
+
+\newcommand{\paperbodytarget}[2]{%
+  \def\ShumoBodyMinPages{#1}%
+  \def\ShumoBodyMaxPages{#2}%
+}
+
 \newcolumntype{Y}{>{\centering\arraybackslash}X}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 
 \lstdefinestyle{shumopython}{
   language=Python,
-  basicstyle=\ttfamily\zihao{6},
+  basicstyle=\ttfamily\zihao{7},
   keywordstyle=\bfseries,
   commentstyle=\itshape,
   numbers=left,
@@ -115,7 +140,9 @@
   numbersep=6pt,
   frame=single,
   breaklines=true,
-  columns=fullflexible,
+  breakatwhitespace=false,
+  keepspaces=true,
+  columns=flexible,
   showstringspaces=false,
   tabsize=4,
   captionpos=b
