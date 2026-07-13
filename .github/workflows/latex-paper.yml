@@ -1,0 +1,51 @@
+name: LaTeX paper policy
+
+on:
+  pull_request:
+    paths:
+      - "skills/math_modeling/support/LATEX_PAPER_STANDARD.md"
+      - "skills/math_modeling/support/CUMCM_2025_FORMAT.md"
+      - "skills/math_modeling/templates/latex/**"
+      - "skills/math_modeling/validation/latex_paper_validator.py"
+      - "tests/specs/test_latex_paper_validator.py"
+      - "tests/**/final_delivery/latex/**"
+      - ".github/workflows/latex-paper.yml"
+  push:
+    paths:
+      - "skills/math_modeling/support/LATEX_PAPER_STANDARD.md"
+      - "skills/math_modeling/support/CUMCM_2025_FORMAT.md"
+      - "skills/math_modeling/templates/latex/**"
+      - "skills/math_modeling/validation/latex_paper_validator.py"
+      - "tests/specs/test_latex_paper_validator.py"
+      - "tests/**/final_delivery/latex/**"
+      - ".github/workflows/latex-paper.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-latex-paper-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run LaTeX paper validator tests
+        run: python -m unittest tests.specs.test_latex_paper_validator -v
+
+      - name: Validate generic LaTeX paper template
+        run: |
+          python skills/math_modeling/validation/latex_paper_validator.py \
+            --tex skills/math_modeling/templates/latex/main.tex
+
+      - name: Validate committed case LaTeX sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' tex; do
+            echo "Validating ${tex}"
+            python skills/math_modeling/validation/latex_paper_validator.py --tex "${tex}"
+          done < <(find tests -type f -path '*/final_delivery/latex/main.tex' -print0)
