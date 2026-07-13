@@ -1,4 +1,4 @@
-schema_version: 1
+schema_version: 2
 case_id: case001
 paper_source_policy: latex_only
 build_engine: xelatex
@@ -6,17 +6,53 @@ delivery_format: pdf
 format_baseline: skills/math_modeling/support/CUMCM_2025_FORMAT.md
 paper_standard: skills/math_modeling/support/LATEX_PAPER_STANDARD.md
 
+body_page_policy:
+  official_preference: normally_within_20_pages
+  explicit_user_target: [20, 30]
+  actual_body_and_references_pages: 20
+  body_page_range: [2, 21]
+  appendix_start_page: 22
+  result: pass
+
 source_files:
   - path: main.tex
-    sha256: 4f8f2cfcac49151a9946ecb569798612d252d1cc35ac44ba0bc522a9a2b8f008
+    sha256: e84e46872fa1592d3d1a69f95585144f70ef8c2c4b0947a9076373777355541c
   - path: shumo-cumcm2025.cls
-    sha256: f5af651b99a40fac03fe50c2a61180e0c7e3ec7a709c151cc6a7192465c39e4f
+    sha256: 9544dabf9a50465a287690b1297015969633f94719025d0ccc205e5e76b0de2c
   - path: solve_case001.py
     sha256: ff447c960c514720d3d89f6ffbf343984b3500e0e10a0a51046d5539737f3a63
   - path: make_figures.py
-    sha256: 0f5d34f2b1e120535446e9d2f921ee0b08a50f98ae447f63720776154b9966e4
+    sha256: b7989ab50e2bf96e0ec26e87df6ebcf9416c4f27bcf166d53908b1d99ee7392f
   - path: route_summary_rows.tex
     sha256: e5eefc9c40593a21d58b0a968e7a56a6d9f9f5a127f686b8a5abddae159ff025
+  - path: sections/00_frontmatter.tex
+    sha256: c2b63de7926e42d15ca7a9cf914ea52dd0cdfcb56d9f5be26bf5af26b986a94f
+  - path: sections/01_problem_restatement.tex
+    sha256: 0e52a3e2d99bba19d05a41b807826db47918e4ca7a84810062abd30f49be60ba
+  - path: sections/02_problem_analysis.tex
+    sha256: 569a0d7f0fa19f09d359fbc7884b6cf2e6aee0dbf6bc418571d929df26c5443b
+  - path: sections/03_assumptions.tex
+    sha256: 08a9f237ab7b7ea2f3d49e3fab890ae7dbce6203de2517aa6487df759d26ebf8
+  - path: sections/04_symbols.tex
+    sha256: 501bff2b3bd1bfc5bb48ac2812ea2e278253de3f88a75e5a060d6f8d71bd19ef
+  - path: sections/05_models.tex
+    sha256: 2724aafe26033fcda82699746da39db19c467a4c70d12964f8091ce9cf62a608
+  - path: sections/05a_problem1.tex
+    sha256: a1edacb91bcfd16af1197ffd16eead97b262fc4b56dcddfa7ba72f3087f8d6e7
+  - path: sections/05b_problem2.tex
+    sha256: 7c8ad7fa7e39148f07a3f3192fcc0d3e8585d574dee31bb3f598f35905d22bfe
+  - path: sections/05c_problem3.tex
+    sha256: 0b9ffce7d7377f455d96a89578e2447c55d42964a77e5bed21ce1a5a2ba52a93
+  - path: sections/05d_problem4.tex
+    sha256: fced8e9a42caa61b362d8f4aa51ccd2b05b8305134ed2d61e388c5603371a384
+  - path: sections/06_validation.tex
+    sha256: 0bb8efb9592d2b3cb59e48026a6d8947dd0f7bed1ea4713621a69770b68cb51d
+  - path: sections/07_evaluation.tex
+    sha256: a7689503d871643b00a060b3ee70771d9f7bc380cfdfd1a2b1c2b8dd91d51935
+  - path: sections/08_conclusion_references.tex
+    sha256: 688a0c0c836638a67f3c54dba920248be5a46cda935a0c33c4427171b8f50cee
+  - path: sections/09_appendix.tex
+    sha256: d588e40b3ed8cfbbf756fd17f65d9837a23248eb6f327f6a1b079065383d6716
   - path: data/problem4_final_metrics.json
     sha256: 2757d89ea5b0f501e885bf664d2df09ec86f99c8e07f8f3bfab81c2b296aaadf
   - path: data/problem4_route_station_matrix.csv
@@ -24,14 +60,26 @@ source_files:
 
 local_delivery:
   pdf:
-    filename: case001_多波束测线问题_LaTeX终稿.pdf
-    sha256: d6c0458a4f6386ad3ebb2a2ac255934710714f7af08fc45b00d3c68ed28d5fb4
-    size_bytes: 446838
-    pages: 20
+    filename: case001_多波束测线问题_LaTeX终稿_完整公式版.pdf
+    sha256: 59b4e006bc5f8ecafa71efdf48c8c4b94743b4f55be29301fc3596a5fe6b07b1
+    size_bytes: 567984
+    pages: 28
   source_package:
-    filename: case001_多波束测线问题_LaTeX源文件.zip
-    sha256: 7d2d94cd227fb9400dd67b6aa1ae4388482beb1cee55375e2f5e4e5cda213a5d
-    size_bytes: 124420
+    filename: case001_多波束测线问题_LaTeX源文件_完整公式版.zip
+    sha256: a063e581733853c203824d02ae3ac857584f0f857e8b582f5214a95d400d492e
+    size_bytes: 145464
+
+content_completeness:
+  problem_sections: 4
+  model_summary_blocks: 4
+  solver_contract_blocks: 5
+  semantic_numbered_equations: 19
+  formula_dependency_chain: complete
+  solver_inputs_and_initialization: explicit
+  solver_ranges_or_stopping_rules: explicit
+  solver_precision: explicit
+  special_case_handling: explicit
+  short_fragmented_paragraph_warnings: 0
 
 format_checks:
   a4: pass
@@ -40,13 +88,15 @@ format_checks:
   abstract_fits_one_page: pass
   table_of_contents_absent: pass
   body_begins_on_page_2: pass
-  main_body_within_20_pages: pass
+  body_page_target_20_to_30: pass
+  official_preferred_twenty_page_body: pass
   appendix_present: pass
   source_code_listings_present: pass
   centered_arabic_page_numbers: pass
   identity_information_absent: pass
   pdf_below_20_mb: pass
   latex_policy_validator: pass_with_zero_warnings
+  full_page_visual_inspection: pass
 
 figure_source_disclosure:
   requested_preferred_tools:
