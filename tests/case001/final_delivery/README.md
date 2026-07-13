@@ -24,19 +24,20 @@ The authoritative paper is under:
 tests/case001/final_delivery/latex/
 ```
 
-It is built with XeLaTeX from `main.tex` and `shumo-cumcm2025.cls`. The electronic PDF follows the user-supplied CUMCM 2025 baseline:
+It is built with XeLaTeX from modular `main.tex` and `sections/*.tex` sources using `shumo-cumcm2025.cls`. The electronic PDF follows the user-supplied CUMCM 2025 baseline and the explicit complete-formula revision:
 
 - A4 and 2.5 cm margins;
 - title, Chinese abstract and keywords on page 1;
 - body starts on page 2;
 - no table of contents;
 - centered Arabic page numbers;
-- body and references within 12 pages, followed by appendices;
+- body and references occupy pages 2-21, exactly 20 pages;
+- appendices occupy pages 22-28;
 - complete runnable source and support-material list in appendices;
 - no identity information;
 - PDF below 20 MB.
 
-DOCX files generated in an earlier iteration are historical artifacts and are no longer the paper source of truth.
+Every problem includes a complete calculable dependency chain, a model-summary block, an algorithm/solver contract with precision and special-case handling, quantitative result analysis and an applicable validation discussion. DOCX files generated in an earlier iteration are historical artifacts and are no longer the paper source of truth.
 
 ## Problem 4 final recommendation
 
@@ -61,7 +62,7 @@ Candidate `P4-CAND-A` uses 67 full-height north-south lines and has a total leng
 
 The LaTeX source directory includes:
 
-- the complete paper source and class;
+- the complete modular paper source and class;
 - complete result-reproduction and audit code;
 - vector-figure generation code;
 - route-summary rows;
