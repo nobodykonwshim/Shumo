@@ -1,0 +1,62 @@
+\subsection{问题二：任意航向下的方向等效坡度模型}
+\subsubsection{三维坐标与坡度正交分解}
+在水平面内取深水方向单位向量为 $\bm e_d$，则均匀坡面的深度梯度为 $\nabla D=\tan\alpha\,\bm e_d$。测线方向与 $\bm e_d$ 的夹角为 $\beta$，测线切向和左法向分别记为 $\bm t$ 与 $\bm n$。在以 $\bm e_d$ 为第一坐标轴的局部坐标系中，可写成 $\bm t=(\cos\beta,\sin\beta)$、$\bm n=(-\sin\beta,\cos\beta)$。于是坡度在航向和横航向上的投影分别为 $\nabla D\cdot\bm t=\tan\alpha\cos\beta$ 与 $\nabla D\cdot\bm n=-\tan\alpha\sin\beta$。
+
+测量船从海域中心沿测线前进 $l$ 后，沿程水深由航向分量积分得到
+\keyequation{eq:p2-depth}{D(l,\beta)=D_0+l\tan\alpha\cos\beta.}
+声束扇面垂直于测线，因此覆盖几何只取决于横航向坡度。其等效坡度角定义为
+\keyequation{eq:p2-gamma}{\gamma(\beta)=\arctan\!\left(\left|\tan\alpha\sin\beta\right|\right).}
+式~\eqref{eq:p2-depth} 与式~\eqref{eq:p2-gamma} 分别处理“位置水深”和“剖面倾角”，二者不能互相替代。把 $D(l,\beta)$ 和 $\gamma(\beta)$ 代入问题一两侧半宽公式，可得任意方向下的总覆盖宽度
+\keyequation{eq:p2-width}{
+W(l,\beta)=D(l,\beta)\sin\varphi\left[
+\frac{1}{\cos(\varphi+\gamma(\beta))}+
+\frac{1}{\cos(\varphi-\gamma(\beta))}
+\right].}
+完整可计算条件为 $D(l,\beta)>0$ 且 $\varphi+\gamma(\beta)<90^\circ$。前者保证船下存在海底交点，后者保证声束与坡面不发生平行或反向交会。
+
+\begin{modelsummary}[问题二模型归纳]
+问题二把海底坡度拆成两个互相独立的作用链：$\tan\alpha\cos\beta$ 决定沿航向水深变化，$|\tan\alpha\sin\beta|$ 决定横航向等效坡度。最终模型为 $(l,\beta)\mapsto D(l,\beta),\gamma(\beta)\mapsto W(l,\beta)$，既保留了问题一的覆盖几何，又能覆盖全部航向。
+\end{modelsummary}
+
+\begin{solvercontract}[问题二算法求解说明]
+\item[输入] $D_0=\SI{120}{m}$，$\alpha=1.5^\circ$，$\theta=120^\circ$；距离为 $0,0.3,\ldots,2.1$ 海里，方向角为 $0^\circ,45^\circ,\ldots,315^\circ$。
+\item[单位处理] 先将海里换算为米，即 $l=1852s$，其中 $s$ 为题目给出的海里数；角度统一转换为弧度参与三角函数计算。
+\item[计算顺序] 对每个 $(s,\beta)$ 先计算 $D$，再计算 $\gamma$，最后按式~\eqref{eq:p2-width} 计算 $W$，形成 $8\times8$ 矩阵。
+\item[精度] 内部采用双精度；覆盖宽度保留 $3$ 位小数。对称位置在舍入前比较，相对差小于 $10^{-12}$ 视为一致。
+\item[特殊情况] 当 $\beta=90^\circ$ 或 $270^\circ$ 时，$\cos\beta=0$，沿程水深保持 $D_0$；若计算得到非正水深或奇异分母，则该网格点判为不可用并停止输出，而不是给出无物理意义的数值。
+\end{solvercontract}
+
+\subsubsection{结果矩阵与结构解释}
+计算结果见表~\ref{tab:p2-result}，图~\ref{fig:p2-heatmap} 将其转化为方向—距离热力图。表头第一行的距离单位为海里，矩阵内部单位为米。
+
+\begin{table}[H]
+\centering
+\caption{不同测线方向和距离下的覆盖宽度（m）}
+\label{tab:p2-result}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{c*{8}{r}}
+\toprule
+$\beta/(^\circ)$ & 0 & 0.3 & 0.6 & 0.9 & 1.2 & 1.5 & 1.8 & 2.1 \\
+\midrule
+0   & 415.692 & 466.091 & 516.490 & 566.889 & 617.288 & 667.686 & 718.085 & 768.484 \\
+45  & 416.192 & 451.872 & 487.552 & 523.232 & 558.912 & 594.592 & 630.273 & 665.953 \\
+90  & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 \\
+135 & 416.192 & 380.511 & 344.831 & 309.151 & 273.471 & 237.791 & 202.110 & 166.430 \\
+180 & 415.692 & 365.293 & 314.894 & 264.496 & 214.097 & 163.698 & 113.299 & 62.900 \\
+225 & 416.192 & 380.511 & 344.831 & 309.151 & 273.471 & 237.791 & 202.110 & 166.430 \\
+270 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 & 416.692 \\
+315 & 416.192 & 451.872 & 487.552 & 523.232 & 558.912 & 594.592 & 630.273 & 665.953 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.76\textwidth]{problem2_heatmap.pdf}
+\caption{不同航向与距离下覆盖宽度的分布}
+\label{fig:p2-heatmap}
+\end{figure}
+
+结果的变化可由公式直接解释。$\beta=0^\circ$ 时船舶向深水方向前进，$D(l,0)$ 随距离线性增加，因此覆盖宽度从 \,\SI{415.692}{m} 增至 \,\SI{768.484}{m}；$\beta=180^\circ$ 时沿浅水方向前进，水深和覆盖宽度持续减小，最远位置仅为 \,\SI{62.900}{m}。$90^\circ$ 和 $270^\circ$ 方向没有航向深度分量，故整行保持 \,\SI{416.692}{m}。$45^\circ$ 与 $315^\circ$、$135^\circ$ 与 $225^\circ$ 分别具有相同的 $\cos\beta$ 和 $|\sin\beta|$，数值完全对称。由此可见，问题二模型不仅给出结果矩阵，还能够解释每一行的单调性、常值性和对称性。
+
+\clearpage
