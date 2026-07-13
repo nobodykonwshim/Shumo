@@ -50,8 +50,42 @@ def _short_prose_blocks(clean: str) -> list[str]:
     return results
 
 
-def validate_tex(path: Path) -> dict[str, Any]:
+def load_source_tree(
+    path: Path,
+    seen: set[Path] | None = None,
+    root: Path | None = None,
+) -> str:
+    r"""Expand local \input and \include files for whole-paper static checks."""
+    resolved = path.resolve()
+    if root is None:
+        root = resolved.parent
+    if seen is None:
+        seen = set()
+    if resolved in seen:
+        raise ValueError(f"cyclic LaTeX include detected: {resolved}")
+    seen = set(seen)
+    seen.add(resolved)
     text = path.read_text(encoding="utf-8")
+
+    def replace(match: re.Match[str]) -> str:
+        raw = match.group(1).strip()
+        child = Path(raw)
+        if child.suffix == "":
+            child = child.with_suffix(".tex")
+        if child.is_absolute():
+            candidates = [child]
+        else:
+            candidates = [path.parent / child, root / child]
+        target = next((candidate for candidate in candidates if candidate.exists()), None)
+        if target is None:
+            return match.group(0)
+        return load_source_tree(target, seen, root)
+
+    return re.sub(r"\\(?:input|include)\{([^}]+)\}", replace, text)
+
+
+def validate_tex(path: Path) -> dict[str, Any]:
+    text = load_source_tree(path)
     clean = strip_comments(text)
     errors: list[dict[str, str]] = []
     warnings: list[dict[str, str]] = []
