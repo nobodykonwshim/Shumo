@@ -64,6 +64,53 @@ The normal order is:
 
 Each subproblem must identify the question being answered, derive the model, state the solution procedure, report quantitative results, interpret those results and directly answer the corresponding task. Writing must use connected paragraphs rather than a sequence of short unsupported statements.
 
+## 4.1 Complete calculable model chain
+
+Every subproblem must be written as a complete calculable chain rather than a sequence of conclusions. The paper must:
+
+- define the coordinate convention, data domain, units and sign convention before formulas use them;
+- introduce every symbol before or at its first formula occurrence;
+- show how each intermediate variable is obtained from previously defined inputs or formulas;
+- give explicit formulas for quantities required by the algorithm, including interpolation, projection, objective, constraints, stopping conditions and validation metrics;
+- state feasibility domains and singular cases;
+- avoid phrases such as “similarly obtained” when the omitted relation is necessary for independent reproduction.
+
+A derivation may keep one-use algebraic identities inline, but the complete dependency chain from input to output must remain visible.
+
+## 4.2 Model summary and solver contract
+
+Each problem subsection must contain exactly identifiable model and solver summaries. The class provides:
+
+```latex
+\begin{modelsummary}[问题一模型归纳]
+...
+\end{modelsummary}
+
+\begin{solvercontract}[问题一算法求解说明]
+\item[输入] ...
+\item[搜索区间] ...
+\item[精度] ...
+\item[特殊情况] ...
+\end{solvercontract}
+```
+
+The model summary states the input-to-state-to-output mapping, objective, constraints and claim boundary. The solver contract states inputs or initialization, calculation order or search interval, numerical precision, stopping criteria and special-case handling. A named algorithm without these details is incomplete.
+
+## 4.3 Paragraph cohesion and result depth
+
+Body text must use cohesive paragraphs. A sequence of one-sentence paragraphs or short declarative fragments is not acceptable. Each result analysis should normally include:
+
+1. the quantitative result;
+2. the mathematical or physical reason for the observed trend;
+3. a direct answer to the corresponding task;
+4. an uncertainty, boundary or failure discussion where applicable.
+
+The static validator warns when prose is excessively fragmented.
+
+## 4.4 Declared body-page target
+
+Every paper declares its intended body-page range with `\paperbodytarget{min}{max}`. The default CUMCM baseline remains “normally within 20 pages”. A user may explicitly request a different project target; that override must be recorded rather than silently represented as the official default. The compiled PDF, not the source declaration, determines actual compliance.
+
 ## 5. Figure and table policy
 
 - Every figure and table is cited in the body before or near its appearance.
