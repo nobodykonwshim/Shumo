@@ -1,0 +1,48 @@
+\section{支撑材料文件列表}
+\begin{longtable}{p{0.37\textwidth}p{0.56\textwidth}}
+\caption{支撑材料文件及用途}\label{tab:support-files}\\
+\toprule
+文件 & 用途 \\
+\midrule
+\endfirsthead
+\toprule
+文件 & 用途 \\
+\midrule
+\endhead
+\path{main.tex}、\path{shumo-cumcm2025.cls} & 论文的 LaTeX 唯一正文源和 2025 电子版格式类文件 \\
+\path{solve_case001.py} & 复现问题一至问题三，并审计问题四冻结路线的条数、总长度和最小曲率半径 \\
+\path{make_figures.py} & 从冻结数值和路线数据生成正文所用矢量 PDF 图 \\
+\path{data/problem4_final_metrics.json} & 问题四最终指标、敏感性结果和结论边界 \\
+\path{data/problem4_route_station_matrix.csv} & $61$ 条路线在 $11$ 个站位上的横向坐标、单线长度和最小曲率半径 \\
+\path{figures/*.pdf} & 正文引用的矢量图形 \\
+\bottomrule
+\end{longtable}
+
+\section{问题四路线摘要}
+表~\ref{tab:route-summary} 给出每条测线在南端、中部和北端的横向坐标，以及显式几何长度和最小曲率半径。完整 $11$ 站位数据见支撑材料 CSV 文件。
+
+\begin{longtable}{C{1.4cm}C{1.65cm}C{1.65cm}C{1.65cm}C{2.15cm}C{2.15cm}}
+\caption{问题四 $61$ 条推荐测线摘要}\label{tab:route-summary}\\
+\toprule
+测线 & $x(0)$ /海里 & $x(2.5)$ /海里 & $x(5)$ /海里 & 长度/m & 最小曲率半径/m \\
+\midrule
+\endfirsthead
+\multicolumn{6}{c}{表~\thetable\ （续）}\\
+\toprule
+测线 & $x(0)$ /海里 & $x(2.5)$ /海里 & $x(5)$ /海里 & 长度/m & 最小曲率半径/m \\
+\midrule
+\endhead
+\midrule
+\multicolumn{6}{r}{续下页}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\input{route_summary_rows.tex}
+\end{longtable}
+
+\section{核心复现程序}
+以下程序使用标准 Python 3 库即可运行，复现问题一至问题三的数值结果，并检查问题四最终路线包的关键一致性。
+\lstinputlisting[caption={问题一至问题四核心结果复现与审计程序}]{solve_case001.py}
+
+\section{绘图程序}
+\lstinputlisting[caption={正文矢量图生成程序}]{make_figures.py}
