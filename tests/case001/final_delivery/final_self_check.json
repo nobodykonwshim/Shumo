@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "case_id": "case001",
+  "delivery_status": "complete_pending_user_audit",
+  "checks": [
+    {"id": "DOCX-ARCHIVE", "status": "pass", "detail": "DOCX package integrity verified"},
+    {"id": "DOCX-CLEAN", "status": "pass", "detail": "No comments or tracked changes"},
+    {"id": "DOCX-RENDER", "status": "pass", "detail": "17 pages rendered and visually inspected"},
+    {"id": "PDF-RENDER", "status": "pass", "detail": "17 pages rendered independently and visually inspected"},
+    {"id": "RESULT1-SHAPE", "status": "pass", "detail": "Result1 A1:J4, 40 cells"},
+    {"id": "RESULT2-SHAPE", "status": "pass", "detail": "Result2 A1:I10, 90 cells"},
+    {"id": "P4-WORKBOOK", "status": "pass", "detail": "Metrics, Sensitivity and RouteStations sheets; route matrix A1:N62"},
+    {"id": "XLSX-ERROR-SCAN", "status": "pass", "detail": "No spreadsheet formula error tokens"},
+    {"id": "P4-ROUTE-COUNT", "status": "pass", "detail": "61 routes in final station matrix"},
+    {"id": "P4-LENGTH-CONSISTENCY", "status": "pass", "detail": "CSV exact-length sum 576726.635509 m; final JSON 576726.6355123592 m"},
+    {"id": "P4-CURVATURE", "status": "pass", "detail": "Minimum curvature radius 225.983064 m; hard-corner count 0"},
+    {"id": "P4-SENSITIVITY", "status": "pass", "detail": "70x70 grid adverse uncovered-area result 0.0408163265 percent retained"},
+    {"id": "CLAIM-BOUNDARY", "status": "pass", "detail": "No global-optimality or continuous-coverage claim"}
+  ],
+  "limitations": [
+    "Problem 3 optimality is limited to the contour-parallel straight-line family.",
+    "Problem 4 nominal zero uncovered area is sampling-based.",
+    "The 70x70 sensitivity grid reports 0.0408163265 percent uncovered area.",
+    "No vessel-specific minimum turning radius was supplied.",
+    "The recommended problem-4 route is not a global-optimality proof."
+  ],
+  "repository_policy": {
+    "pull_request": 2,
+    "draft": true,
+    "merge_authorized": false
+  }
+}
