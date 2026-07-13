@@ -1,0 +1,74 @@
+\subsection{问题一：斜坡剖面覆盖与重叠模型}
+\subsubsection{坐标系、变量链与坡面方程}
+在垂直测线的剖面内，以测量船正下方为横坐标原点，横向坐标 $q$ 指向浅水侧，深度坐标 $z$ 竖直向下。设测量船所在位置的垂直水深为 $D$，海底坡度为 $\alpha$，则局部坡面可写成 $z=D-q\tan\alpha$。换能器半开角为 $\varphi=\theta/2$，深水侧声束位于 $q<0$，浅水侧声束位于 $q>0$。声束射线与坡面相交后，其水平投影分别为 $h_d=D\tan\varphi/(1-\tan\alpha\tan\varphi)$ 与 $h_s=D\tan\varphi/(1+\tan\alpha\tan\varphi)$；由于题目中的覆盖宽度沿斜坡表面量取，沿坡面半宽满足 $L_d=h_d/\cos\alpha$、$L_s=h_s/\cos\alpha$。这一推导把变量建立顺序固定为“位置 $x$—水深 $D$—水平交点 $h$—坡面半宽 $L$—总宽度 $W$”。
+
+在全局横向坐标中规定 $x$ 向浅水侧为正，中心水深为 $D_0$，均匀坡面上位置 $x$ 的垂直水深为
+\keyequation{eq:p1-depth}{D(x)=D_0-x\tan\alpha.}
+式~\eqref{eq:p1-depth} 是后续所有覆盖量的输入。将上述交点关系化简，可得深水侧、浅水侧和总覆盖宽度的完整公式
+\keyequation{eq:p1-half}{
+L_d(D)=\frac{D\sin\varphi}{\cos(\varphi+\alpha)},\qquad
+L_s(D)=\frac{D\sin\varphi}{\cos(\varphi-\alpha)},\qquad
+W(D)=L_d(D)+L_s(D).}
+式~\eqref{eq:p1-half} 的可计算条件为 $D>0$ 且 $\varphi+\alpha<90^\circ$，否则深水侧声束与坡面的交点退化或不存在。当 $\alpha=0$ 时，两侧半宽均为 $D\tan\varphi$，总宽度退化为 $2D\tan\varphi$，与平底公式一致。
+
+\subsubsection{相邻条带重叠率的建立}
+设第 $i-1$ 条测线位于 $x_{i-1}$，第 $i$ 条测线位于 $x_i$，且 $x_i>x_{i-1}$。前一条测线的浅水侧边界为 $x_{i-1}+h_s(D_{i-1})$，当前测线的深水侧边界为 $x_i-h_d(D_i)$，因此水平交叠长度为 $h_s(D_{i-1})+h_d(D_i)-(x_i-x_{i-1})$。把该长度除以 $\cos\alpha$ 转换为坡面长度，并以当前条带总宽度作为分母，得到有向重叠率
+\keyequation{eq:p1-overlap}{
+\eta_i=\frac{L_s(D_{i-1})+L_d(D_i)-(x_i-x_{i-1})/\cos\alpha}{W(D_i)},
+\qquad D_i=D(x_i).}
+式~\eqref{eq:p1-overlap} 形成了完整的可计算闭环：$x_i$ 由题目给定，$D_i$ 由式~\eqref{eq:p1-depth} 得到，$L_d,L_s,W$ 由式~\eqref{eq:p1-half} 得到，最终计算 $\eta_i$。当分子为正时条带重叠，为零时边界恰好相接，为负时其绝对值对应漏测间隙占当前条带宽度的比例。
+
+\begin{modelsummary}[问题一模型归纳]
+问题一模型可归纳为复合映射 $x_i\mapsto D_i\mapsto(L_d(D_i),L_s(D_i),W(D_i))\mapsto\eta_i$。输入为测线位置、中心水深、坡度、开角和测线顺序；输出为每条测线的水深、覆盖宽度和与前一条线的有向重叠率。模型不依赖迭代优化，所有量均由显式公式直接计算，负重叠率即为漏测判据。
+\end{modelsummary}
+
+\begin{solvercontract}[问题一算法求解说明]
+\item[输入] $D_0=\SI{70}{m}$，$\alpha=1.5^\circ$，$\theta=120^\circ$，测线位置 $x_i\in\{-800,-600,\ldots,800\}\,\mathrm{m}$。
+\item[计算顺序] 先计算 $\varphi=60^\circ$，再逐线计算 $D_i$、$L_d(D_i)$、$L_s(D_i)$、$W(D_i)$；从第二条线开始按式~\eqref{eq:p1-overlap} 计算 $\eta_i$。
+\item[精度] 内部使用双精度浮点数；水深和覆盖宽度输出保留 $2$ 位小数，重叠率输出保留 $2$ 位百分数。
+\item[特殊情况] 第一条线没有前序测线，重叠率记为“--”；若 $D_i\le0$ 或 $\varphi+\alpha\ge90^\circ$，则停止并报告几何不可行；若 $\eta_i<0$，显式标记为漏测而不截断为零。
+\end{solvercontract}
+
+\subsubsection{计算结果与深入分析}
+将参数代入式~\eqref{eq:p1-depth}--\eqref{eq:p1-overlap}，得到表~\ref{tab:p1-result}。例如 $x=\SI{600}{m}$ 时，水深为 $70-600\tan1.5^\circ=\SI{54.288}{m}$，由式~\eqref{eq:p1-half} 得到覆盖宽度 \,\SI{188.513}{m}，再与 $x=\SI{400}{m}$ 处条带比较，得到重叠率 $-1.525\%$。这一计算示例说明表中每个结果都能从前述变量链逐项复现。
+
+\begin{table}[H]
+\centering
+\caption{问题一计算结果}
+\label{tab:p1-result}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{c*{9}{r}}
+\toprule
+距中心位置/m & -800 & -600 & -400 & -200 & 0 & 200 & 400 & 600 & 800 \\
+\midrule
+水深/m & 90.95 & 85.71 & 80.47 & 75.24 & 70.00 & 64.76 & 59.53 & 54.29 & 49.05 \\
+覆盖宽度/m & 315.81 & 297.63 & 279.44 & 261.26 & 243.07 & 224.88 & 206.70 & 188.51 & 170.33 \\
+与前一条重叠率/\% & -- & 35.70 & 31.51 & 26.74 & 21.26 & 14.89 & 7.41 & -1.53 & -12.36 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+图~\ref{fig:p1-width} 表明覆盖宽度与水深保持近似线性关系，这是式~\eqref{eq:p1-half} 中 $W(D)$ 对 $D$ 的一次性所决定的，而不是偶然的数值趋势。深水侧 $x=-600,-400,-200$ 处重叠率超过 $20\%$，说明固定间距造成了明显的重复测量；中心至 $x=\SI{400}{m}$ 的重叠率逐渐进入并离开 $10\%$--$20\%$ 区间；浅水侧 $600$ 和 $800$ m 位置出现负值，说明同一固定间距不能兼顾全区域。问题一的直接结论是：题目给定的九条测线并不能完整覆盖该剖面，且测线间距应随水深变浅而减小。
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}\centering
+\includegraphics[width=\linewidth]{problem1_depth.pdf}
+\caption{水深变化}\label{fig:p1-depth}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}\centering
+\includegraphics[width=\linewidth]{problem1_width.pdf}
+\caption{覆盖宽度变化}\label{fig:p1-width-sub}
+\end{subfigure}
+\caption{问题一水深与覆盖宽度随位置的变化}
+\label{fig:p1-width}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{problem1_overlap.pdf}
+\caption{问题一相邻条带重叠率；阴影为题目要求的 $10\%$--$20\%$ 区间}
+\label{fig:p1-overlap}
+\end{figure}
+
+\clearpage
