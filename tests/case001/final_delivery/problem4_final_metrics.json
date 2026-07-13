@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "case_id": "case001",
+  "problem_id": "problem4",
+  "selected_candidate": "P4-CAND-C-SMOOTH-05",
+  "selection_role": "recommended_final_plan",
+  "fallback_candidate": "P4-CAND-A",
+  "required_metrics": {
+    "survey_line_count": 61,
+    "total_survey_line_length_m": 576726.6355123592,
+    "uncovered_area_percent": 0.0,
+    "excess_overlap_length_m": 339556.4072993089
+  },
+  "additional_metrics": {
+    "multiply_covered_area_percent": 47.56666666666667,
+    "outside_region_line_length_m": 0.0,
+    "boundary_violation": false,
+    "minimum_adjacent_separation_m": 59.47418612876038,
+    "minimum_curvature_radius_m": 225.98306382015713,
+    "hard_corner_count": 0,
+    "crossing_count": 0,
+    "independent_spatial_evaluator_length_m": 576725.7292825343,
+    "geometry_evaluator_length_difference_m": 0.9062298248754814
+  },
+  "sensitivity_grid": [
+    {
+      "grid_nx": 30,
+      "grid_ny": 30,
+      "multiply_covered_area_percent": 48.77777777777778,
+      "uncovered_area_percent": 0.0
+    },
+    {
+      "grid_nx": 50,
+      "grid_ny": 50,
+      "multiply_covered_area_percent": 48.0,
+      "uncovered_area_percent": 0.0
+    },
+    {
+      "grid_nx": 70,
+      "grid_ny": 70,
+      "multiply_covered_area_percent": 48.38775510204081,
+      "uncovered_area_percent": 0.04081632653061224
+    }
+  ],
+  "comparison": {
+    "conservative_fallback_total_length_m": 620420.0,
+    "length_reduction_vs_fallback_percent": 7.042546095812642,
+    "excess_overlap_reduction_vs_fallback_percent": 7.993208245640068
+  },
+  "claims": {
+    "global_optimality": false,
+    "continuous_coverage_proof": false,
+    "nominal_grid_coverage_only": true,
+    "operational_turning_radius_compliance": null
+  },
+  "notes": [
+    "The recommended plan satisfies the nominal frozen evaluator with zero sampled uncovered area.",
+    "The 70x70 sensitivity grid reports 0.0408163265% uncovered area; this is disclosed rather than hidden.",
+    "No vessel-specific minimum turning radius was supplied, so only finite curvature is asserted."
+  ]
+}
