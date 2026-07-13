@@ -13,7 +13,7 @@ python skills/math_modeling/validation/latex_paper_validator.py \
   --tex main.tex --fail-on-warning
 ```
 
-The final PDF has 31 pages. Page 1 contains the title, Chinese abstract and keywords. The body starts on page 2. The body and references occupy pages 2-23, so the declared body length is 22 pages and satisfies the user-requested 20-30 page range. The appendix starts on page 24 and contains the support-material list, complete route summary and runnable source code.
+The final PDF has 28 pages. Page 1 contains the title, Chinese abstract and keywords. The body starts on page 2. The body and references occupy pages 2-21, so the declared body length is 20 pages and satisfies the user-requested 20-30 page range while meeting the official preference to keep the body within 20 pages. The appendix starts on page 22 and contains the support-material list, complete route summary and runnable source code.
 
 Every problem section includes:
 
