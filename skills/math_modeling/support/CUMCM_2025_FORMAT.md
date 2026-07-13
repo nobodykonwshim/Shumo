@@ -5,7 +5,7 @@ Source: user-supplied `format2025.doc`, titled *全国大学生数学建模竞�
 SHA-256 of the supplied source file:
 
 ```text
-65974bb5e4f3219e548ac2aeb69c0c21399985c49d541c1d939b1210ef9c2be2
+69fc08c6a446c08e7116be35e8f99986377255318971d63d691fc11a9013917a
 ```
 
 The executable requirements used by Shumo are:
