@@ -8,12 +8,35 @@ problem 1: solved
 problem 2: solved
 problem 3: solved within the declared contour-parallel straight-line family
 problem 4: recommended finite-curvature plan selected with conservative fallback
-paper: complete DOCX and PDF generated locally
+paper source of truth: LaTeX
+paper delivery: PDF
 PR: Draft
 merge authorized: no
 ```
 
 This record supersedes the earlier case-cycle label `partial / demonstration_complete` for the **competition deliverable**. The earlier label remains valid only for the bounded Skill-extraction cycle; it is not the status of the completed case solution.
+
+## Paper source and format
+
+The authoritative paper is under:
+
+```text
+tests/case001/final_delivery/latex/
+```
+
+It is built with XeLaTeX from `main.tex` and `shumo-cumcm2025.cls`. The electronic PDF follows the user-supplied CUMCM 2025 baseline:
+
+- A4 and 2.5 cm margins;
+- title, Chinese abstract and keywords on page 1;
+- body starts on page 2;
+- no table of contents;
+- centered Arabic page numbers;
+- body and references within 12 pages, followed by appendices;
+- complete runnable source and support-material list in appendices;
+- no identity information;
+- PDF below 20 MB.
+
+DOCX files generated in an earlier iteration are historical artifacts and are no longer the paper source of truth.
 
 ## Problem 4 final recommendation
 
@@ -34,28 +57,19 @@ The `70 x 70` sensitivity grid reports `0.04081632653061224%` uncovered area. Th
 
 Candidate `P4-CAND-A` uses 67 full-height north-south lines and has a total length of `620420 m`. It remains the conservative fallback because every declared sensitivity grid reports zero sampled uncovered area.
 
-## Local final artifacts
+## Reproducibility
 
-Binary deliverables remain local and are identified by SHA-256 in `FINAL_DELIVERY_MANIFEST.yaml`:
+The LaTeX source directory includes:
 
-- complete paper in DOCX and PDF;
-- official-format problem-1 workbook;
-- official-format problem-2 workbook;
-- problem-4 route and metrics workbook;
-- machine-readable final metrics and route station matrix;
-- final self-check report and combined delivery ZIP.
+- the complete paper source and class;
+- complete result-reproduction and audit code;
+- vector-figure generation code;
+- route-summary rows;
+- frozen problem-4 metric and route data;
+- source and delivery hashes in `PAPER_SOURCE_MANIFEST.yaml`.
 
-## Reproducibility code
+The route generator and evaluator remain separate. Geometry feasibility, spatial coverage, sensitivity and final claim boundaries are recorded independently.
 
-The implementation and regression evidence remain on this branch. The principal reusable components are:
+## Figure-source disclosure
 
-```text
-skills/math_modeling/evaluators/xlsx_depth_grid.py
-skills/math_modeling/evaluators/spatial_coverage.py
-skills/math_modeling/evaluators/route_feasibility.py
-skills/math_modeling/geometry/route_geometry.py
-tests/case001/run/problem4_candidates/generate_candidates.py
-tests/case001/run/problem4_candidates/
-```
-
-The route generator and evaluator are separate. Geometry feasibility, spatial coverage, sensitivity, and final claim boundaries are recorded independently.
+Visio, MindMaster, Edraw/AxGlyph and ArcGIS are the preferred editable drawing tools established by the user. They were not available in the automated execution environment. The current paper uses TikZ for flowcharts and Matplotlib vector PDF for quantitative figures, and this fallback is disclosed rather than misrepresented as proprietary-tool output.
