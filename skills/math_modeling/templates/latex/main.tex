@@ -1,5 +1,6 @@
 \documentclass{shumo-cumcm2025}
 \begin{document}
+\paperbodytarget{1}{20}
 \papertitle{基于某模型的某问题研究}
 \begin{cnabstract}
 本文针对……问题，建立……模型。针对问题一，……；针对问题二，……；针对问题三，……。给出核心定量结果、检验结论和适用边界，摘要不超过一页。
@@ -7,22 +8,32 @@
 \keywords{关键词一；关键词二；关键词三}
 \clearpage
 \section{问题重述}
-用原创语言说明背景、目标和约束。
+用原创、连贯的段落说明背景、目标、约束和交付要求，避免把题面逐句改写。
 \section{问题分析}
-说明总体路线和各小问关键矛盾，不在此处提前堆放结果。
+说明总体路线和各小问关键矛盾，并用一张模型链归纳表说明输入、状态量、求解方法和输出。
 \section{模型假设}
-列出与建模直接相关且有依据的假设。
+列出与建模直接相关且有依据的假设，同时说明每条假设对结果范围的影响。
 \section{符号说明}
 使用三线表列出全局符号、含义和单位。
 \section{模型建立与求解}
-\subsection{问题一}
-先定义变量，再建立模型。仅核心公式编号：
-\keyequation{eq:example}{y=f(x;\bm\theta).}
-在正文中引用式~\eqref{eq:example}，并给出求解、结果分析和直接回答。
+\subsection{问题一：示例模型}
+先定义坐标、变量、单位和可行域，再建立完整可计算关系。仅将后续引用或承载核心结论的公式编号：
+\keyequation{eq:example}{y=f(x;\bm\theta),\qquad x\in\mathcal D.}
+正文必须引用式~\eqref{eq:example}，并说明每个变量如何由前一步得到。
+\begin{modelsummary}[问题一模型归纳]
+输入为……，核心状态量为……，输出为……，目标和约束为……，结论只适用于……。
+\end{modelsummary}
+\begin{solvercontract}[问题一算法求解说明]
+\item[输入] 给定数据、参数和初始条件。
+\item[搜索区间] 写明枚举区间、迭代范围或停止条件。
+\item[精度] 写明内部精度、迭代容差和结果保留位数。
+\item[特殊情况] 写明非法输入、奇异分母、边界值和无可行解的处理。
+\end{solvercontract}
+用连贯段落报告定量结果，解释趋势，并直接回答该小问。
 \section{模型检验与讨论}
 给出一致性、误差、敏感性或对照检验，并保留不利结果。
 \section{模型评价}
-具体说明优点、局限和改进方向。
+具体说明优点、局限和可执行的改进方向。
 \section{结论}
 直接汇总各问结论和适用范围。
 \begin{thebibliography}{9}
