@@ -1,16 +1,19 @@
 {
+  "analysis_tex": "tests\\case002\\paper\\sections\\02_problem_analysis\\problem1.tex",
   "error_count": 0,
   "errors": [],
+  "model_tex": "tests\\case002\\paper\\sections\\05_model_solution\\problem1.tex",
   "result": "tests\\case002\\results\\problem1_result.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "pass",
   "summary": {
-    "equation_label_count": 6,
-    "full_duration_s": 1.3916426692959991,
-    "label_count": 8,
-    "result_macros_checked": 7
+    "coverage_duration_s": 1.3916426692947468,
+    "equation_label_count": 8,
+    "label_count": 9,
+    "projection_containment_pass": true,
+    "result_macros_checked": 3,
+    "symbolic_contract_status": "pass"
   },
-  "tex": "tests\\case002\\paper\\sections\\problem1.tex",
   "validator": "case002_problem1_paper_check",
   "warning_count": 0,
   "warnings": []

@@ -1,7 +1,7 @@
 schema_version: "1.0"
-blueprint_id: PAPER-CASE002-P1-R1
+blueprint_id: PAPER-CASE002-P1-R2
 project_id: case002
-title: 2025 CUMCM A problem 1 first-review paper blueprint
+title: 2025 CUMCM A problem 1 symbolic projection paper blueprint
 status: frozen
 
 source_specs:
@@ -18,123 +18,110 @@ numbering_policy:
   locked_before_writing: true
 
 sections:
-  - id: SEC-P1-INTERPRETATION
-    title: 问题一题目解读
+  - id: SEC-P1-ANALYSIS
+    title: 2.1 问题一分析
     order: 1
-    purpose: Explain the geometry, prescribed schedule and full-cylinder occlusion target.
+    purpose: Explain the missile-view occlusion question and why perspective rather than orthographic projection is required.
     content_blocks:
       - id: BLOCK-P1-SUMMARY
         type: problem_summary
-        source_ids: [IN-P1-MISSILE, IN-P1-UAV-SCHEDULE, IN-P1-SMOKE, IN-P1-TARGET]
+        source_ids: [IN-P1-KINEMATICS, IN-P1-TARGET]
         disposition: body
-  - id: SEC-P1-ASSUMPTIONS
-    title: 模型假设
-    order: 2
-    purpose: Declare the short-time kinematic and geometric boundary of the model.
-    content_blocks:
-      - id: BLOCK-P1-ASSUMPTIONS
-        type: assumptions
-        source_ids: [A-P1-MISSILE-UNIFORM, A-P1-UAV-UNIFORM, A-P1-BALLISTIC, A-P1-NO-DRIFT, A-P1-SPHERE, A-P1-TARGET-CYLINDER]
+      - id: BLOCK-P1-ANALYSIS-METHOD
+        type: discussion
+        source_ids: [M-P1-CAMERA, M-P1-PROJECTION-COVERAGE]
         disposition: body
   - id: SEC-P1-MODEL
-    title: 运动关系与遮蔽判据
-    order: 3
-    purpose: Define only the core kinematic equations and strict occlusion predicate.
+    title: 5.1.1 问题模型建立
+    order: 2
+    purpose: Define symbolic kinematics, view matrix, perspective transformation and complete coverage predicate.
     content_blocks:
       - id: BLOCK-P1-KINEMATICS
         type: model_definition
         source_ids: [M-P1-KINEMATICS]
         disposition: body
-      - id: BLOCK-P1-OCCLUSION
+      - id: BLOCK-P1-CAMERA
         type: model_definition
-        source_ids: [M-P1-FULL-OCCLUSION]
+        source_ids: [M-P1-CAMERA]
+        disposition: body
+      - id: BLOCK-P1-COVERAGE
+        type: model_definition
+        source_ids: [M-P1-PROJECTION-COVERAGE]
         disposition: body
       - id: BLOCK-P1-FORMULAS
         type: formula
-        source_ids: [F-P1-MISSILE-POSITION, F-P1-UAV-POSITION, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER, F-P1-WHOLE-TARGET-MARGIN, F-P1-EFFECTIVE-DURATION]
+        source_ids: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER, F-P1-VIEW-MATRIX, F-P1-PERSPECTIVE-PROJECTION, F-P1-SMOKE-CONIC, F-P1-PROJECTION-COVERAGE, F-P1-EFFECTIVE-DURATION]
         disposition: body
-  - id: SEC-P1-NUMERICAL
-    title: 数值求解
-    order: 4
-    purpose: Report hand checks, scan, root refinement and mesh convergence without implementation narration.
+  - id: SEC-P1-SOLUTION
+    title: 5.1.2 模型求解
+    order: 3
+    purpose: Load registries, compute the trajectory, test projected coverage and refine event roots.
     content_blocks:
       - id: BLOCK-P1-ALGORITHM
         type: algorithm
-        source_ids: [STEP-P1-HAND-CHECK, STEP-P1-SURFACE, STEP-P1-SCAN, STEP-P1-ROOT, STEP-P1-COMPARE]
+        source_ids: [STEP-P1-LOAD-REGISTRY, STEP-P1-KINEMATICS, STEP-P1-PROJECT, STEP-P1-COVERAGE, STEP-P1-ROOT]
         disposition: body
       - id: BLOCK-P1-VALIDATION
         type: validation
-        source_ids: [V-P1-HAND-CALC, V-P1-ACTIVE-WINDOW, V-P1-MESH-CONVERGENCE, V-P1-TIME-CONVERGENCE, V-P1-CENTRE-BOUND, V-P1-ROOT-RESIDUAL]
+        source_ids: [V-P1-HAND-CALC, V-P1-VIEW-ORTHONORMAL, V-P1-PROJECTION-CONTAINMENT, V-P1-TIME-CONVERGENCE, V-P1-MESH-CONVERGENCE, V-P1-BOUNDARY-RESIDUAL]
         disposition: body
-  - id: SEC-P1-RESULTS
-    title: 结果与分析
-    order: 5
-    purpose: Give one compact table, compare the two predicates and state the answer.
-    content_blocks:
       - id: BLOCK-P1-RESULT-TABLE
         type: table
-        source_ids: [OUT-P1-RELEASE-BURST, OUT-P1-FULL-INTERVAL, OUT-P1-CENTRE-COMPARISON]
+        source_ids: [OUT-P1-RELEASE-BURST, OUT-P1-COVERAGE-INTERVAL]
         disposition: body
+  - id: SEC-P1-RESULTS
+    title: 5.1.3 结果分析
+    order: 4
+    purpose: Interpret the projection-coverage interval, boundary events and numerical stability.
+    content_blocks:
       - id: BLOCK-P1-DISCUSSION
         type: discussion
-        source_ids: [METRIC-P1-FULL-DURATION, METRIC-P1-CENTRE-DURATION]
-        disposition: body
-  - id: SEC-P1-ABSTRACT-MATERIAL
-    title: 针对问题一的摘要素材
-    order: 6
-    purpose: Supply one provisional paragraph for a later global abstract without creating a title, keywords or full abstract.
-    content_blocks:
-      - id: BLOCK-P1-ABSTRACT-MATERIAL
-        type: other
-        source_ids: [OUT-P1-FULL-INTERVAL, OUT-P1-CENTRE-COMPARISON]
+        source_ids: [METRIC-P1-COVERAGE-DURATION, OUT-P1-COVERAGE-INTERVAL]
         disposition: body
 
 model_placements:
   - {model_id: M-P1-KINEMATICS, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
-  - {model_id: M-P1-FULL-OCCLUSION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
+  - {model_id: M-P1-CAMERA, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
+  - {model_id: M-P1-PROJECTION-COVERAGE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
 
 formula_placements:
-  - {formula_id: F-P1-MISSILE-POSITION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-missile}
-  - {formula_id: F-P1-UAV-POSITION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-uav}
+  - {formula_id: F-P1-MOTION-TRAJECTORIES, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-motion}
   - {formula_id: F-P1-BOMB-POSITION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-bomb}
   - {formula_id: F-P1-SMOKE-CENTER, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-smoke}
-  - {formula_id: F-P1-WHOLE-TARGET-MARGIN, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-occlusion}
+  - {formula_id: F-P1-VIEW-MATRIX, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-view-matrix}
+  - {formula_id: F-P1-PERSPECTIVE-PROJECTION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-perspective}
+  - {formula_id: F-P1-SMOKE-CONIC, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-smoke-conic}
+  - {formula_id: F-P1-PROJECTION-COVERAGE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-coverage}
   - {formula_id: F-P1-EFFECTIVE-DURATION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-duration}
 
 output_placements:
   - output_id: OUT-P1-RELEASE-BURST
     source_spec_id: MODEL-CASE002-P1
-    owner_section_id: SEC-P1-NUMERICAL
-    representation: text
+    owner_section_id: SEC-P1-SOLUTION
+    representation: table
+    label: tab:p1-projection-results
     precision_policy: Coordinates retain 0.001 m where needed and burst time is shown to 0.1 s.
-  - output_id: OUT-P1-FULL-INTERVAL
+  - output_id: OUT-P1-COVERAGE-INTERVAL
     source_spec_id: MODEL-CASE002-P1
-    owner_section_id: SEC-P1-RESULTS
+    owner_section_id: SEC-P1-SOLUTION
     representation: table
-    label: tab:p1-results
-    precision_policy: Report interval boundaries and duration to 0.001 s.
-  - output_id: OUT-P1-CENTRE-COMPARISON
-    source_spec_id: MODEL-CASE002-P1
-    owner_section_id: SEC-P1-RESULTS
-    representation: table
-    label: tab:p1-results-centre
     precision_policy: Report interval boundaries and duration to 0.001 s.
 
 claims:
-  - id: CLAIM-P1-FULL-RESULT
-    text: Under the declared assumptions, the full-cylinder effective occlusion interval is 8.056445489406 s to 9.448088158702 s and its duration is 1.391642669296 s.
+  - id: CLAIM-P1-PROJECTION-RESULT
+    text: Under the registered assumptions, the full perspective-projection coverage interval is 8.056445489407 s to 9.448088158702 s and its duration is 1.391642669295 s.
     source_spec_id: MODEL-CASE002-P1
     owner_section_id: SEC-P1-RESULTS
     status: allowed
-  - id: CLAIM-P1-CENTRE-RESULT
-    text: The target-geometric-centre line-of-sight comparison duration is 1.435082101967 s.
+  - id: CLAIM-P1-PROJECTION-CHECKS
+    text: The view matrix is orthonormal to numerical precision and the target projection passes conic containment and smoke-before-target depth checks inside the reported interval.
     source_spec_id: MODEL-CASE002-P1
     owner_section_id: SEC-P1-RESULTS
     status: allowed
-  - id: CLAIM-P1-NOT-COMPLETE
-    text: The target-centre line-of-sight duration is the complete-target effective occlusion duration.
+  - id: CLAIM-P1-NO-ORTHOGRAPHIC-SUBSTITUTE
+    text: Plain orthographic projection without depth normalization is equivalent to missile visual observation.
     source_spec_id: MODEL-CASE002-P1
-    owner_section_id: SEC-P1-RESULTS
+    owner_section_id: SEC-P1-ANALYSIS
     status: forbidden
 
 writing_constraints:
@@ -145,15 +132,20 @@ writing_constraints:
   duplicate_definition_forbidden: true
 
 human_checkpoints:
-  - id: H-P1-REVIEW-STRUCTURE
-    decision: Approve the problem-1-only review structure and full-cylinder primary result before drafting.
+  - id: H-P1-PROJECTION-DEFINITION
+    decision: Use a missile-view perpendicular image plane, perspective matrix transformation and complete projected target coverage with depth order.
     authority: user
     status: approved
-    record: tests/case002/review/problem1_scope_approval.yaml
+    record: tests/case002/review/problem1_definition_revision2.yaml
 
 evidence_paths:
+  - tests/case002/registry/parameters.yaml
+  - tests/case002/registry/assumptions.yaml
+  - tests/case002/registry/formulas.yaml
+  - tests/case002/registry/model_contracts.yaml
   - tests/case002/results/problem1_result.json
 
 limitations:
-  - This blueprint covers problem 1 revision 1 only.
-  - The global paper abstract, title, keywords and later-problem inheritance remain locked.
+  - This blueprint covers problem 1 revision 2 only.
+  - Assumptions and parameter values remain in registries rather than the LaTeX body.
+  - The global abstract, title, keywords and all later problems remain locked.

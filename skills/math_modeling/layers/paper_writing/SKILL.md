@@ -41,6 +41,9 @@ description: 按已批准的论文蓝图将建模成果写成正式论文，不�
 4. 当前章节引用的前序公式与结果条目；
 5. 目标格式规范和题目原始交付要求。
 
+项目采用登记库唯一来源时，还必须读取 registry/parameters.yaml 与 registry/assumptions.yaml，
+但不得在 LaTeX 中复制参数表和假设清单。
+
 不得默认加载其他问题的完整正文。引用前文时优先读取蓝图和公式登记库，以减少上下文和 token 消耗。
 
 ## 3. 写作规则
@@ -80,6 +83,13 @@ description: 按已批准的论文蓝图将建模成果写成正式论文，不�
 
 ### 3.3 公式控制
 
+项目配置 model_formula_mode: symbolic 时，还必须：
+
+- 模型建立只用参数符号，不代入题面数值和项目选择值；
+- 速度、时刻、坐标、半径和有效期等具体值只出现在求解结果、结果表和验证证据；
+- 后续问题从参数、假设、公式和模型合同登记库按语义 ID 读取，不从前序 LaTeX 复制；
+- 运行 validation/symbolic_latex_validator.py。
+
 - 只定义蓝图中 `formula_plan.define` 的公式；
 - 对 `formula_plan.reference` 中的公式使用 `\eqref{}` 或文字引用；
 - 不编号普通代数整理和临时中间式；
@@ -108,6 +118,16 @@ description: 按已批准的论文蓝图将建模成果写成正式论文，不�
 - 结果解释不重复模型推导。
 
 ## 4. 单题默认结构
+
+若项目启用 per_problem_section_contract: cumcm_analysis_and_solution，则采用：
+
+    第2章 问题分析 / 2.x 问题x分析
+    第5章 模型的建立与求解 / 5.x 问题x的模型建立与求解
+      / 5.x.1 问题模型建立
+      / 5.x.2 模型求解
+      / 5.x.3 结果分析
+
+详细约束见 ../../support/SYMBOLIC_PAPER_CONTRACT.md。
 
 蓝图未另行规定时采用：
 

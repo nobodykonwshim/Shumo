@@ -52,10 +52,11 @@ solution_reviewer
 1. 项目配置文件；
 2. 题面与当前问题附件；
 3. 项目参数库；
-4. 项目公式库；
-5. 项目模型边界库；
-6. 当前问题直接依赖的前序成果包；
-7. 当前 Workflow 或 Agent 所需的单一规则文件。
+4. 项目假设库；
+5. 项目公式库；
+6. 项目模型边界库；
+7. 当前问题直接依赖的前序成果包；
+8. 当前 Workflow 或 Agent 所需的单一规则文件。
 
 不得默认通读全部历史对话、项目文件或已完成章节。
 
@@ -276,6 +277,7 @@ innovation:
   limitations: ""
 new_registry_entries:
   parameters: []
+  assumptions: []
   formulas: []
   model_contracts: []
 writing_notes:
@@ -296,7 +298,7 @@ status: solved|partial|blocked
 - 参数来源、单位和索引明确；
 - 结果通过定量验证；
 - Agent 行动均有准入、预算、证据和停止记录；
-- 已更新待登记的公式、参数和模型边界；
+- 已更新待登记的假设、公式、参数和模型边界；
 - 已区分计算约束和论文内容；
 - 创新点有基线、改造和验证依据；
 - 没有未处理的 critical 评审问题。

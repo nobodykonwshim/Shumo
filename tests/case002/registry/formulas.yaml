@@ -1,9 +1,11 @@
-schema_version: 1
+schema_version: 2
 project_id: case002
 formulas:
-  - {id: F-P1-MISSILE-POSITION, owner_problem: problem1, status: candidate}
-  - {id: F-P1-UAV-POSITION, owner_problem: problem1, status: candidate}
-  - {id: F-P1-BOMB-POSITION, owner_problem: problem1, status: candidate}
-  - {id: F-P1-SMOKE-CENTER, owner_problem: problem1, status: candidate}
-  - {id: F-P1-WHOLE-TARGET-MARGIN, owner_problem: problem1, status: candidate}
-  - {id: F-P1-EFFECTIVE-DURATION, owner_problem: problem1, status: candidate}
+  - {id: F-P1-MOTION-TRAJECTORIES, owner_problem: problem1, label: eq:p1-motion, reuse_rule: reference_only}
+  - {id: F-P1-BOMB-POSITION, owner_problem: problem1, label: eq:p1-bomb, reuse_rule: reference_only}
+  - {id: F-P1-SMOKE-CENTER, owner_problem: problem1, label: eq:p1-smoke, reuse_rule: reference_only}
+  - {id: F-P1-VIEW-MATRIX, owner_problem: problem1, label: eq:p1-view-matrix, reuse_rule: reference_only}
+  - {id: F-P1-PERSPECTIVE-PROJECTION, owner_problem: problem1, label: eq:p1-perspective, reuse_rule: reference_only}
+  - {id: F-P1-SMOKE-CONIC, owner_problem: problem1, label: eq:p1-smoke-conic, reuse_rule: reference_only}
+  - {id: F-P1-PROJECTION-COVERAGE, owner_problem: problem1, label: eq:p1-coverage, reuse_rule: reference_only}
+  - {id: F-P1-EFFECTIVE-DURATION, owner_problem: problem1, label: eq:p1-duration, reuse_rule: reference_only}

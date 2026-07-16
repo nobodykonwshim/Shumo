@@ -1,259 +1,276 @@
 schema_version: "1.0"
 spec_id: MODEL-CASE002-P1
 problem_id: problem1
-title: Prescribed FY1 release and full-cylinder smoke occlusion model
+title: Missile-view perspective projection and full smoke coverage model
 status: solved
 
 objective:
   sense: estimate
-  description: Determine the time interval during which the prescribed FY1 smoke cloud completely occludes the true cylindrical target from missile M1.
+  description: Determine the interval during which the true target perspective projection is completely covered by the projected smoke shadow from missile M1.
   metrics:
-    - id: METRIC-P1-FULL-DURATION
-      description: Effective full-cylinder occlusion duration
+    - id: METRIC-P1-COVERAGE-DURATION
+      description: Effective full-projection coverage duration
       priority: primary
       formula_id: F-P1-EFFECTIVE-DURATION
       unit: s
-    - id: METRIC-P1-CENTRE-DURATION
-      description: Target-geometric-centre line-of-sight duration used only as a comparison
-      priority: diagnostic
-      unit: s
 
 inputs:
-  - id: IN-P1-MISSILE
-    description: Initial position, speed and fake-target-directed flight rule for M1
+  - id: IN-P1-KINEMATICS
+    description: Missile, FY1, bomb and smoke motion parameters referenced from the parameter registry
     data_type: object
     required: true
-    source: SRC-PROBLEM-PDF
-  - id: IN-P1-UAV-SCHEDULE
-    description: Initial position, prescribed speed, release time and burst delay for FY1
-    data_type: object
+    source: tests/case002/registry/parameters.yaml
+  - id: IN-P1-ASSUMPTIONS
+    description: Problem 1 physical and projection assumptions referenced by semantic id
+    data_type: file
     required: true
-    source: SRC-PROBLEM-PDF
-  - id: IN-P1-SMOKE
-    description: Smoke radius, settling speed and active duration
-    data_type: object
-    required: true
-    source: SRC-PROBLEM-PDF
+    source: tests/case002/registry/assumptions.yaml
   - id: IN-P1-TARGET
-    description: Fixed true-target cylinder geometry
+    description: Fixed true-target cylinder geometry referenced from the parameter registry
     data_type: geometry
     required: true
-    source: SRC-PROBLEM-PDF
+    source: tests/case002/registry/parameters.yaml
 
 symbols:
   variables:
-    - {id: VAR-TIME, description: Absolute time after task assignment, role: state, domain: nonnegative real, unit: s}
-    - {id: VAR-MISSILE-POS, description: Position of missile M1, role: state, domain: R^3, unit: m}
-    - {id: VAR-UAV-POS, description: Position of UAV FY1, role: state, domain: R^3, unit: m}
-    - {id: VAR-BOMB-POS, description: Position of the smoke bomb before burst, role: state, domain: R^3, unit: m}
-    - {id: VAR-SMOKE-CENTER, description: Centre of the active smoke sphere, role: state, domain: R^3, unit: m}
-    - {id: VAR-TARGET-POINT, description: Arbitrary point of the true target cylinder, role: auxiliary, domain: solid cylinder, unit: m}
-    - {id: VAR-SIGHT-FRACTION, description: Segment projection fraction from missile to a target point, role: auxiliary, domain: "closed interval [0,1]", unit: null}
-    - {id: VAR-MAX-DISTANCE, description: Worst distance from the smoke centre to all missile-target sight segments, role: output, domain: nonnegative real, unit: m}
-    - {id: VAR-EFFECTIVE-SET, description: Absolute-time set satisfying full-target occlusion, role: output, domain: subset of active interval, unit: s}
-    - {id: VAR-DURATION, description: Length of the effective occlusion time set, role: output, domain: nonnegative real, unit: s}
+    - {id: VAR-TIME, description: absolute task time, role: state, domain: nonnegative real, unit: s}
+    - {id: VAR-MISSILE-POS, description: missile position and projection viewpoint, role: state, domain: R3, unit: m}
+    - {id: VAR-UAV-POS, description: FY1 position, role: state, domain: R3, unit: m}
+    - {id: VAR-BOMB-POS, description: smoke-bomb position before burst, role: state, domain: R3, unit: m}
+    - {id: VAR-SMOKE-CENTER, description: active smoke-sphere centre, role: state, domain: R3, unit: m}
+    - {id: VAR-VIEW-MATRIX, description: orthonormal world-to-camera rotation matrix, role: auxiliary, domain: 3 by 3 orthogonal matrix, unit: null}
+    - {id: VAR-CAMERA-POINT, description: camera-coordinate representation of a world point, role: auxiliary, domain: R3 with positive depth, unit: m}
+    - {id: VAR-IMAGE-POINT, description: homogeneous image-plane coordinate, role: auxiliary, domain: projective plane, unit: null}
+    - {id: VAR-SMOKE-CONIC, description: symmetric matrix of the projected smoke tangent-cone conic, role: auxiliary, domain: 3 by 3 symmetric matrix, unit: null}
+    - {id: VAR-TARGET-PROJECTION, description: perspective projection set of the full target cylinder, role: auxiliary, domain: subset of image plane, unit: null}
+    - {id: VAR-SMOKE-PROJECTION, description: image-plane region blocked by the smoke sphere, role: auxiliary, domain: conic region, unit: null}
+    - {id: VAR-EFFECTIVE-SET, description: time set satisfying full projection coverage and depth order, role: output, domain: subset of active interval, unit: s}
+    - {id: VAR-DURATION, description: measure of the effective time set, role: output, domain: nonnegative real, unit: s}
   parameters:
-    - {id: PAR-M1-P0, description: Initial position of M1, unit: m, source: SRC-PROBLEM-PDF, value: [20000, 0, 2000]}
-    - {id: PAR-MISSILE-SPEED, description: Missile speed, unit: m/s, source: SRC-PROBLEM-PDF, value: 300}
-    - {id: PAR-FY1-P0, description: Initial position of FY1, unit: m, source: SRC-PROBLEM-PDF, value: [17800, 0, 1800]}
-    - {id: PAR-FY1-P1-SPEED, description: Prescribed FY1 speed, unit: m/s, source: SRC-PROBLEM-PDF, value: 120}
-    - {id: PAR-P1-RELEASE-TIME, description: Release time, unit: s, source: SRC-PROBLEM-PDF, value: 1.5}
-    - {id: PAR-P1-BURST-DELAY, description: Delay from release to burst, unit: s, source: SRC-PROBLEM-PDF, value: 3.6}
-    - {id: PAR-GRAVITY, description: Gravitational acceleration used for the bomb trajectory, unit: m/s^2, source: modeling assumption, value: 9.8}
-    - {id: PAR-SMOKE-RADIUS, description: Effective smoke-sphere radius, unit: m, source: SRC-PROBLEM-PDF, value: 10}
-    - {id: PAR-SMOKE-SETTLING-SPEED, description: Smoke-centre vertical settling speed, unit: m/s, source: SRC-PROBLEM-PDF, value: 3}
-    - {id: PAR-SMOKE-ACTIVE-DURATION, description: Post-burst active duration, unit: s, source: SRC-PROBLEM-PDF, value: 20}
-    - {id: PAR-TARGET-BOTTOM-CENTER, description: Bottom-face centre of the true target, unit: m, source: SRC-PROBLEM-PDF, value: [0, 200, 0]}
-    - {id: PAR-TARGET-RADIUS, description: True-target cylinder radius, unit: m, source: SRC-PROBLEM-PDF, value: 7}
-    - {id: PAR-TARGET-HEIGHT, description: True-target cylinder height, unit: m, source: SRC-PROBLEM-PDF, value: 10}
+    - {id: PAR-M1-P0, description: initial M1 position, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FAKE-TARGET, description: fake-target guidance point, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-MISSILE-SPEED, description: missile speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-P0, description: initial FY1 position, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-DIRECTION, description: FY1 unit heading, unit: null, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-P1-SPEED, description: FY1 speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-P1-RELEASE-TIME, description: release time, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-P1-BURST-DELAY, description: release-to-burst delay, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-GRAVITY, description: gravitational acceleration, unit: m/s^2, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-RADIUS, description: smoke-sphere radius, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-SETTLING-SPEED, description: smoke-centre settling speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-ACTIVE-DURATION, description: smoke active duration, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-BOTTOM-CENTER, description: target bottom-face centre, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-RADIUS, description: target cylinder radius, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-HEIGHT, description: target cylinder height, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-GEOMETRIC-CENTER, description: target geometric centre defining the camera normal, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-VIEW-UP, description: view-frame reference vector, unit: null, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-NORMALIZED-FOCAL-LENGTH, description: image-plane focal scale, unit: null, source: tests/case002/registry/parameters.yaml}
 
 assumptions:
   - id: A-P1-MISSILE-UNIFORM
-    statement: M1 flies at 300 m/s in a straight line from its initial position toward the fake-target origin.
+    statement: M1 follows the registered straight uniform trajectory during evaluation.
     status: accepted
-    impact: Fixes the missile trajectory and excludes guidance corrections during the short evaluation interval.
+    impact: fixes the moving camera origin
   - id: A-P1-UAV-UNIFORM
-    statement: FY1 instantaneously adopts the prescribed heading and then flies horizontally at 120 m/s toward the fake target.
+    statement: FY1 follows the registered horizontal constant-speed trajectory.
     status: accepted
-    impact: Fixes the bomb release point from the stated control schedule.
+    impact: fixes the release point
   - id: A-P1-BALLISTIC
-    statement: At release the bomb inherits FY1 horizontal velocity, has zero vertical velocity and is acted on only by gravity with g=9.8 m/s^2.
+    statement: The bomb inherits FY1 horizontal velocity and is acted on only by gravity after release.
     status: accepted
-    impact: Determines the burst position; aerodynamic drag is omitted.
+    impact: determines the burst point
   - id: A-P1-NO-DRIFT
-    statement: Wind, air resistance and horizontal smoke drift are ignored.
+    statement: Wind, drag and horizontal smoke drift are ignored.
     status: accepted
-    impact: The smoke centre keeps the burst point's horizontal coordinates.
+    impact: fixes smoke horizontal coordinates
   - id: A-P1-SPHERE
-    statement: After burst the effective smoke is a sphere of radius 10 m whose centre settles vertically at 3 m/s for 20 s.
+    statement: Active smoke is represented by a sphere with registered radius and settling motion.
     status: accepted
-    impact: Converts occlusion into a point-to-sight-segment distance test inside a finite active interval.
+    impact: gives a tangent-cone conic on the image plane
   - id: A-P1-TARGET-CYLINDER
-    statement: The true target is a fixed solid vertical cylinder with radius 7 m and height 10 m.
+    statement: The target is the registered fixed solid cylinder.
     status: accepted
-    impact: Full occlusion must hold for every point of this cylinder rather than only its geometric centre.
+    impact: full coverage applies to its complete projection
+  - id: A-P1-PINHOLE-VIEW
+    statement: Observation uses a pinhole perspective plane perpendicular to the missile-to-target-centre sight direction.
+    status: accepted
+    impact: preserves angular scale and depth
 
 model_components:
   - id: M-P1-KINEMATICS
     type: equation
-    purpose: Determine the missile, UAV, bomb and smoke-centre positions in absolute time.
-    depends_on: [F-P1-MISSILE-POSITION, F-P1-UAV-POSITION, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER]
-  - id: M-P1-FULL-OCCLUSION
+    purpose: Determine missile, FY1, bomb and smoke-centre states symbolically.
+    depends_on: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER]
+  - id: M-P1-CAMERA
+    type: geometry
+    purpose: Build the moving view plane and transform world points into two-dimensional perspective coordinates.
+    depends_on: [F-P1-VIEW-MATRIX, F-P1-PERSPECTIVE-PROJECTION]
+  - id: M-P1-PROJECTION-COVERAGE
     type: decision_rule
-    purpose: Require the smoke sphere to intersect every sight segment from M1 to the full target cylinder.
-    depends_on: [F-P1-WHOLE-TARGET-MARGIN, F-P1-EFFECTIVE-DURATION]
+    purpose: Require complete projected target containment and correct smoke-before-target depth order.
+    depends_on: [F-P1-SMOKE-CONIC, F-P1-PROJECTION-COVERAGE, F-P1-EFFECTIVE-DURATION]
 
 formulas:
-  - id: F-P1-MISSILE-POSITION
-    expression: r_M(t)=r_M0+300t*(-r_M0/||r_M0||)
-    description: Straight uniform M1 position directed toward the origin.
-    symbols: [VAR-MISSILE-POS, VAR-TIME, PAR-M1-P0, PAR-MISSILE-SPEED]
-    unit_check: pass
-  - id: F-P1-UAV-POSITION
-    expression: r_F(t)=r_F0+(-120,0,0)t
-    description: Prescribed horizontal FY1 trajectory.
-    symbols: [VAR-UAV-POS, VAR-TIME, PAR-FY1-P0, PAR-FY1-P1-SPEED]
+  - id: F-P1-MOTION-TRAJECTORIES
+    expression: e_M=(r_O-r_M0)/||r_O-r_M0||; r_M(t)=r_M0+v_M t e_M; r_F(t)=r_F0+v_F t e_F
+    description: Symbolic missile and FY1 trajectories.
+    symbols: [VAR-MISSILE-POS, VAR-UAV-POS, VAR-TIME, PAR-M1-P0, PAR-FAKE-TARGET, PAR-MISSILE-SPEED, PAR-FY1-P0, PAR-FY1-DIRECTION, PAR-FY1-P1-SPEED]
     unit_check: pass
   - id: F-P1-BOMB-POSITION
-    expression: r_B(t)=r_F(t_d)+(-120,0,0)(t-t_d)+(0,0,-g(t-t_d)^2/2)
-    description: Ballistic smoke-bomb trajectory from release to burst.
-    symbols: [VAR-BOMB-POS, VAR-UAV-POS, VAR-TIME, PAR-P1-RELEASE-TIME, PAR-FY1-P1-SPEED, PAR-GRAVITY]
+    expression: r_d=r_F(t_d); t_b=t_d+tau_b; r_B(t)=r_d+v_F e_F(t-t_d)-g(t-t_d)^2 e_z/2
+    description: Symbolic ballistic bomb trajectory.
+    symbols: [VAR-BOMB-POS, VAR-UAV-POS, VAR-TIME, PAR-P1-RELEASE-TIME, PAR-P1-BURST-DELAY, PAR-FY1-P1-SPEED, PAR-FY1-DIRECTION, PAR-GRAVITY]
     unit_check: pass
   - id: F-P1-SMOKE-CENTER
-    expression: r_C(t)=r_B(t_b)+(0,0,-3(t-t_b)), t in [t_b,t_b+20]
-    description: Active smoke-centre trajectory after burst.
+    expression: r_C(t)=r_B(t_b)-v_s(t-t_b)e_z for t in [t_b,t_b+T_e]
+    description: Symbolic active smoke-centre trajectory.
     symbols: [VAR-SMOKE-CENTER, VAR-BOMB-POS, VAR-TIME, PAR-SMOKE-SETTLING-SPEED, PAR-SMOKE-ACTIVE-DURATION]
     unit_check: pass
-  - id: F-P1-WHOLE-TARGET-MARGIN
-    expression: D(t)=max_{p in T} min_{lambda in [0,1]} ||r_C(t)-[r_M(t)+lambda(p-r_M(t))]||; m(t)=10-D(t)
-    description: Worst sight-segment distance and full-target occlusion margin.
-    symbols: [VAR-MAX-DISTANCE, VAR-TARGET-POINT, VAR-SIGHT-FRACTION, VAR-SMOKE-CENTER, VAR-MISSILE-POS, VAR-TIME, PAR-SMOKE-RADIUS]
+  - id: F-P1-VIEW-MATRIX
+    expression: n=(r_Tc-r_M)/||r_Tc-r_M||; e_1=(k cross n)/||k cross n||; e_2=n cross e_1; R=[e_1^T;e_2^T;n^T]
+    description: Time-dependent orthonormal view matrix with normal along the missile-target-centre sight.
+    symbols: [VAR-VIEW-MATRIX, VAR-MISSILE-POS, PAR-TARGET-GEOMETRIC-CENTER, PAR-VIEW-UP]
+    unit_check: not_applicable
+  - id: F-P1-PERSPECTIVE-PROJECTION
+    expression: x'=R(X-r_M); y_tilde=(f x'_1/x'_3, f x'_2/x'_3, 1)^T
+    description: Perspective transformation from a three-dimensional world point to the two-dimensional image plane.
+    symbols: [VAR-VIEW-MATRIX, VAR-CAMERA-POINT, VAR-IMAGE-POINT, VAR-MISSILE-POS, PAR-NORMALIZED-FOCAL-LENGTH]
+    unit_check: not_applicable
+  - id: F-P1-SMOKE-CONIC
+    expression: c'=R(r_C-r_M); Q=K^{-T}[c'c'^T-(c'^Tc'-R_s^2)I]K^{-1}; Omega_S={y:y^TQy>=0}
+    description: Image-plane conic region generated by the missile-to-smoke-sphere tangent cone.
+    symbols: [VAR-VIEW-MATRIX, VAR-SMOKE-CENTER, VAR-MISSILE-POS, VAR-SMOKE-CONIC, VAR-SMOKE-PROJECTION, VAR-IMAGE-POINT, PAR-SMOKE-RADIUS, PAR-NORMALIZED-FOCAL-LENGTH]
     unit_check: pass
+  - id: F-P1-PROJECTION-COVERAGE
+    expression: Omega_T(t) subseteq Omega_S(t) and every target ray intersects the smoke sphere before its target point
+    description: Complete target-projection coverage with the required depth order.
+    symbols: [VAR-TARGET-PROJECTION, VAR-SMOKE-PROJECTION, VAR-IMAGE-POINT, PAR-SMOKE-RADIUS]
+    unit_check: not_applicable
   - id: F-P1-EFFECTIVE-DURATION
-    expression: I={t in [t_b,t_b+20]:D(t)<=10}; Delta_t=measure(I)
-    description: Effective occlusion set and its total duration.
-    symbols: [VAR-EFFECTIVE-SET, VAR-DURATION, VAR-MAX-DISTANCE, VAR-TIME, PAR-SMOKE-RADIUS, PAR-SMOKE-ACTIVE-DURATION]
+    expression: "I={t in [t_b,t_b+T_e]: projection coverage and depth order hold}; Delta_t=measure(I)"
+    description: Effective occlusion time set and duration.
+    symbols: [VAR-EFFECTIVE-SET, VAR-DURATION, VAR-TIME, PAR-SMOKE-ACTIVE-DURATION]
     unit_check: pass
 
 constraints:
+  - id: C-P1-POSITIVE-DEPTH
+    kind: hard
+    description: Every projected target point must have positive camera depth.
+    expression: x'_3>0
+    symbols: [VAR-CAMERA-POINT]
+    tolerance: 1.0e-12
+    failure_signal: a target point lies on or behind the camera plane
   - id: C-P1-ACTIVE-WINDOW
     kind: hard
-    description: Smoke occlusion is evaluated only during the 20 s post-burst active interval.
-    expression: t_b <= t <= t_b+20
+    description: Coverage is evaluated only during the registered smoke active interval.
+    expression: t_b<=t<=t_b+T_e
     symbols: [VAR-TIME, PAR-SMOKE-ACTIVE-DURATION]
     tolerance: 1.0e-12
-    failure_signal: an interval boundary lies outside [5.1,25.1] s
-  - id: C-P1-FULL-TARGET
+    failure_signal: an interval boundary lies outside the active interval
+  - id: C-P1-FULL-PROJECTION
     kind: hard
-    description: Every missile-to-target-point sight segment must pass within the smoke radius.
-    expression: D(t)<=10
-    symbols: [VAR-MAX-DISTANCE, PAR-SMOKE-RADIUS]
-    tolerance: 1.0e-7
-    failure_signal: the maximum target-point sight distance exceeds 10 m
+    description: The complete target projection is contained in the smoke conic and all covered rays hit smoke before the target.
+    expression: Omega_T subseteq Omega_S with valid ray depth
+    symbols: [VAR-TARGET-PROJECTION, VAR-SMOKE-PROJECTION]
+    tolerance: 1.0e-9
+    failure_signal: any target projection point is uncovered or has invalid depth order
 
 algorithm:
-  method: deterministic time scan, cylindrical-boundary discretization and Brent root refinement
+  method: deterministic perspective projection, conic containment, target-boundary refinement and Brent event roots
   deterministic: true
   steps:
-    - id: STEP-P1-HAND-CHECK
-      description: Compute release point, burst time and burst point directly from the prescribed schedule.
-      uses: [F-P1-UAV-POSITION, F-P1-BOMB-POSITION]
-      produces: [VAR-BOMB-POS]
-    - id: STEP-P1-SURFACE
-      description: Discretize the cylinder side and both caps at three increasing resolutions.
-      uses: [IN-P1-TARGET]
-      produces: [VAR-TARGET-POINT]
-    - id: STEP-P1-SCAN
-      description: Scan the active interval at 0.02 s and bracket sign changes of the full-target margin.
-      uses: [F-P1-WHOLE-TARGET-MARGIN, C-P1-ACTIVE-WINDOW]
+    - id: STEP-P1-LOAD-REGISTRY
+      description: Load all parameter values and assumptions by semantic id.
+      uses: [IN-P1-KINEMATICS, IN-P1-ASSUMPTIONS, IN-P1-TARGET]
+    - id: STEP-P1-KINEMATICS
+      description: Compute release, burst and active smoke states.
+      uses: [M-P1-KINEMATICS]
+      produces: [VAR-MISSILE-POS, VAR-SMOKE-CENTER]
+    - id: STEP-P1-PROJECT
+      description: Build the view matrix and perspective-project the cylinder boundary and smoke tangent cone.
+      uses: [M-P1-CAMERA, F-P1-SMOKE-CONIC]
+      produces: [VAR-TARGET-PROJECTION, VAR-SMOKE-PROJECTION]
+    - id: STEP-P1-COVERAGE
+      description: Test conic containment and smoke-before-target ray intersections.
+      uses: [F-P1-PROJECTION-COVERAGE, C-P1-FULL-PROJECTION]
       produces: [VAR-EFFECTIVE-SET]
     - id: STEP-P1-ROOT
-      description: Refine both occlusion boundaries with the Brent bracketing method.
-      uses: [VAR-EFFECTIVE-SET]
+      description: Scan the active interval and refine both coverage boundaries with Brent roots.
+      uses: [VAR-EFFECTIVE-SET, C-P1-ACTIVE-WINDOW]
       produces: [VAR-DURATION]
-    - id: STEP-P1-COMPARE
-      description: Repeat the interval calculation for the target geometric centre line of sight.
-      produces: [METRIC-P1-CENTRE-DURATION]
-  termination: Stop after all three mesh resolutions and all three time-scan steps produce one valid interval, both convergence changes are below 0.001 s and all required checks pass.
-  complexity_note: The dominant cost is vectorized distance evaluation over sampled target-boundary points.
+  termination: Stop when time-step and target-boundary refinements each change duration by less than 0.001 s and all projection, depth and residual checks pass.
+  complexity_note: The dominant cost is vectorized projection and ray-sphere evaluation over sampled cylinder-boundary points.
 
 outputs:
   - id: OUT-P1-RELEASE-BURST
-    description: Release point, absolute burst time and burst point
+    description: Release point, burst time and burst point
     data_type: object
     unit: null
-    depends_on: [F-P1-UAV-POSITION, F-P1-BOMB-POSITION]
+    depends_on: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION]
     destination: tests/case002/results/problem1_result.json
-    acceptance: Coordinates agree with the independent hand calculation to numerical precision.
-  - id: OUT-P1-FULL-INTERVAL
-    description: Full-cylinder effective occlusion interval and duration
+    acceptance: Values agree with direct hand calculation.
+  - id: OUT-P1-COVERAGE-INTERVAL
+    description: Full perspective-projection coverage interval and duration
     data_type: object
     unit: s
-    depends_on: [F-P1-WHOLE-TARGET-MARGIN, F-P1-EFFECTIVE-DURATION]
+    depends_on: [F-P1-PROJECTION-COVERAGE, F-P1-EFFECTIVE-DURATION]
     destination: tests/case002/results/problem1_result.json
-    acceptance: Interval is inside the active window and boundary distance residual is below 1e-7 m.
-  - id: OUT-P1-CENTRE-COMPARISON
-    description: Geometric-centre line-of-sight comparison interval and duration
-    data_type: object
-    unit: s
-    depends_on: [F-P1-EFFECTIVE-DURATION]
-    destination: tests/case002/results/problem1_result.json
-    acceptance: Its duration is not shorter than the full-cylinder duration.
+    acceptance: Interval lies in the active window and both boundary residuals are below tolerance.
 
 validation:
   checks:
     - id: V-P1-HAND-CALC
       type: analytic_case
-      description: Check release point, burst time and burst point against direct substitution.
+      description: Verify release point, burst time and burst point by direct substitution.
       target_ids: [OUT-P1-RELEASE-BURST]
-      acceptance: Values equal (17620,0,1800) m, 5.1 s and (17188,0,1736.496) m.
+      acceptance: All registered hand-check values agree to numerical precision.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
-    - id: V-P1-ACTIVE-WINDOW
-      type: boundary
-      description: Check both full-target interval boundaries against the active interval.
-      target_ids: [OUT-P1-FULL-INTERVAL, C-P1-ACTIVE-WINDOW]
-      acceptance: 5.1 <= start <= end <= 25.1 s.
+    - id: V-P1-VIEW-ORTHONORMAL
+      type: residual
+      description: Verify that the view matrix is orthonormal.
+      target_ids: [VAR-VIEW-MATRIX]
+      acceptance: Frobenius residual of R R^T-I is below 1e-10.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
-    - id: V-P1-MESH-CONVERGENCE
-      type: sensitivity
-      description: Increase target-boundary sampling from 360x31x31 to 720x61x61.
-      target_ids: [OUT-P1-FULL-INTERVAL]
-      acceptance: Absolute duration change is below 0.001 s.
+    - id: V-P1-PROJECTION-CONTAINMENT
+      type: constraint
+      description: Verify projected target containment and smoke-before-target ray intersections inside the effective interval.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL, C-P1-FULL-PROJECTION]
+      acceptance: Every sampled target point passes both projection and depth tests.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
     - id: V-P1-TIME-CONVERGENCE
       type: sensitivity
-      description: Repeat event bracketing with time-scan steps of 0.05 s, 0.02 s and 0.01 s before root refinement.
-      target_ids: [OUT-P1-FULL-INTERVAL]
-      acceptance: The maximum duration difference is below 0.001 s.
+      description: Refine the time scan before root refinement.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL]
+      acceptance: Maximum duration change is below 0.001 s.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
-    - id: V-P1-CENTRE-BOUND
-      type: constraint
-      description: Compare the strict full-target duration with the looser target-centre line of sight.
-      target_ids: [OUT-P1-FULL-INTERVAL, OUT-P1-CENTRE-COMPARISON]
-      acceptance: Full-target duration does not exceed target-centre duration.
+    - id: V-P1-MESH-CONVERGENCE
+      type: sensitivity
+      description: Refine cylinder side and cap sampling.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL]
+      acceptance: Finest two duration estimates differ by less than 0.001 s.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
-    - id: V-P1-ROOT-RESIDUAL
+    - id: V-P1-BOUNDARY-RESIDUAL
       type: residual
-      description: Check the worst sight-segment distance at both refined interval boundaries.
-      target_ids: [OUT-P1-FULL-INTERVAL, C-P1-FULL-TARGET]
-      acceptance: Maximum absolute distance residual from 10 m is below 1e-7 m.
+      description: Verify that the worst sight-segment distance equals the smoke radius at both event boundaries.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL]
+      acceptance: Maximum absolute distance residual is below 1e-7 m.
       required: true
       status: pass
       evidence: tests/case002/results/problem1_result.json
   sensitivity_policy:
     declared_before_final_result: true
-    parameters: [PAR-TARGET-RADIUS, PAR-TARGET-HEIGHT]
-    acceptance: Numerical target-boundary resolution must change the reported duration by less than 0.001 s; physical parameter sensitivity is deferred because problem 1 prescribes these constants.
+    parameters: [PAR-NORMALIZED-FOCAL-LENGTH, PAR-TARGET-RADIUS, PAR-TARGET-HEIGHT]
+    acceptance: Common focal scaling must not change containment, and declared time and mesh refinements must change duration by less than 0.001 s.
 
 provenance:
   reference_exposure_status: independent
@@ -263,6 +280,14 @@ provenance:
       availability: local
       role: authoritative_input
       sha256: a37f6aad30b16ea09da9cb320ce194b12d3a28874008cf9ff19549f6c6079447
+    - id: SRC-P1-PARAMETERS
+      location: tests/case002/registry/parameters.yaml
+      availability: repository
+      role: derived_input
+    - id: SRC-P1-ASSUMPTIONS
+      location: tests/case002/registry/assumptions.yaml
+      availability: repository
+      role: derived_input
     - id: SRC-P1-SOLVER
       location: tests/case002/code/problem1_solver.py
       availability: repository
@@ -276,25 +301,25 @@ provenance:
     - tests/case002/review/independent_baseline.yaml
 
 human_checkpoints:
-  - id: H-P1-PRIMARY-PREDICATE
-    decision: Use full-cylinder complete occlusion as the primary result and target-centre line of sight only as a comparison.
+  - id: H-P1-PROJECTION-DEFINITION
+    decision: Use a missile-view perpendicular image plane, perspective matrix transformation and complete projected target coverage with depth order.
     authority: user
     status: approved
-    record: User-approved implementation plan for this case.
+    record: tests/case002/review/problem1_definition_revision2.yaml
 
 limitations:
-  - Air resistance, wind and smoke deformation are outside the stated first-round model.
-  - Gravitational acceleration is taken as 9.8 m/s^2 because the problem statement does not prescribe a value.
-  - The continuous target maximum is evaluated numerically on the full cylinder boundary; mesh refinement supports numerical stability but is not a symbolic extremum proof.
+  - Air resistance, wind and smoke deformation remain outside the current physical model.
+  - Full continuous projection coverage is evaluated numerically on a refined cylinder boundary.
+  - Mesh convergence supports numerical stability but is not a symbolic proof of the continuous extremum.
 
 claims:
   allowed:
-    - Under the declared assumptions, the full-cylinder effective occlusion interval is 8.056445489406 s to 9.448088158702 s and its duration is 1.391642669296 s.
-    - The target-geometric-centre line-of-sight comparison duration is 1.435082101967 s.
-    - The declared time-scan and target-boundary refinements each change the computed duration by less than 0.001 s.
+    - Under the registered assumptions, the full perspective-projection coverage interval is 8.056445489407 s to 9.448088158702 s and its duration is 1.391642669295 s.
+    - The view matrix is orthonormal to numerical precision and the target projection passes conic containment and smoke-before-target depth checks inside the reported interval.
+    - Time and target-boundary refinements each change the duration by less than 0.001 s.
   forbidden:
-    - The target-centre line-of-sight duration is the complete-target effective occlusion duration.
-    - The declared assumptions capture all real aerodynamic and meteorological effects.
+    - Plain orthographic projection without depth normalization is equivalent to missile visual observation.
+    - Sampled target-boundary evidence is a symbolic proof of continuous coverage.
 
 implementation:
   entrypoints:

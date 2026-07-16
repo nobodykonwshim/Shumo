@@ -42,6 +42,9 @@ description: 负责论文蓝图、模型归属、符号与公式编号，不负�
 5. `registry/model_contracts.yaml`；
 6. 题目对正文、附件、页数和格式的要求。
 
+此外必须读取 registry/assumptions.yaml；参数和假设采用登记库唯一来源时，不得把它们复制成
+当前问题的 LaTeX 清单。
+
 ## 3. 核心原则
 
 ### 3.1 首次定义权
@@ -119,6 +122,8 @@ F-P1-HANDLE-RECURSION:
 
 架构确定后更新：
 
+- registry/assumptions.yaml；
+
 - `registry/parameters.yaml`；
 - `registry/formulas.yaml`；
 - `registry/model_contracts.yaml`。
@@ -169,6 +174,10 @@ status: approved|needs_modeling_revision
 ```
 
 ## 6. 交付给第三层的门槛
+
+项目启用符号化逐问正文契约时，蓝图必须把当前问内容分别放入“第2章问题分析”和“第5章模型的
+建立与求解”，且第5章固定包含“问题模型建立、模型求解、结果分析”。假设与参数值的正文
+placement 必须设为 omit，来源转为项目登记库。
 
 只有满足以下条件才允许进入正式写作：
 

@@ -8,11 +8,12 @@ route:
   uav_motion: prescribed horizontal straight uniform motion
   bomb_motion: inherited horizontal velocity plus gravity
   smoke_motion: fixed horizontal coordinates plus vertical settling
-  primary_occlusion: maximum line-segment distance over the full cylindrical target
-  comparison_occlusion: line-segment distance for the target center
+  primary_occlusion: complete perspective projection of the target cylinder covered by the missile-view smoke tangent-cone projection with depth order
+  equivalent_evaluator: maximum line-segment distance over the full cylindrical target
 validation_plan:
   - hand-check release and burst coordinates
   - bracket event boundaries in the 20 s active interval and refine roots
   - compare increasingly dense cylindrical-boundary resolutions
-  - confirm full-target duration is no larger than center-target duration
+  - verify the moving view matrix is orthonormal
+  - verify projected containment and smoke-before-target depth order
 reference_release: not_approved

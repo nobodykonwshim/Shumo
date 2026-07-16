@@ -17,6 +17,7 @@ paths:
   source_manifest: tests/case002/problem/source_manifest.yaml
   registry:
     parameters: tests/case002/registry/parameters.yaml
+    assumptions: tests/case002/registry/assumptions.yaml
     formulas: tests/case002/registry/formulas.yaml
     model_contracts: tests/case002/registry/model_contracts.yaml
   modeling_artifacts: tests/case002/artifacts/modeling/
@@ -58,7 +59,8 @@ modeling:
     - hand_calculation
     - active_window_check
     - discretization_convergence
-    - centerline_upper_bound_comparison
+    - view_matrix_orthonormality
+    - projection_containment_and_depth_order
 
 paper_architecture:
   equation_numbering: global
@@ -76,6 +78,11 @@ paper_writing:
   editable_equations_required: true
   compile_environment: unavailable
   static_validation_required: true
+  model_formula_mode: symbolic
+  assumption_parameter_presentation: registry_only
+  per_problem_section_contract: cumcm_analysis_and_solution
+  symbolic_contract: skills/math_modeling/support/SYMBOLIC_PAPER_CONTRACT.md
+  symbolic_validator: skills/math_modeling/validation/symbolic_latex_validator.py
 
 question_delivery:
   mode: sequential_review
@@ -90,7 +97,7 @@ question_delivery:
 current_cycle:
   allowed_scope:
     - problem1_problem_interpretation
-    - problem1_assumptions
+    - problem1_registry_assumptions
     - problem1_core_formulas
     - problem1_numerical_solution
     - problem1_concise_analysis

@@ -137,6 +137,10 @@ Workflow/Agent 编排入口
 
 第三层是确定性 Workflow，禁止重新建模、重新求解、重新编号、调用探索 Agent 或临时增加创新点。
 
+项目启用符号化逐问正文契约时，第三层还必须读取
+support/SYMBOLIC_PAPER_CONTRACT.md。模型建立只写参数符号，参数值与假设只进入项目登记库；
+每问分别生成第2章问题分析片段和第5章模型建立、模型求解、结果分析片段。
+
 ## 8. 复合请求
 
 用户要求“完整建模与求解并写成论文”时，必须串行执行：
@@ -205,6 +209,7 @@ Agent 只围绕三个基础组件设计：
 
 ```text
 <project>/registry/parameters.yaml
+<project>/registry/assumptions.yaml
 <project>/registry/formulas.yaml
 <project>/registry/model_contracts.yaml
 ```

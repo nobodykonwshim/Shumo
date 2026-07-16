@@ -6,11 +6,31 @@
 原始 PDF、Excel 和 Word 二进制材料位于 gitignored 的 `local/problem/`。仓库只跟踪
 `problem/source_manifest.yaml` 中的结构、字节数和 SHA-256，不公开复制用户本地材料。
 
-问题一复现命令：
+问题一 revision 2 采用导弹视点下的透视投影：观察平面垂直于导弹—目标中心视线，
+烟幕球的切锥在像平面上形成二次曲线；只有完整目标投影被覆盖且烟幕位于每条目标射线前方时，
+才计为有效遮蔽。模型建立段只使用符号，参数值与假设分别存放在登记库中。
+
+数值结果复现命令：
 
 ```bash
 python tests/case002/code/problem1_solver.py \
   --output tests/case002/results/problem1_result.json
+```
+
+LaTeX 符号与结构检查：
+
+```bash
+python skills/math_modeling/validation/symbolic_latex_validator.py \
+  --analysis-tex tests/case002/paper/sections/02_problem_analysis/problem1.tex \
+  --model-tex tests/case002/paper/sections/05_model_solution/problem1.tex \
+  --problem-name 问题一 \
+  --output tests/case002/results/problem1_symbolic_check.json
+
+python tests/case002/code/problem1_paper_check.py \
+  --analysis-tex tests/case002/paper/sections/02_problem_analysis/problem1.tex \
+  --model-tex tests/case002/paper/sections/05_model_solution/problem1.tex \
+  --result tests/case002/results/problem1_result.json \
+  --output tests/case002/results/problem1_paper_static_check.json
 ```
 
 审核门禁检查：

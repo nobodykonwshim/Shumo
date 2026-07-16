@@ -9,7 +9,7 @@ coordinate_system:
   ground_plane: z=0
   units: m
 problem1:
-  objective: calculate the effective duration for which the FY1 smoke cloud fully occludes the true cylindrical target from missile M1
+  objective: calculate the interval for which the missile-view perspective projection of the true cylinder is completely covered by the smoke-sphere shadow projection, with smoke before the target on every sight ray
   prescribed_controls:
     uav: FY1
     heading: horizontally toward the fake target
@@ -20,10 +20,9 @@ problem1:
     - release_point_m
     - burst_absolute_time_s
     - burst_point_m
-    - whole_cylinder_occlusion_start_s
-    - whole_cylinder_occlusion_end_s
-    - whole_cylinder_effective_duration_s
-    - target_center_comparison_duration_s
+    - full_projection_coverage_start_s
+    - full_projection_coverage_end_s
+    - full_projection_coverage_duration_s
   precision:
     reported_time_s: 0.001
   dependencies: []
@@ -31,6 +30,7 @@ problem1:
     - release and burst points agree with independent hand calculation
     - all occlusion times lie inside the 20 s post-burst active window
     - duration changes by less than 0.001 s under denser target-boundary resolution
-    - whole-target duration does not exceed target-center comparison duration
+    - the view rotation matrix is orthonormal within tolerance
+    - every sampled target projection lies inside the smoke conic and the corresponding ray intersects smoke before the target
 other_problems:
   status: locked_pending_problem1_approval

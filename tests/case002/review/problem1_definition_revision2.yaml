@@ -1,0 +1,15 @@
+schema_version: 1
+project_id: case002
+problem_id: problem1
+revision: 2
+decision: Use a plane perpendicular to the missile-to-target-centre sight direction, transform three-dimensional geometry to the two-dimensional plane with a perspective view matrix, and require the projected smoke shadow to cover the complete projected target with smoke-before-target depth order.
+authority: user
+status: approved_for_modeling_and_redraft
+writing_requirements:
+  - model establishment formulas use symbols rather than substituted problem values
+  - problem analysis is written in chapter 2 as the current problem subsection
+  - model establishment solution and result analysis are written in chapter 5
+  - assumptions and parameter values remain in GitHub registries rather than per-problem LaTeX
+does_not_approve:
+  - revision2_final_paper_text
+  - progression_to_problem2

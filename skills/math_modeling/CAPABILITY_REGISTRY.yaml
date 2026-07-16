@@ -150,6 +150,24 @@ capabilities:
       - final section ownership labels and presentation choices require human approval
       - status remains validated until exercised on a second unrelated real case
 
+  - capability_id: symbolic_per_problem_paper_contract
+    name: symbolic model formulas registry-only assumptions and fixed per-problem paper sections
+    status: prototype
+    owner_path: skills/math_modeling/support/SYMBOLIC_PAPER_CONTRACT.md
+    validator: skills/math_modeling/validation/symbolic_latex_validator.py
+    contract:
+      inputs: problem_analysis_latex_model_solution_latex_problem_name_parameter_registry_and_assumption_registry
+      outputs: checked_chapter_structure_symbolic_model_block_and_registry_only_presentation_boundary
+    generic_tests:
+      - tests/specs/test_symbolic_latex_validator.py
+    demonstrated_by:
+      - tests/case002/results/problem1_symbolic_check.json
+      - tests/case002/results/problem1_paper_static_check.json
+    limits:
+      - numeric-literal checks detect direct substitutions but cannot prove every symbol is registered
+      - structural mathematical constants remain allowed inside the symbolic model block
+      - chapter placement and the choice of target reference point remain project-level decisions
+
   - capability_id: agent_admission
     name: bounded agent admission and runtime token
     status: reusable

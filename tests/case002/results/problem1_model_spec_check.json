@@ -1,0 +1,10 @@
+{
+  "error_count": 0,
+  "errors": [],
+  "schema_version": 1,
+  "spec_id": "MODEL-CASE002-P1",
+  "status": "pass",
+  "validator": "shumo_model_spec_validator",
+  "warning_count": 0,
+  "warnings": []
+}

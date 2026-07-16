@@ -1,14 +1,37 @@
 {
-  "comparison": {
-    "centre_minus_full_duration_s": 0.04343943267100059,
-    "full_to_centre_duration_ratio": 0.9697303501928843
-  },
-  "full_cylinder": {
-    "boundary_distance_at_end_m": 10.00000000007449,
-    "boundary_distance_at_start_m": 10.00000000000425,
-    "duration_s": 1.3916426692959991,
-    "end_s": 9.448088158702,
-    "start_s": 8.056445489406,
+  "definition_revision": 2,
+  "full_projection_coverage": {
+    "duration_s": 1.3916426692947468,
+    "end_s": 9.448088158701717,
+    "max_segment_distance_at_end_m": 10.000000000000549,
+    "max_segment_distance_at_start_m": 10.00000000000049,
+    "midpoint_all_projected_points_inside_smoke_conic": true,
+    "midpoint_all_rays_intersect_smoke_before_target": true,
+    "midpoint_min_projected_conic_value": 49.42267726880834,
+    "midpoint_s": 8.752266824054344,
+    "smoke_center_camera_at_midpoint_m": [
+      2.292902697774651,
+      6.646288964413366,
+      199.66322496595737
+    ],
+    "start_s": 8.05644548940697,
+    "view_rotation_matrix_at_midpoint": [
+      [
+        -0.011501854060971537,
+        -0.9999338514887672,
+        0.0
+      ],
+      [
+        -0.09920734021657639,
+        0.00114114383391393,
+        0.9950661291783088
+      ],
+      [
+        -0.9950003070352855,
+        0.01144510539882476,
+        -0.09921390306855794
+      ]
+    ],
     "worst_target_point_at_end_m": [
       7.0,
       200.0,
@@ -51,37 +74,43 @@
     },
     {
       "boundary_point_count": 33480,
-      "duration_change_from_previous_s": -2.6990170010066095e-06,
-      "duration_s": 1.3916426692959991,
-      "end_s": 9.448088158702,
+      "duration_change_from_previous_s": -2.6990183084052433e-06,
+      "duration_s": 1.3916426692946917,
+      "end_s": 9.448088158701712,
       "name": "standard",
       "radial_count": 31,
-      "start_s": 8.056445489406,
+      "start_s": 8.05644548940702,
       "theta_count": 360,
       "vertical_count": 31
     },
     {
       "boundary_point_count": 131760,
-      "duration_change_from_previous_s": 0.0,
-      "duration_s": 1.3916426692959991,
-      "end_s": 9.448088158702,
+      "duration_change_from_previous_s": 5.5067062021407764e-14,
+      "duration_s": 1.3916426692947468,
+      "end_s": 9.448088158701717,
       "name": "fine",
       "radial_count": 61,
-      "start_s": 8.056445489406,
+      "start_s": 8.05644548940697,
       "theta_count": 720,
       "vertical_count": 61
     }
   ],
   "method": {
-    "comparison_predicate": "distance from smoke centre to missile-target-geometric-centre sight segment <= smoke radius",
-    "primary_predicate": "max over full cylindrical target of distance from smoke centre to missile-target sight segment <= smoke radius",
+    "camera_normal": "missile-to-target-geometric-centre sight direction",
+    "camera_origin": "missile position",
+    "equivalent_numeric_margin": "smoke radius minus maximum distance over missile-to-target-point sight segments",
+    "primary_predicate": "full target perspective projection is covered by the smoke-sphere shadow projection and every covered ray intersects smoke before the target",
+    "projection": "pinhole perspective projection through a time-dependent orthonormal view matrix",
     "root_method": "Brent bracketing root refinement",
-    "root_xtol_s": 1e-11,
-    "scan_step_s": 0.02,
-    "target_surface_sampling": "cylinder side plus both circular caps"
+    "smoke_projection": "image-plane conic induced by the tangent cone from missile to smoke sphere"
   },
   "parameters": {
     "burst_delay_s": 3.6,
+    "fake_target_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
     "gravity_m_per_s2": 9.8,
     "missile_initial_m": [
       20000.0,
@@ -89,6 +118,7 @@
       2000.0
     ],
     "missile_speed_m_per_s": 300.0,
+    "normalized_focal_length": 1.0,
     "release_time_s": 1.5,
     "smoke_active_duration_s": 20.0,
     "smoke_radius_m": 10.0,
@@ -98,59 +128,78 @@
       200.0,
       0.0
     ],
+    "target_geometric_center_m": [
+      0.0,
+      200.0,
+      5.0
+    ],
     "target_height_m": 10.0,
     "target_radius_m": 7.0,
+    "uav_direction": [
+      -1.0,
+      0.0,
+      0.0
+    ],
     "uav_initial_m": [
       17800.0,
       0.0,
       1800.0
     ],
-    "uav_speed_m_per_s": 120.0
+    "uav_speed_m_per_s": 120.0,
+    "view_up": [
+      0.0,
+      0.0,
+      1.0
+    ]
   },
   "problem_id": "problem1",
   "project_id": "case002",
-  "schema_version": 1,
-  "target_centre_line_of_sight": {
-    "duration_s": 1.4350821019669997,
-    "end_s": 9.448088158702,
-    "start_s": 8.013006056735,
-    "target_point_m": [
-      0.0,
-      200.0,
-      5.0
-    ]
+  "registry_sources": {
+    "assumptions": "tests/case002/registry/assumptions.yaml",
+    "loaded_assumption_ids": [
+      "A-P1-BALLISTIC",
+      "A-P1-MISSILE-UNIFORM",
+      "A-P1-NO-DRIFT",
+      "A-P1-PINHOLE-VIEW",
+      "A-P1-SPHERE",
+      "A-P1-TARGET-CYLINDER",
+      "A-P1-UAV-UNIFORM"
+    ],
+    "parameters": "tests/case002/registry/parameters.yaml"
   },
+  "schema_version": 3,
   "time_scan_convergence": [
     {
-      "duration_s": 1.391642669294999,
+      "duration_s": 1.3916453683130001,
       "end_s": 9.448088158702,
       "scan_step_s": 0.05,
-      "start_s": 8.056445489407
+      "start_s": 8.056442790389
     },
     {
-      "duration_s": 1.3916426692959991,
+      "duration_s": 1.3916453683130001,
       "end_s": 9.448088158702,
       "scan_step_s": 0.02,
-      "start_s": 8.056445489406
+      "start_s": 8.056442790389
     },
     {
-      "duration_s": 1.391642669294999,
+      "duration_s": 1.391645368311,
       "end_s": 9.448088158702,
       "scan_step_s": 0.01,
-      "start_s": 8.056445489407
+      "start_s": 8.056442790391
     }
   ],
   "validation": {
     "all_required_checks_pass": true,
-    "boundary_residual_max_m": 7.44897477034101e-11,
+    "boundary_residual_max_m": 5.488942633746774e-13,
     "burst_point_hand_check_pass": true,
     "burst_time_hand_check_pass": true,
-    "full_duration_not_above_centre_pass": true,
     "inside_active_window_pass": true,
     "mesh_duration_change_below_0_001_s_pass": true,
-    "mesh_duration_change_s": 0.0,
+    "mesh_duration_change_s": 5.5067062021407764e-14,
+    "projection_containment_midpoint_pass": true,
     "release_point_hand_check_pass": true,
     "scan_duration_change_below_0_001_s_pass": true,
-    "scan_duration_change_s": 1.000088900582341e-12
+    "scan_duration_change_s": 2.000177801164682e-12,
+    "view_matrix_orthonormal_residual": 1.111870541841552e-16
   }
 }

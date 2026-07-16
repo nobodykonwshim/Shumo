@@ -1,0 +1,5 @@
+# Hash-bound review artifacts must have identical bytes on every platform.
+.gitattributes text eol=lf
+skills/math_modeling/** text eol=lf
+tests/case002/** text eol=lf
+tests/specs/** text eol=lf
