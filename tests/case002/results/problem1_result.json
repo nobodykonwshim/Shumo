@@ -1,0 +1,156 @@
+{
+  "comparison": {
+    "centre_minus_full_duration_s": 0.04343943267100059,
+    "full_to_centre_duration_ratio": 0.9697303501928843
+  },
+  "full_cylinder": {
+    "boundary_distance_at_end_m": 10.00000000007449,
+    "boundary_distance_at_start_m": 10.00000000000425,
+    "duration_s": 1.3916426692959991,
+    "end_s": 9.448088158702,
+    "start_s": 8.056445489406,
+    "worst_target_point_at_end_m": [
+      7.0,
+      200.0,
+      0.0
+    ],
+    "worst_target_point_at_start_m": [
+      1.3356629676358145,
+      206.87139028413364,
+      0.0
+    ]
+  },
+  "hand_calculation": {
+    "burst_absolute_time_s": 5.1,
+    "burst_point_m": [
+      17188.0,
+      0.0,
+      1736.496
+    ],
+    "release_point_m": [
+      17620.0,
+      0.0,
+      1800.0
+    ],
+    "smoke_active_interval_s": [
+      5.1,
+      25.1
+    ]
+  },
+  "mesh_convergence": [
+    {
+      "boundary_point_count": 9180,
+      "duration_change_from_previous_s": null,
+      "duration_s": 1.3916453683130001,
+      "end_s": 9.448088158702,
+      "name": "coarse",
+      "radial_count": 17,
+      "start_s": 8.056442790389,
+      "theta_count": 180,
+      "vertical_count": 17
+    },
+    {
+      "boundary_point_count": 33480,
+      "duration_change_from_previous_s": -2.6990170010066095e-06,
+      "duration_s": 1.3916426692959991,
+      "end_s": 9.448088158702,
+      "name": "standard",
+      "radial_count": 31,
+      "start_s": 8.056445489406,
+      "theta_count": 360,
+      "vertical_count": 31
+    },
+    {
+      "boundary_point_count": 131760,
+      "duration_change_from_previous_s": 0.0,
+      "duration_s": 1.3916426692959991,
+      "end_s": 9.448088158702,
+      "name": "fine",
+      "radial_count": 61,
+      "start_s": 8.056445489406,
+      "theta_count": 720,
+      "vertical_count": 61
+    }
+  ],
+  "method": {
+    "comparison_predicate": "distance from smoke centre to missile-target-geometric-centre sight segment <= smoke radius",
+    "primary_predicate": "max over full cylindrical target of distance from smoke centre to missile-target sight segment <= smoke radius",
+    "root_method": "Brent bracketing root refinement",
+    "root_xtol_s": 1e-11,
+    "scan_step_s": 0.02,
+    "target_surface_sampling": "cylinder side plus both circular caps"
+  },
+  "parameters": {
+    "burst_delay_s": 3.6,
+    "gravity_m_per_s2": 9.8,
+    "missile_initial_m": [
+      20000.0,
+      0.0,
+      2000.0
+    ],
+    "missile_speed_m_per_s": 300.0,
+    "release_time_s": 1.5,
+    "smoke_active_duration_s": 20.0,
+    "smoke_radius_m": 10.0,
+    "smoke_settling_speed_m_per_s": 3.0,
+    "target_bottom_center_m": [
+      0.0,
+      200.0,
+      0.0
+    ],
+    "target_height_m": 10.0,
+    "target_radius_m": 7.0,
+    "uav_initial_m": [
+      17800.0,
+      0.0,
+      1800.0
+    ],
+    "uav_speed_m_per_s": 120.0
+  },
+  "problem_id": "problem1",
+  "project_id": "case002",
+  "schema_version": 1,
+  "target_centre_line_of_sight": {
+    "duration_s": 1.4350821019669997,
+    "end_s": 9.448088158702,
+    "start_s": 8.013006056735,
+    "target_point_m": [
+      0.0,
+      200.0,
+      5.0
+    ]
+  },
+  "time_scan_convergence": [
+    {
+      "duration_s": 1.391642669294999,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.05,
+      "start_s": 8.056445489407
+    },
+    {
+      "duration_s": 1.3916426692959991,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.02,
+      "start_s": 8.056445489406
+    },
+    {
+      "duration_s": 1.391642669294999,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.01,
+      "start_s": 8.056445489407
+    }
+  ],
+  "validation": {
+    "all_required_checks_pass": true,
+    "boundary_residual_max_m": 7.44897477034101e-11,
+    "burst_point_hand_check_pass": true,
+    "burst_time_hand_check_pass": true,
+    "full_duration_not_above_centre_pass": true,
+    "inside_active_window_pass": true,
+    "mesh_duration_change_below_0_001_s_pass": true,
+    "mesh_duration_change_s": 0.0,
+    "release_point_hand_check_pass": true,
+    "scan_duration_change_below_0_001_s_pass": true,
+    "scan_duration_change_s": 1.000088900582341e-12
+  }
+}

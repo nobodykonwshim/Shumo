@@ -1,0 +1,9 @@
+schema_version: 1
+project_id: case002
+formulas:
+  - {id: F-P1-MISSILE-POSITION, owner_problem: problem1, status: candidate}
+  - {id: F-P1-UAV-POSITION, owner_problem: problem1, status: candidate}
+  - {id: F-P1-BOMB-POSITION, owner_problem: problem1, status: candidate}
+  - {id: F-P1-SMOKE-CENTER, owner_problem: problem1, status: candidate}
+  - {id: F-P1-WHOLE-TARGET-MARGIN, owner_problem: problem1, status: candidate}
+  - {id: F-P1-EFFECTIVE-DURATION, owner_problem: problem1, status: candidate}

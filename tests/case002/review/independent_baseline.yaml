@@ -1,0 +1,18 @@
+schema_version: 1
+baseline_id: CASE002-P1-INDEPENDENT-BASELINE
+project_id: case002
+problem_id: problem1
+status: frozen_before_same_problem_reference_search
+route:
+  missile_motion: straight uniform motion toward the fake-target origin
+  uav_motion: prescribed horizontal straight uniform motion
+  bomb_motion: inherited horizontal velocity plus gravity
+  smoke_motion: fixed horizontal coordinates plus vertical settling
+  primary_occlusion: maximum line-segment distance over the full cylindrical target
+  comparison_occlusion: line-segment distance for the target center
+validation_plan:
+  - hand-check release and burst coordinates
+  - bracket event boundaries in the 20 s active interval and refine roots
+  - compare increasingly dense cylindrical-boundary resolutions
+  - confirm full-target duration is no larger than center-target duration
+reference_release: not_approved

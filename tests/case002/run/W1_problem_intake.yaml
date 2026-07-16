@@ -1,0 +1,36 @@
+schema_version: 1
+intake_id: CASE002-W1
+project_id: case002
+current_problem: problem1
+time_origin: radar_detection_and_task_assignment
+coordinate_system:
+  origin: fake_target
+  axes: right_handed_cartesian
+  ground_plane: z=0
+  units: m
+problem1:
+  objective: calculate the effective duration for which the FY1 smoke cloud fully occludes the true cylindrical target from missile M1
+  prescribed_controls:
+    uav: FY1
+    heading: horizontally toward the fake target
+    speed_m_per_s: 120
+    release_time_s: 1.5
+    burst_delay_after_release_s: 3.6
+  required_outputs:
+    - release_point_m
+    - burst_absolute_time_s
+    - burst_point_m
+    - whole_cylinder_occlusion_start_s
+    - whole_cylinder_occlusion_end_s
+    - whole_cylinder_effective_duration_s
+    - target_center_comparison_duration_s
+  precision:
+    reported_time_s: 0.001
+  dependencies: []
+  acceptance:
+    - release and burst points agree with independent hand calculation
+    - all occlusion times lie inside the 20 s post-burst active window
+    - duration changes by less than 0.001 s under denser target-boundary resolution
+    - whole-target duration does not exceed target-center comparison duration
+other_problems:
+  status: locked_pending_problem1_approval

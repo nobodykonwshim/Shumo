@@ -1,0 +1,102 @@
+schema_version: 2
+
+project:
+  id: case002
+  title: "2025 CUMCM A：烟幕干扰弹的投放策略"
+  competition: CUMCM
+  year: 2025
+  problem: A
+  language: zh-CN
+  timezone: Asia/Shanghai
+  root: tests/case002/
+
+paths:
+  problem_statement: tests/case002/local/problem/official/A题.pdf
+  attachments: tests/case002/local/problem/official/attachments/
+  guidance: tests/case002/local/problem/guidance/
+  source_manifest: tests/case002/problem/source_manifest.yaml
+  registry:
+    parameters: tests/case002/registry/parameters.yaml
+    formulas: tests/case002/registry/formulas.yaml
+    model_contracts: tests/case002/registry/model_contracts.yaml
+  modeling_artifacts: tests/case002/artifacts/modeling/
+  architecture_artifacts: tests/case002/artifacts/architecture/
+  paper_sections: tests/case002/paper/sections/
+  results: tests/case002/results/
+  figures: tests/case002/figures/
+  review_records: tests/case002/review/
+
+units:
+  system: SI
+  length: m
+  time: s
+  speed: m/s
+  angle: rad
+  conversion_required_before_modeling: true
+
+orchestration:
+  mode: workflow_first
+  workflow_map: skills/math_modeling/workflows/README.md
+  allow_direct_paper_writing: false
+  require_modeling_packet: true
+  require_paper_blueprint: true
+  require_validation_before_writing: true
+  require_registry_update: true
+
+reference_isolation:
+  protocol: skills/math_modeling/support/REFERENCE_ISOLATION_PROTOCOL.md
+  mode: independent_first_reference_second
+  reference_exposure_log: tests/case002/review/reference_exposure_log.yaml
+  independent_baseline: tests/case002/review/independent_baseline.yaml
+  same_problem_solution_search_before_baseline_freeze: forbidden
+  human_reference_release_required: true
+
+modeling:
+  stable_formula_ids: true
+  final_equation_numbers: false
+  validation_required:
+    - hand_calculation
+    - active_window_check
+    - discretization_convergence
+    - centerline_upper_bound_comparison
+
+paper_architecture:
+  equation_numbering: global
+  figure_numbering: chapter
+  table_numbering: chapter
+  one_owner_per_formula: true
+  one_owner_per_model: true
+  formula_reuse_policy: reference_only
+
+paper_writing:
+  style: formal_academic
+  final_formats: [latex]
+  current_review_formats: [conversation, latex]
+  result_explanation_level: concise
+  editable_equations_required: true
+  compile_environment: unavailable
+  static_validation_required: true
+
+question_delivery:
+  mode: sequential_review
+  problem_order: [problem1, problem2, problem3, problem4, problem5]
+  current_problem: problem1
+  require_approved_review_before_next: true
+  review_formats: [conversation, latex]
+  review_records: tests/case002/review/
+  gate: skills/math_modeling/support/PROBLEM_REVIEW_GATE.md
+  validator: skills/math_modeling/validation/problem_review_validator.py
+
+current_cycle:
+  allowed_scope:
+    - problem1_problem_interpretation
+    - problem1_assumptions
+    - problem1_core_formulas
+    - problem1_numerical_solution
+    - problem1_concise_analysis
+  forbidden_scope:
+    - problem2_artifacts
+    - problem3_artifacts
+    - problem4_artifacts
+    - problem5_artifacts
+  stop_condition: problem1_review_record_written_as_pending

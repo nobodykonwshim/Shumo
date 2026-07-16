@@ -1,0 +1,17 @@
+{
+  "error_count": 0,
+  "errors": [],
+  "result": "tests\\case002\\results\\problem1_result.json",
+  "schema_version": 1,
+  "status": "pass",
+  "summary": {
+    "equation_label_count": 6,
+    "full_duration_s": 1.3916426692959991,
+    "label_count": 8,
+    "result_macros_checked": 7
+  },
+  "tex": "tests\\case002\\paper\\sections\\problem1.tex",
+  "validator": "case002_problem1_paper_check",
+  "warning_count": 0,
+  "warnings": []
+}

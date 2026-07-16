@@ -179,3 +179,6 @@ status: approved|needs_modeling_revision
 - 题目要求的结果、文件和指定对象均有落点；
 - 页数和章节篇幅可控；
 - `open_issues` 为空或已明确允许带条件写作。
+
+启用逐问审核时，蓝图可以只覆盖当前问题，但必须作为哈希绑定产物写入
+`../../support/PROBLEM_REVIEW_GATE.md` 定义的审核记录；未获批前不规划下一问题正文。

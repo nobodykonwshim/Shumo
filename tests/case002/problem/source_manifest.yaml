@@ -1,0 +1,57 @@
+schema_version: 1
+manifest_id: CASE002-SOURCE-MANIFEST
+project_id: case002
+binary_storage: gitignored_local_only
+source_root: tests/case002/local/problem/
+files:
+  - id: SRC-PROBLEM-PDF
+    role: authoritative_problem_statement
+    path: tests/case002/local/problem/official/A题.pdf
+    original_path_hint: Downloads/A题/A题.pdf
+    bytes: 286520
+    sha256: a37f6aad30b16ea09da9cb320ce194b12d3a28874008cf9ff19549f6c6079447
+  - id: SRC-RESULT1-XLSX
+    role: authoritative_output_template_for_problem3
+    path: tests/case002/local/problem/official/attachments/result1.xlsx
+    original_path_hint: Downloads/A题/附件/result1.xlsx
+    bytes: 10316
+    sha256: af04b16e6a4719628971bcf5a03d230c9da6738e67eebac9276d254fdd4df1a7
+  - id: SRC-RESULT2-XLSX
+    role: authoritative_output_template_for_problem4
+    path: tests/case002/local/problem/official/attachments/result2.xlsx
+    original_path_hint: Downloads/A题/附件/result2.xlsx
+    bytes: 10438
+    sha256: c681d5e378538f71c77fca199a3ca8303a04dbcfc7bd95f870ae22f01ab69f91
+  - id: SRC-RESULT3-XLSX
+    role: authoritative_output_template_for_problem5
+    path: tests/case002/local/problem/official/attachments/result3.xlsx
+    original_path_hint: Downloads/A题/附件/result3.xlsx
+    bytes: 9763
+    sha256: b648c82d63e459ba6e6b3711ae79875e373521cd543b45571c4d8ff1ad5ec54a
+  - id: SRC-GUIDANCE-MODELING
+    role: user_modeling_guidance
+    path: tests/case002/local/problem/guidance/建模过程.docx
+    original_path_hint: Downloads/国赛(1)/建模过程.docx
+    bytes: 23344
+    sha256: 1c98f209748b4f78399727c24b1f95b8a7832f90f0a4002c4336dbb0081213d5
+  - id: SRC-GUIDANCE-WRITING
+    role: user_paper_writing_guidance
+    path: tests/case002/local/problem/guidance/论文撰写.docx
+    original_path_hint: Downloads/国赛(1)/论文撰写.docx
+    bytes: 30064
+    sha256: b0400701f4a8757a1c0d5b8822bc891f715ec9f8fe04a3611b06823c23b33794
+  - id: SRC-GUIDANCE-FULL
+    role: user_end_to_end_guidance
+    path: tests/case002/local/problem/guidance/完整过程.docx
+    original_path_hint: Downloads/国赛(1)/完整过程.docx
+    bytes: 28232
+    sha256: df83d2cfbcc077072d958b817b64411da2c17d455e2eb85c969b5f20fa0827bc
+  - id: SRC-PAPER-TEMPLATE
+    role: user_paper_template
+    path: tests/case002/local/problem/guidance/论文模板.docx
+    original_path_hint: Downloads/国赛(1)/论文模板.docx
+    bytes: 818704
+    sha256: 64f19357327e93d5a9ae93c8a2407b86239fc8a789ec163c21559ed87fdbe62b
+excluded:
+  - pattern: "~$*.docx"
+    reason: transient Microsoft Office lock file

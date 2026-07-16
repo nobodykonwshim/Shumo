@@ -1,0 +1,39 @@
+schema_version: "1.0"
+review_id: REVIEW-CASE002-P1-R1
+project_id: case002
+project_config_path: tests/case002/project.yaml
+problem_id: problem1
+sequence_index: 1
+previous_review_path: null
+artifacts:
+  - id: ART-P1-MODEL-R1
+    role: model_spec
+    path: tests/case002/artifacts/modeling/problem1.model.yaml
+    sha256: 332e24d86556d313ebd33f2311b0a263f3f5ae300a33e192f3e53491a74d607d
+  - id: ART-P1-BLUEPRINT-R1
+    role: paper_blueprint
+    path: tests/case002/artifacts/architecture/problem1.paper-blueprint.yaml
+    sha256: 0db7a10a58e1e4c5c541214288803fd0938c44f30283bdc50ad73324c2cff44c
+  - id: ART-P1-LATEX-R1
+    role: latex_section
+    path: tests/case002/paper/sections/problem1.tex
+    sha256: 90ea9e8793c44b0698c7f91c236911ecfa3e170424194ffd79049b5f42a81b76
+  - id: ART-P1-RESULT-R1
+    role: result
+    path: tests/case002/results/problem1_result.json
+    sha256: 7a386838f9f3799687c52819a2a119732cde60bf42cc798d5234e951a47903e5
+  - id: ART-P1-PAPER-CHECK-R1
+    role: validation_evidence
+    path: tests/case002/results/problem1_paper_static_check.json
+    sha256: 143a8a5df260054b0521a0ad1e6c696d4461d3224c3b8e5962f449db7392cb40
+review:
+  revision: 1
+  status: pending
+  authority: user
+  feedback: []
+  reviewed_at: null
+next_problem_id: problem2
+notes:
+  - This review covers problem 1 only.
+  - Any change to a bound artifact requires revision increment, refreshed hashes and status reset to pending.
+  - Problem 2 remains locked until this exact revision is approved.

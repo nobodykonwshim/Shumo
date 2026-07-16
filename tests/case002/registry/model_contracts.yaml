@@ -1,0 +1,15 @@
+schema_version: 1
+project_id: case002
+contracts:
+  - id: MODEL-P1-KINEMATICS-OCCLUSION
+    owner_problem: problem1
+    status: candidate_pending_review
+    inputs:
+      - missile_initial_position_and_speed
+      - prescribed_FY1_motion_and_release_schedule
+      - smoke_radius_settling_speed_and_lifetime
+      - true_target_cylinder
+    outputs:
+      - whole_target_occlusion_interval
+      - target_center_comparison_interval
+    reuse_boundary: later problems may reuse kinematics and the whole-target occlusion predicate by semantic ID after problem1 approval

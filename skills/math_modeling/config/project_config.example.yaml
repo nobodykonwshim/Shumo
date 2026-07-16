@@ -179,6 +179,17 @@ paper_writing:
   exploration_agents_forbidden: true
   provenance_required_for_reference_influenced_content: true
 
+question_delivery:
+  mode: all_at_once  # all_at_once | sequential_review
+  problem_order: []
+  require_approved_review_before_next: false
+  review_formats:
+    - conversation
+    - latex
+  review_records: "<project>/review/"
+  review_gate: "skills/math_modeling/support/PROBLEM_REVIEW_GATE.md"
+  review_validator: "skills/math_modeling/validation/problem_review_validator.py"
+
 context_budget:
   read_entire_repository: false
   load_only:

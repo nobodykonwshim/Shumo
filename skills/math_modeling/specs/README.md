@@ -74,3 +74,10 @@ The validators can detect missing objectives, unresolved references, unverified 
 ## Lifecycle rule
 
 A specification is written at W2, completed during W3, updated with evidence during W4 and frozen into the modeling package at W5. W7 paper writing may consume the frozen specification, but must not silently redefine it.
+
+## Sequential problem review
+
+Projects that require one-problem-at-a-time approval use `problem_review.schema.json` and
+`../validation/problem_review_validator.py`. The review record binds the current model, blueprint, LaTeX and
+results to SHA-256 hashes. A valid `pending` record is an intentional closed gate; only a valid `approved`
+record opens the next configured problem. See `../support/PROBLEM_REVIEW_GATE.md`.

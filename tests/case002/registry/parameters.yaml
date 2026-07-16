@@ -1,0 +1,16 @@
+schema_version: 1
+project_id: case002
+parameters:
+  - {id: PAR-M1-P0, value: [20000, 0, 2000], unit: m, source: SRC-PROBLEM-PDF}
+  - {id: PAR-MISSILE-SPEED, value: 300, unit: m/s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-FY1-P0, value: [17800, 0, 1800], unit: m, source: SRC-PROBLEM-PDF}
+  - {id: PAR-FY1-P1-SPEED, value: 120, unit: m/s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-P1-RELEASE-TIME, value: 1.5, unit: s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-P1-BURST-DELAY, value: 3.6, unit: s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-GRAVITY, value: 9.8, unit: m/s^2, source: modeling_assumption}
+  - {id: PAR-SMOKE-RADIUS, value: 10, unit: m, source: SRC-PROBLEM-PDF}
+  - {id: PAR-SMOKE-SETTLING-SPEED, value: 3, unit: m/s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-SMOKE-ACTIVE-DURATION, value: 20, unit: s, source: SRC-PROBLEM-PDF}
+  - {id: PAR-TARGET-BOTTOM-CENTER, value: [0, 200, 0], unit: m, source: SRC-PROBLEM-PDF}
+  - {id: PAR-TARGET-RADIUS, value: 7, unit: m, source: SRC-PROBLEM-PDF}
+  - {id: PAR-TARGET-HEIGHT, value: 10, unit: m, source: SRC-PROBLEM-PDF}
