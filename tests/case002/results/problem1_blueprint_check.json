@@ -1,0 +1,10 @@
+{
+  "blueprint_id": "PAPER-CASE002-P1-R3",
+  "error_count": 0,
+  "errors": [],
+  "schema_version": 1,
+  "status": "pass",
+  "validator": "shumo_paper_blueprint_validator",
+  "warning_count": 0,
+  "warnings": []
+}

@@ -1,0 +1,45 @@
+schema_version: 1
+project_id: case002
+presentation_policy: registry_only_not_repeated_in_latex
+assumptions:
+  - id: A-P1-MISSILE-UNIFORM
+    owner_problem: problem1
+    statement: M1 follows a straight uniform trajectory toward the fake target during the evaluation interval.
+    status: accepted
+    impact: fixes the moving camera origin used by the projection model
+  - id: A-P1-UAV-UNIFORM
+    owner_problem: problem1
+    statement: FY1 instantaneously adopts the prescribed heading and then flies horizontally at constant speed.
+    status: accepted
+    impact: fixes the release point and inherited horizontal bomb velocity
+  - id: A-P1-BALLISTIC
+    owner_problem: problem1
+    statement: after release the smoke bomb inherits FY1 horizontal velocity, has zero initial vertical velocity and is acted on only by gravity.
+    status: accepted
+    impact: determines the burst point
+  - id: A-P1-NO-DRIFT
+    owner_problem: problem1
+    statement: air resistance, wind and horizontal smoke drift are ignored.
+    status: accepted
+    impact: the smoke centre keeps the burst point horizontal coordinates
+  - id: A-P1-SPHERE
+    owner_problem: problem1
+    statement: the active smoke is a sphere with fixed registered radius and a centre that settles vertically at the registered speed.
+    status: accepted
+    impact: permits smoke intersection to be tested by the sphere-centre distance to a closed sight segment
+  - id: A-P1-TARGET-CYLINDER
+    owner_problem: problem1
+    statement: the true target is a fixed solid vertical cylinder.
+    status: accepted
+    impact: supplies the convex cylindrical visual boundary used by the edge-segment test
+  - id: A-P1-EDGE-SILHOUETTE
+    owner_problem: problem1
+    statement: while the missile remains above the target cylinder, its visible boundary is represented by the top far rim arc, bottom near rim arc and two exact side tangency generators.
+    status: accepted
+    impact: reduces the complete-target sight test to four continuous boundary curves without a projection plane or whole-surface sampling
+reuse_policy:
+  later_problems:
+    - load assumptions by semantic id before modeling
+    - inherit unchanged assumptions by reference
+    - record any changed assumption as a new id
+    - do not reproduce the assumption list in per-problem LaTeX

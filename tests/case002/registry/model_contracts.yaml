@@ -1,0 +1,24 @@
+schema_version: 3
+project_id: case002
+contracts:
+  - id: MODEL-P1-EDGE-SEGMENT-OCCLUSION
+    owner_problem: problem1
+    status: solved_pending_paper_review
+    inputs:
+      - missile and FY1 kinematic parameters by registry id
+      - smoke sphere parameters by registry id
+      - true-target cylinder geometry by registry id
+    target_edge:
+      radial_plane: vertical plane through missile and cylinder axis
+      upper_boundary: far rim arc of the top circle
+      lower_boundary: near rim arc of the bottom circle
+      lateral_boundaries: two exact circle-tangent vertical generators
+    primary_predicate:
+      - for every point on the four silhouette curves form the closed missile-to-edge-point segment
+      - the maximum smoke-centre distance to these segments is at most the smoke radius
+    projection_plane: not_used
+    whole_surface_sampling: not_used
+    outputs:
+      - full edge-segment occlusion interval
+      - effective occlusion duration
+    reuse_boundary: later problems may reuse the silhouette construction and closed-segment distance formula by semantic id after problem1 approval

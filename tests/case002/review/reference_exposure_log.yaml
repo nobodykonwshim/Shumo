@@ -1,0 +1,16 @@
+schema_version: 1
+project_id: case002
+phase: independent_baseline_frozen
+same_problem_external_solution_exposure: false
+authoritative_sources_read:
+  - tests/case002/local/problem/official/A题.pdf
+  - tests/case002/local/problem/guidance/建模过程.docx
+  - tests/case002/local/problem/guidance/论文撰写.docx
+  - tests/case002/local/problem/guidance/完整过程.docx
+  - tests/case002/local/problem/guidance/论文模板.docx
+external_searches: []
+release_for_reference_comparison:
+  status: not_requested
+  authority: user
+notes:
+  - User-provided writing guidance is process guidance, not a same-problem numerical solution.

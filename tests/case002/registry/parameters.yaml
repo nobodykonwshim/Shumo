@@ -1,0 +1,114 @@
+schema_version: 2
+project_id: case002
+presentation_policy: registry_only_values_symbol_only_model_formulas
+parameters:
+  - id: PAR-M1-P0
+    symbol: \boldsymbol{r}_{M,0}
+    description: initial position of missile M1
+    value: [20000, 0, 2000]
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-FAKE-TARGET
+    symbol: \boldsymbol{r}_{O}
+    description: fake-target position and missile guidance point
+    value: [0, 0, 0]
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-MISSILE-SPEED
+    symbol: v_M
+    description: missile speed
+    value: 300
+    unit: m/s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-FY1-P0
+    symbol: \boldsymbol{r}_{F,0}
+    description: initial position of FY1
+    value: [17800, 0, 1800]
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-FY1-DIRECTION
+    symbol: \boldsymbol{e}_{F}
+    description: prescribed unit heading of FY1 in problem 1
+    value: [-1, 0, 0]
+    unit: null
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-FY1-P1-SPEED
+    symbol: v_F
+    description: prescribed FY1 speed in problem 1
+    value: 120
+    unit: m/s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-P1-RELEASE-TIME
+    symbol: t_d
+    description: smoke-bomb release time
+    value: 1.5
+    unit: s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-P1-BURST-DELAY
+    symbol: \tau_b
+    description: delay from release to burst
+    value: 3.6
+    unit: s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-GRAVITY
+    symbol: g
+    description: gravitational acceleration used for the ballistic segment
+    value: 9.8
+    unit: m/s^2
+    source: modeling_assumption
+    owner_problem: problem1
+  - id: PAR-SMOKE-RADIUS
+    symbol: R_s
+    description: effective smoke-sphere radius
+    value: 10
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-SMOKE-SETTLING-SPEED
+    symbol: v_s
+    description: vertical settling speed of the smoke centre
+    value: 3
+    unit: m/s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-SMOKE-ACTIVE-DURATION
+    symbol: T_e
+    description: post-burst smoke active duration
+    value: 20
+    unit: s
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-TARGET-BOTTOM-CENTER
+    symbol: \boldsymbol{r}_{T,0}
+    description: bottom-face centre of the true target cylinder
+    value: [0, 200, 0]
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-TARGET-RADIUS
+    symbol: R_T
+    description: true-target cylinder radius
+    value: 7
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+  - id: PAR-TARGET-HEIGHT
+    symbol: H_T
+    description: true-target cylinder height
+    value: 10
+    unit: m
+    source: SRC-PROBLEM-PDF
+    owner_problem: problem1
+reuse_policy:
+  later_problems:
+    - read values and symbols by parameter id
+    - override only problem-specific control parameters
+    - never copy numeric values from LaTeX

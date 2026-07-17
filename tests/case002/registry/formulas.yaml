@@ -1,0 +1,11 @@
+schema_version: 2
+project_id: case002
+formulas:
+  - {id: F-P1-MOTION-TRAJECTORIES, owner_problem: problem1, label: eq:p1-motion, reuse_rule: reference_only}
+  - {id: F-P1-BOMB-POSITION, owner_problem: problem1, label: eq:p1-bomb, reuse_rule: reference_only}
+  - {id: F-P1-SMOKE-CENTER, owner_problem: problem1, label: eq:p1-smoke, reuse_rule: reference_only}
+  - {id: F-P1-EDGE-BASIS, owner_problem: problem1, label: eq:p1-edge-basis, reuse_rule: reference_only}
+  - {id: F-P1-SILHOUETTE-EDGE-SET, owner_problem: problem1, label: eq:p1-edge-set, reuse_rule: reference_only}
+  - {id: F-P1-SEGMENT-DISTANCE, owner_problem: problem1, label: eq:p1-segment-distance, reuse_rule: reference_only}
+  - {id: F-P1-EDGE-COVERAGE, owner_problem: problem1, label: eq:p1-edge-coverage, reuse_rule: reference_only}
+  - {id: F-P1-EFFECTIVE-DURATION, owner_problem: problem1, label: eq:p1-duration, reuse_rule: reference_only}

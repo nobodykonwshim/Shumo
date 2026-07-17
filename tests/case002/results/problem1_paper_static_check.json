@@ -1,0 +1,21 @@
+{
+  "analysis_tex": "tests\\case002\\paper\\sections\\02_problem_analysis\\problem1.tex",
+  "error_count": 0,
+  "errors": [],
+  "model_tex": "tests\\case002\\paper\\sections\\05_model_solution\\problem1.tex",
+  "result": "tests\\case002\\results\\problem1_result.json",
+  "schema_version": 2,
+  "status": "pass",
+  "summary": {
+    "edge_geometry_pass": true,
+    "edge_occlusion_duration_s": 1.3916426950393177,
+    "equation_label_count": 8,
+    "exact_tangency_pass": true,
+    "label_count": 9,
+    "result_macros_checked": 3,
+    "symbolic_contract_status": "pass"
+  },
+  "validator": "case002_problem1_paper_check",
+  "warning_count": 0,
+  "warnings": []
+}

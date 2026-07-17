@@ -1,0 +1,21 @@
+schema_version: "1.0"
+review_id: REVIEW-DEMO-P1
+project_id: demo_project
+project_config_path: demo/project.yaml
+problem_id: problem1
+sequence_index: 1
+previous_review_path: null
+artifacts:
+  - id: ART-DEMO-MODEL
+    role: model_spec
+    path: demo/artifacts/modeling/problem1.model.yaml
+    sha256: 0000000000000000000000000000000000000000000000000000000000000000
+review:
+  revision: 1
+  status: pending
+  authority: user
+  feedback: []
+  reviewed_at: null
+next_problem_id: problem2
+notes:
+  - Replace the demonstration hash with the current artifact hash before validation.

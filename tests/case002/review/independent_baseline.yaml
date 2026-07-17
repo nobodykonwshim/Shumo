@@ -1,0 +1,22 @@
+schema_version: 1
+baseline_id: CASE002-P1-INDEPENDENT-BASELINE
+project_id: case002
+problem_id: problem1
+status: superseded_by_user_definition_revision3
+route:
+  missile_motion: straight uniform motion toward the fake-target origin
+  uav_motion: prescribed horizontal straight uniform motion
+  bomb_motion: inherited horizontal velocity plus gravity
+  smoke_motion: fixed horizontal coordinates plus vertical settling
+  primary_occlusion: every missile-to-cylinder-silhouette edge segment intersects the active smoke sphere
+  target_edge: top far rim arc, bottom near rim arc and two exact side tangent generators
+  evaluator: maximum smoke-centre distance to closed missile-edge-point segments
+  projection_plane_used: false
+  whole_surface_sampling_used: false
+validation_plan:
+  - hand-check release and burst coordinates
+  - bracket event boundaries in the 20 s active interval and refine roots
+  - compare increasingly dense two-arc and two-generator resolutions
+  - verify exact circle tangency and cylinder edge geometry residuals
+  - verify the event-boundary maximum distance equals the smoke radius
+reference_release: not_approved

@@ -61,6 +61,24 @@ capabilities:
       - lifecycle goals and nonblocking external dependencies remain explicit project declarations
       - status remains validated until exercised on a second materially different real case
 
+  - capability_id: sequential_problem_review_gate
+    name: hash-bound one-problem-at-a-time paper review gate
+    status: prototype
+    owner_path: skills/math_modeling/support/PROBLEM_REVIEW_GATE.md
+    validator: skills/math_modeling/validation/problem_review_validator.py
+    contract:
+      inputs: project_problem_order_review_status_revision_artifact_paths_hashes_and_previous_review
+      outputs: validated_review_record_closed_or_open_advance_gate_and_stale_artifact_report
+    generic_tests:
+      - tests/specs/test_problem_review_validator.py
+    demonstrated_by:
+      - skills/math_modeling/specs/problem_review.example.yaml
+      - tests/case002/review/problem1.paper-review.yaml
+    limits:
+      - validation proves order state and artifact identity rather than mathematical correctness or writing quality
+      - the capability remains prototype until a real sequential case completes at least one approved revision
+      - approval authority and requested revisions remain human decisions
+
   - capability_id: generic_model_spec_schema
     name: generic executable mathematical model specification
     status: validated
@@ -131,6 +149,25 @@ capabilities:
       - the validator cannot choose the best chapter structure or page allocation
       - final section ownership labels and presentation choices require human approval
       - status remains validated until exercised on a second unrelated real case
+
+  - capability_id: symbolic_per_problem_paper_contract
+    name: symbolic model formulas registry-only assumptions and fixed per-problem paper sections
+    status: prototype
+    owner_path: skills/math_modeling/support/SYMBOLIC_PAPER_CONTRACT.md
+    validator: skills/math_modeling/validation/symbolic_latex_validator.py
+    contract:
+      inputs: problem_analysis_latex_model_solution_latex_problem_name_parameter_registry_and_assumption_registry
+      outputs: checked_chapter_structure_symbolic_model_block_and_registry_only_presentation_boundary
+    generic_tests:
+      - tests/specs/test_symbolic_latex_validator.py
+    demonstrated_by:
+      - tests/case002/results/problem1_symbolic_check.json
+      - tests/case002/results/problem1_paper_static_check.json
+    limits:
+      - numeric-literal checks detect direct substitutions but cannot prove every symbol is registered
+      - structural mathematical constants remain allowed inside the symbolic model block
+      - silhouette-edge reduction is valid only after the project records its convexity and viewpoint conditions
+      - chapter placement and the choice of target boundary representation remain project-level decisions
 
   - capability_id: agent_admission
     name: bounded agent admission and runtime token

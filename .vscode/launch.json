@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "2025A 问题一：运行边缘线段遮蔽仿真",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tests/case002/code/problem1_solver.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    }
+  ]
+}

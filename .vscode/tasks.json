@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "2025A 问题一：安装依赖",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "${workspaceFolder}/tests/case002/code/requirements.txt"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "2025A 问题一：运行仿真",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/tests/case002/code/problem1_solver.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "2025A 问题一：首次安装并运行",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "2025A 问题一：安装依赖",
+        "2025A 问题一：运行仿真"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

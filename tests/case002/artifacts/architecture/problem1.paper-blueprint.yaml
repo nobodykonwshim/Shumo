@@ -1,0 +1,156 @@
+schema_version: "1.0"
+blueprint_id: PAPER-CASE002-P1-R3
+project_id: case002
+title: 2025 CUMCM A problem 1 symbolic silhouette-edge paper blueprint
+status: frozen
+
+source_specs:
+  - spec_id: MODEL-CASE002-P1
+    path: tests/case002/artifacts/modeling/problem1.model.yaml
+    role: primary
+    required_for_writing: true
+
+numbering_policy:
+  equations: global
+  figures: chapter
+  tables: chapter
+  algorithms: chapter
+  locked_before_writing: true
+
+sections:
+  - id: SEC-P1-ANALYSIS
+    title: 2.1 问题一分析
+    order: 1
+    purpose: Explain the moving sight-segment occlusion question and the four-curve cylindrical silhouette boundary.
+    content_blocks:
+      - id: BLOCK-P1-SUMMARY
+        type: problem_summary
+        source_ids: [IN-P1-KINEMATICS, IN-P1-TARGET]
+        disposition: body
+      - id: BLOCK-P1-ANALYSIS-METHOD
+        type: discussion
+        source_ids: [M-P1-SILHOUETTE-EDGE, M-P1-EDGE-SEGMENT-COVERAGE]
+        disposition: body
+  - id: SEC-P1-MODEL
+    title: 5.1.1 问题模型建立
+    order: 2
+    purpose: Define symbolic kinematics, exact cylinder silhouette edges and the closed-segment distance predicate.
+    content_blocks:
+      - id: BLOCK-P1-KINEMATICS
+        type: model_definition
+        source_ids: [M-P1-KINEMATICS]
+        disposition: body
+      - id: BLOCK-P1-SILHOUETTE
+        type: model_definition
+        source_ids: [M-P1-SILHOUETTE-EDGE]
+        disposition: body
+      - id: BLOCK-P1-COVERAGE
+        type: model_definition
+        source_ids: [M-P1-EDGE-SEGMENT-COVERAGE]
+        disposition: body
+      - id: BLOCK-P1-FORMULAS
+        type: formula
+        source_ids: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER, F-P1-EDGE-BASIS, F-P1-SILHOUETTE-EDGE-SET, F-P1-SEGMENT-DISTANCE, F-P1-EDGE-COVERAGE, F-P1-EFFECTIVE-DURATION]
+        disposition: body
+  - id: SEC-P1-SOLUTION
+    title: 5.1.2 模型求解
+    order: 3
+    purpose: Load registries, construct the four edge curves, evaluate segment distances and refine event roots.
+    content_blocks:
+      - id: BLOCK-P1-ALGORITHM
+        type: algorithm
+        source_ids: [STEP-P1-LOAD-REGISTRY, STEP-P1-KINEMATICS, STEP-P1-EDGE-CONSTRUCTION, STEP-P1-EDGE-DISTANCE, STEP-P1-ROOT]
+        disposition: body
+      - id: BLOCK-P1-VALIDATION
+        type: validation
+        source_ids: [V-P1-HAND-CALC, V-P1-EXACT-TANGENCY, V-P1-EDGE-GEOMETRY, V-P1-TIME-CONVERGENCE, V-P1-EDGE-RESOLUTION, V-P1-BOUNDARY-RESIDUAL]
+        disposition: body
+      - id: BLOCK-P1-RESULT-TABLE
+        type: table
+        source_ids: [OUT-P1-RELEASE-BURST, OUT-P1-COVERAGE-INTERVAL]
+        disposition: body
+  - id: SEC-P1-RESULTS
+    title: 5.1.3 结果分析
+    order: 4
+    purpose: Interpret the edge-occlusion interval, controlling boundary curves and numerical stability.
+    content_blocks:
+      - id: BLOCK-P1-DISCUSSION
+        type: discussion
+        source_ids: [METRIC-P1-COVERAGE-DURATION, OUT-P1-COVERAGE-INTERVAL]
+        disposition: body
+
+model_placements:
+  - {model_id: M-P1-KINEMATICS, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
+  - {model_id: M-P1-SILHOUETTE-EDGE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
+  - {model_id: M-P1-EDGE-SEGMENT-COVERAGE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define}
+
+formula_placements:
+  - {formula_id: F-P1-MOTION-TRAJECTORIES, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-motion}
+  - {formula_id: F-P1-BOMB-POSITION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-bomb}
+  - {formula_id: F-P1-SMOKE-CENTER, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-smoke}
+  - {formula_id: F-P1-EDGE-BASIS, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-edge-basis}
+  - {formula_id: F-P1-SILHOUETTE-EDGE-SET, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-edge-set}
+  - {formula_id: F-P1-SEGMENT-DISTANCE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-segment-distance}
+  - {formula_id: F-P1-EDGE-COVERAGE, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-edge-coverage}
+  - {formula_id: F-P1-EFFECTIVE-DURATION, source_spec_id: MODEL-CASE002-P1, owner_section_id: SEC-P1-MODEL, mode: define, label: eq:p1-duration}
+
+output_placements:
+  - output_id: OUT-P1-RELEASE-BURST
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-SOLUTION
+    representation: table
+    label: tab:p1-edge-results
+    precision_policy: Coordinates retain 0.001 m where needed and burst time is shown to 0.1 s.
+  - output_id: OUT-P1-COVERAGE-INTERVAL
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-SOLUTION
+    representation: table
+    precision_policy: Report interval boundaries and duration to 0.001 s.
+
+claims:
+  - id: CLAIM-P1-EDGE-RESULT
+    text: Under the registered assumptions, the complete silhouette-edge sight-segment occlusion interval is 8.056445463662 s to 9.448088158702 s and its duration is 1.391642695039 s.
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-RESULTS
+    status: allowed
+  - id: CLAIM-P1-EDGE-CHECKS
+    text: The exact tangency, cylinder edge geometry, active-window, time-refinement and edge-resolution checks pass within their declared tolerances.
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-RESULTS
+    status: allowed
+  - id: CLAIM-P1-CONTROLLING-CURVES
+    text: The beginning event is controlled by the bottom near rim arc and the ending event by the top far rim arc.
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-RESULTS
+    status: allowed
+  - id: CLAIM-P1-NO-PROJECTION
+    text: A perspective projection plane is used by the current problem 1 solver.
+    source_spec_id: MODEL-CASE002-P1
+    owner_section_id: SEC-P1-ANALYSIS
+    status: forbidden
+
+writing_constraints:
+  new_modeling_content_forbidden: true
+  recomputation_forbidden: true
+  renumbering_forbidden: true
+  unverified_claims_forbidden: true
+  duplicate_definition_forbidden: true
+
+human_checkpoints:
+  - id: H-P1-EDGE-DEFINITION
+    decision: Use only the exact two-arc and two-side-generator cylinder silhouette, and test smoke-centre distance to missile-edge-point closed segments without a projection plane or whole-surface sampling.
+    authority: user
+    status: approved
+    record: tests/case002/review/problem1_definition_revision3.yaml
+
+evidence_paths:
+  - tests/case002/registry/parameters.yaml
+  - tests/case002/registry/assumptions.yaml
+  - tests/case002/registry/formulas.yaml
+  - tests/case002/registry/model_contracts.yaml
+  - tests/case002/results/problem1_result.json
+
+limitations:
+  - This blueprint covers problem 1 revision 3 only.
+  - Assumptions and parameter values remain in registries rather than the LaTeX body.
+  - The global abstract, title, keywords and all later problems remain locked.

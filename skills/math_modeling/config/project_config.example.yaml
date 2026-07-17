@@ -13,6 +13,7 @@ paths:
   attachments: "<project>/inputs/"
   registry:
     parameters: "<project>/registry/parameters.yaml"
+    assumptions: "<project>/registry/assumptions.yaml"
     formulas: "<project>/registry/formulas.yaml"
     model_contracts: "<project>/registry/model_contracts.yaml"
   modeling_artifacts: "<project>/artifacts/modeling/"
@@ -178,6 +179,22 @@ paper_writing:
   editable_equations_required: true
   exploration_agents_forbidden: true
   provenance_required_for_reference_influenced_content: true
+  model_formula_mode: symbolic
+  assumption_parameter_presentation: registry_only
+  per_problem_section_contract: cumcm_analysis_and_solution
+  symbolic_contract: "skills/math_modeling/support/SYMBOLIC_PAPER_CONTRACT.md"
+  symbolic_validator: "skills/math_modeling/validation/symbolic_latex_validator.py"
+
+question_delivery:
+  mode: all_at_once  # all_at_once | sequential_review
+  problem_order: []
+  require_approved_review_before_next: false
+  review_formats:
+    - conversation
+    - latex
+  review_records: "<project>/review/"
+  review_gate: "skills/math_modeling/support/PROBLEM_REVIEW_GATE.md"
+  review_validator: "skills/math_modeling/validation/problem_review_validator.py"
 
 context_budget:
   read_entire_repository: false

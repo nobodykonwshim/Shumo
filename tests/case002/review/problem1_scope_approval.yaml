@@ -1,0 +1,15 @@
+schema_version: 1
+project_id: case002
+problem_id: problem1
+decision: Use full-cylinder complete occlusion as the primary criterion, retain the target-centre line of sight as a comparison, and deliver only problem 1 in the first review round.
+authority: user
+status: approved
+scope:
+  - problem_interpretation
+  - assumptions
+  - core_formulas
+  - numerical_solution
+  - concise_result_analysis
+does_not_approve:
+  - problem1_final_paper_text
+  - progression_to_problem2

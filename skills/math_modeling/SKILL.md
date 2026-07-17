@@ -59,6 +59,8 @@ Workflow/Agent 编排入口
 → 论文蓝图
 → 正式写作
 → 一致性与交付检查
+→ 逐问人工审核（启用 sequential_review 时）
+→ 获批后进入下一问
 ```
 
 只有候选路线探索、未知故障诊断和方案压力测试是默认 Agent 插槽。其他步骤优先使用 Workflow。
@@ -135,6 +137,10 @@ Workflow/Agent 编排入口
 
 第三层是确定性 Workflow，禁止重新建模、重新求解、重新编号、调用探索 Agent 或临时增加创新点。
 
+项目启用符号化逐问正文契约时，第三层还必须读取
+support/SYMBOLIC_PAPER_CONTRACT.md。模型建立只写参数符号，参数值与假设只进入项目登记库；
+每问分别生成第2章问题分析片段和第5章模型建立、模型求解、结果分析片段。
+
 ## 8. 复合请求
 
 用户要求“完整建模与求解并写成论文”时，必须串行执行：
@@ -146,6 +152,10 @@ Workflow/Agent 编排入口
 ```
 
 不得跳过第二层直接把第一层探索记录改写成论文，也不得让一个 Agent 同时修改模型、代码、登记库和正文。
+
+若用户要求逐问审核，还必须在每一问的第三层输出后执行
+`support/PROBLEM_REVIEW_GATE.md`。当前问题的审核记录不是 `approved`，或任一绑定产物哈希发生变化时，
+下一问题保持锁定。
 
 ## 9. 最小上下文加载
 
@@ -199,6 +209,7 @@ Agent 只围绕三个基础组件设计：
 
 ```text
 <project>/registry/parameters.yaml
+<project>/registry/assumptions.yaml
 <project>/registry/formulas.yaml
 <project>/registry/model_contracts.yaml
 ```
@@ -251,6 +262,7 @@ AI 不能保证某一方案对所有参赛队伍绝对唯一。创新应来自�
 - `support/AGENT_RUNTIME_CONTRACT.md`：环境、工具与 Prompt 契约；
 - `support/INNOVATION_EXPLORER.md`：候选路线探索；
 - `support/SOLUTION_REVIEW_AGENT.md`：方案压力测试；
+- `support/PROBLEM_REVIEW_GATE.md`：逐问论文审核与顺序门禁；
 - `config/project_config.example.yaml`：项目配置模板；
 - `FORMULA_REUSE_PROTOCOL.md`：公式复用协议；
 - `checks/check_formula_reuse.py`：重复定义审查脚本；

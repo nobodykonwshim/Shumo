@@ -1,0 +1,194 @@
+{
+  "definition_revision": 3,
+  "edge_resolution_convergence": [
+    {
+      "arc_count": 181,
+      "duration_change_from_previous_s": null,
+      "duration_s": 1.3916430073769988,
+      "edge_point_count": 444,
+      "end_s": 9.448088158702,
+      "line_count": 41,
+      "name": "coarse",
+      "start_s": 8.056445151325
+    },
+    {
+      "arc_count": 361,
+      "duration_change_from_previous_s": -2.740322422312147e-07,
+      "duration_s": 1.3916427333447565,
+      "edge_point_count": 884,
+      "end_s": 9.448088158701712,
+      "line_count": 81,
+      "name": "standard",
+      "start_s": 8.056445425356955
+    },
+    {
+      "arc_count": 721,
+      "duration_change_from_previous_s": -3.8305438820884774e-08,
+      "duration_s": 1.3916426950393177,
+      "edge_point_count": 1764,
+      "end_s": 9.448088158701715,
+      "line_count": 161,
+      "name": "fine",
+      "start_s": 8.056445463662397
+    }
+  ],
+  "full_edge_occlusion": {
+    "duration_s": 1.3916426950393177,
+    "end_s": 9.448088158701715,
+    "fine_edge_point_count": 1764,
+    "max_edge_segment_distance_at_end_m": 10.000000000000423,
+    "max_edge_segment_distance_at_start_m": 9.99999999999982,
+    "midpoint_max_edge_segment_distance_m": 7.111774436725244,
+    "midpoint_s": 8.752266811182057,
+    "midpoint_worst_curve": "bottom_near_arc",
+    "start_s": 8.056445463662397,
+    "worst_curve_at_end": "top_far_arc",
+    "worst_curve_at_start": "bottom_near_arc",
+    "worst_edge_point_at_end_m": [
+      0.08433810954713825,
+      206.99949191608061,
+      10.0
+    ],
+    "worst_edge_point_at_start_m": [
+      1.3262401725410393,
+      206.87321518684948,
+      0.0
+    ]
+  },
+  "hand_calculation": {
+    "burst_absolute_time_s": 5.1,
+    "burst_point_m": [
+      17188.0,
+      0.0,
+      1736.496
+    ],
+    "release_point_m": [
+      17620.0,
+      0.0,
+      1800.0
+    ],
+    "smoke_active_interval_s": [
+      5.1,
+      25.1
+    ]
+  },
+  "method": {
+    "edge_construction": "horizontal radial plane through the missile and cylinder axis with exact circle tangency correction",
+    "primary_predicate": "maximum smoke-centre distance to missile-to-silhouette-edge-point segments is at most the smoke radius",
+    "projection_model_used": false,
+    "root_method": "Brent bracketing root refinement",
+    "target_edge": "top far rim arc, bottom near rim arc, and two exact side tangency generators",
+    "whole_surface_sampling_used": false
+  },
+  "numerical_discretization": {
+    "fine_arc_interval_count_per_arc": 720,
+    "fine_arc_point_count_per_arc": 721,
+    "fine_side_height_step_m": 0.0625,
+    "fine_side_interval_count_per_generator": 160,
+    "fine_side_point_count_per_generator": 161,
+    "fine_total_edge_point_count": 1764,
+    "root_absolute_tolerance_s": 1e-11,
+    "sight_segment_minimum": "analytic clipped orthogonal projection; no samples are taken along each missile-to-edge-point segment",
+    "time_scan_steps_s": [
+      0.05,
+      0.02,
+      0.01
+    ]
+  },
+  "parameters": {
+    "burst_delay_s": 3.6,
+    "fake_target_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "gravity_m_per_s2": 9.8,
+    "missile_initial_m": [
+      20000.0,
+      0.0,
+      2000.0
+    ],
+    "missile_speed_m_per_s": 300.0,
+    "release_time_s": 1.5,
+    "smoke_active_duration_s": 20.0,
+    "smoke_radius_m": 10.0,
+    "smoke_settling_speed_m_per_s": 3.0,
+    "target_bottom_center_m": [
+      0.0,
+      200.0,
+      0.0
+    ],
+    "target_height_m": 10.0,
+    "target_radius_m": 7.0,
+    "uav_direction": [
+      -1.0,
+      0.0,
+      0.0
+    ],
+    "uav_initial_m": [
+      17800.0,
+      0.0,
+      1800.0
+    ],
+    "uav_speed_m_per_s": 120.0
+  },
+  "problem_id": "problem1",
+  "project_id": "case002",
+  "registry_sources": {
+    "assumptions": "tests/case002/registry/assumptions.yaml",
+    "loaded_assumption_ids": [
+      "A-P1-BALLISTIC",
+      "A-P1-EDGE-SILHOUETTE",
+      "A-P1-MISSILE-UNIFORM",
+      "A-P1-NO-DRIFT",
+      "A-P1-SPHERE",
+      "A-P1-TARGET-CYLINDER",
+      "A-P1-UAV-UNIFORM"
+    ],
+    "parameters": "tests/case002/registry/parameters.yaml"
+  },
+  "schema_version": 4,
+  "simulation_outputs": {
+    "csv": "tests/case002/results/problem1_simulation.csv",
+    "figure": "tests/case002/figures/problem1_occlusion_simulation.png",
+    "row_count": 2001,
+    "time_step_s": 0.01
+  },
+  "time_scan_convergence": [
+    {
+      "duration_s": 1.3916430073759987,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.05,
+      "start_s": 8.056445151326
+    },
+    {
+      "duration_s": 1.3916430073769988,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.02,
+      "start_s": 8.056445151325
+    },
+    {
+      "duration_s": 1.3916430073759987,
+      "end_s": 9.448088158702,
+      "scan_step_s": 0.01,
+      "start_s": 8.056445151326
+    }
+  ],
+  "validation": {
+    "all_required_checks_pass": true,
+    "boundary_residual_max_m": 4.227729277772596e-13,
+    "burst_point_hand_check_pass": true,
+    "burst_time_hand_check_pass": true,
+    "cylinder_edge_geometry_pass": true,
+    "cylinder_radial_residual_m": 1.5987211554602254e-14,
+    "edge_resolution_change_below_0_001_s_pass": true,
+    "edge_resolution_duration_change_s": 3.8305438820884774e-08,
+    "exact_tangency_pass": true,
+    "exact_tangency_residual_m2": 1.5234036254696548e-11,
+    "inside_active_window_pass": true,
+    "missile_above_target_pass": true,
+    "release_point_hand_check_pass": true,
+    "scan_duration_change_below_0_001_s_pass": true,
+    "scan_duration_change_s": 1.000088900582341e-12
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "error_count": 0,
+  "errors": [],
+  "problem_name": "问题一",
+  "schema_version": 1,
+  "status": "pass",
+  "summary": {
+    "disallowed_numeric_tokens": [],
+    "label_count": 9,
+    "symbolic_numeric_tokens": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "2",
+      "2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0"
+    ]
+  },
+  "validator": "shumo_symbolic_latex_validator",
+  "warning_count": 0,
+  "warnings": []
+}

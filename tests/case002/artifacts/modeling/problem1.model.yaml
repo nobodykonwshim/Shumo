@@ -1,0 +1,343 @@
+schema_version: "1.0"
+spec_id: MODEL-CASE002-P1
+problem_id: problem1
+title: Cylinder silhouette edge-segment smoke occlusion model
+status: solved
+
+objective:
+  sense: estimate
+  description: Determine the interval during which every missile-to-cylinder-silhouette edge segment intersects the active smoke sphere.
+  metrics:
+    - id: METRIC-P1-COVERAGE-DURATION
+      description: Effective complete edge-segment occlusion duration
+      priority: primary
+      formula_id: F-P1-EFFECTIVE-DURATION
+      unit: s
+
+inputs:
+  - id: IN-P1-KINEMATICS
+    description: Missile, FY1, bomb and smoke motion parameters referenced from the parameter registry
+    data_type: object
+    required: true
+    source: tests/case002/registry/parameters.yaml
+  - id: IN-P1-ASSUMPTIONS
+    description: Problem 1 physical and silhouette-edge assumptions referenced by semantic id
+    data_type: file
+    required: true
+    source: tests/case002/registry/assumptions.yaml
+  - id: IN-P1-TARGET
+    description: Fixed cylindrical true-target geometry referenced from the parameter registry
+    data_type: geometry
+    required: true
+    source: tests/case002/registry/parameters.yaml
+
+symbols:
+  variables:
+    - {id: VAR-TIME, description: absolute task time, role: state, domain: nonnegative real, unit: s}
+    - {id: VAR-MISSILE-POS, description: missile position, role: state, domain: three-dimensional vector, unit: m}
+    - {id: VAR-UAV-POS, description: FY1 position, role: state, domain: three-dimensional vector, unit: m}
+    - {id: VAR-BOMB-POS, description: smoke-bomb position before burst, role: state, domain: three-dimensional vector, unit: m}
+    - {id: VAR-SMOKE-CENTER, description: active smoke-sphere centre, role: state, domain: three-dimensional vector, unit: m}
+    - {id: VAR-HORIZONTAL-RADIAL, description: horizontal radial direction from cylinder axis to missile, role: auxiliary, domain: unit vector, unit: null}
+    - {id: VAR-TRANSVERSE, description: transverse normal to the vertical radial plane, role: auxiliary, domain: unit vector, unit: null}
+    - {id: VAR-TANGENT-ANGLE, description: exact circle tangent angle, role: auxiliary, domain: real angle, unit: rad}
+    - {id: VAR-SILHOUETTE-EDGE, description: union of two rim arcs and two side tangent generators, role: auxiliary, domain: space-curve set, unit: m}
+    - {id: VAR-SEGMENT-PARAMETER, description: clipped nearest-point parameter on a sight segment, role: auxiliary, domain: closed unit interval, unit: null}
+    - {id: VAR-MAX-EDGE-DISTANCE, description: maximum smoke-centre distance over all silhouette sight segments, role: auxiliary, domain: nonnegative real, unit: m}
+    - {id: VAR-EFFECTIVE-SET, description: active times satisfying complete edge-segment occlusion, role: output, domain: subset of active interval, unit: s}
+    - {id: VAR-DURATION, description: measure of the effective time set, role: output, domain: nonnegative real, unit: s}
+  parameters:
+    - {id: PAR-M1-P0, description: initial M1 position, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FAKE-TARGET, description: fake-target guidance point, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-MISSILE-SPEED, description: missile speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-P0, description: initial FY1 position, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-DIRECTION, description: FY1 unit heading, unit: null, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-FY1-P1-SPEED, description: FY1 speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-P1-RELEASE-TIME, description: release time, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-P1-BURST-DELAY, description: release-to-burst delay, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-GRAVITY, description: gravitational acceleration, unit: m/s^2, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-RADIUS, description: smoke-sphere radius, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-SETTLING-SPEED, description: smoke-centre settling speed, unit: m/s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-SMOKE-ACTIVE-DURATION, description: smoke active duration, unit: s, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-BOTTOM-CENTER, description: target bottom-face centre, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-RADIUS, description: target cylinder radius, unit: m, source: tests/case002/registry/parameters.yaml}
+    - {id: PAR-TARGET-HEIGHT, description: target cylinder height, unit: m, source: tests/case002/registry/parameters.yaml}
+
+assumptions:
+  - id: A-P1-MISSILE-UNIFORM
+    statement: M1 follows the registered straight uniform trajectory during evaluation.
+    status: accepted
+    impact: fixes the moving sight-line origin
+  - id: A-P1-UAV-UNIFORM
+    statement: FY1 follows the registered horizontal constant-speed trajectory.
+    status: accepted
+    impact: fixes the release point
+  - id: A-P1-BALLISTIC
+    statement: The bomb inherits FY1 horizontal velocity and is acted on only by gravity after release.
+    status: accepted
+    impact: determines the burst point
+  - id: A-P1-NO-DRIFT
+    statement: Wind, drag and horizontal smoke drift are ignored.
+    status: accepted
+    impact: fixes smoke horizontal coordinates
+  - id: A-P1-SPHERE
+    statement: Active smoke is represented by a sphere with registered radius and settling motion.
+    status: accepted
+    impact: permits a point-to-segment distance intersection test
+  - id: A-P1-TARGET-CYLINDER
+    statement: The true target is the registered fixed solid cylinder.
+    status: accepted
+    impact: supplies the exact cylindrical silhouette geometry
+  - id: A-P1-EDGE-SILHOUETTE
+    statement: While the missile is above the cylinder, the visual boundary is represented by the top far rim arc, bottom near rim arc and two exact side tangent generators.
+    status: accepted
+    impact: reduces the complete target sight test to four continuous boundary curves
+
+model_components:
+  - id: M-P1-KINEMATICS
+    type: equation
+    purpose: Determine missile, FY1, bomb and smoke-centre states symbolically.
+    depends_on: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION, F-P1-SMOKE-CENTER]
+  - id: M-P1-SILHOUETTE-EDGE
+    type: geometry
+    purpose: Construct the exact two-arc and two-generator visual boundary of the target cylinder.
+    depends_on: [F-P1-EDGE-BASIS, F-P1-SILHOUETTE-EDGE-SET]
+  - id: M-P1-EDGE-SEGMENT-COVERAGE
+    type: decision_rule
+    purpose: Require every missile-to-silhouette-point closed segment to intersect the smoke sphere.
+    depends_on: [F-P1-SEGMENT-DISTANCE, F-P1-EDGE-COVERAGE, F-P1-EFFECTIVE-DURATION]
+
+formulas:
+  - id: F-P1-MOTION-TRAJECTORIES
+    expression: e_M=(r_O-r_M0)/||r_O-r_M0||; r_M(t)=r_M0+v_M t e_M; r_F(t)=r_F0+v_F t e_F
+    description: Symbolic missile and FY1 trajectories.
+    symbols: [VAR-MISSILE-POS, VAR-UAV-POS, VAR-TIME, PAR-M1-P0, PAR-FAKE-TARGET, PAR-MISSILE-SPEED, PAR-FY1-P0, PAR-FY1-DIRECTION, PAR-FY1-P1-SPEED]
+    unit_check: pass
+  - id: F-P1-BOMB-POSITION
+    expression: r_d=r_F(t_d); t_b=t_d+tau_b; r_B(t)=r_d+v_F e_F(t-t_d)-g(t-t_d)^2 e_z/2
+    description: Symbolic ballistic smoke-bomb trajectory.
+    symbols: [VAR-BOMB-POS, VAR-UAV-POS, VAR-TIME, PAR-P1-RELEASE-TIME, PAR-P1-BURST-DELAY, PAR-FY1-P1-SPEED, PAR-FY1-DIRECTION, PAR-GRAVITY]
+    unit_check: pass
+  - id: F-P1-SMOKE-CENTER
+    expression: r_C(t)=r_B(t_b)-v_s(t-t_b)e_z for t in [t_b,t_b+T_e]
+    description: Symbolic active smoke-centre trajectory.
+    symbols: [VAR-SMOKE-CENTER, VAR-BOMB-POS, VAR-TIME, PAR-SMOKE-SETTLING-SPEED, PAR-SMOKE-ACTIVE-DURATION]
+    unit_check: pass
+  - id: F-P1-EDGE-BASIS
+    expression: q=P_h(r_M-r_T0); rho=||q||; e_r=q/rho; e_t=e_z cross e_r; alpha=arccos(R_T/rho)
+    description: Horizontal radial basis and exact external-point circle tangent angle.
+    symbols: [VAR-MISSILE-POS, VAR-HORIZONTAL-RADIAL, VAR-TRANSVERSE, VAR-TANGENT-ANGLE, PAR-TARGET-BOTTOM-CENTER, PAR-TARGET-RADIUS]
+    unit_check: pass
+  - id: F-P1-SILHOUETTE-EDGE-SET
+    expression: Gamma=top-far rim arc union bottom-near rim arc union two side tangent generators at theta=plus-or-minus alpha
+    description: Exact cylinder silhouette edge for a missile above the target.
+    symbols: [VAR-SILHOUETTE-EDGE, VAR-HORIZONTAL-RADIAL, VAR-TRANSVERSE, VAR-TANGENT-ANGLE, PAR-TARGET-BOTTOM-CENTER, PAR-TARGET-RADIUS, PAR-TARGET-HEIGHT]
+    unit_check: pass
+  - id: F-P1-SEGMENT-DISTANCE
+    expression: lambda=clip(a^T b/(a^T a),0,1); d=||b-lambda a|| with a=X-r_M and b=r_C-r_M
+    description: Smoke-centre distance to a closed missile-to-edge-point sight segment.
+    symbols: [VAR-MISSILE-POS, VAR-SMOKE-CENTER, VAR-SILHOUETTE-EDGE, VAR-SEGMENT-PARAMETER, VAR-MAX-EDGE-DISTANCE]
+    unit_check: pass
+  - id: F-P1-EDGE-COVERAGE
+    expression: D(t)=max over X in Gamma(t) of d(X,t); complete occlusion holds when D(t)<=R_s
+    description: Complete silhouette-edge sight-segment occlusion predicate.
+    symbols: [VAR-TIME, VAR-SILHOUETTE-EDGE, VAR-MAX-EDGE-DISTANCE, PAR-SMOKE-RADIUS]
+    unit_check: pass
+  - id: F-P1-EFFECTIVE-DURATION
+    expression: "I={t in [t_b,t_b+T_e]: D(t)<=R_s}; Delta_t=measure(I)"
+    description: Effective occlusion time set and duration.
+    symbols: [VAR-EFFECTIVE-SET, VAR-DURATION, VAR-TIME, VAR-MAX-EDGE-DISTANCE, PAR-SMOKE-RADIUS, PAR-SMOKE-ACTIVE-DURATION]
+    unit_check: pass
+
+constraints:
+  - id: C-P1-MISSILE-ABOVE-CYLINDER
+    kind: hard
+    description: The missile remains above the target top plane throughout the reported interval so the selected four-curve silhouette topology applies.
+    expression: missile height exceeds target height
+    symbols: [VAR-MISSILE-POS, PAR-TARGET-HEIGHT]
+    tolerance: 1.0e-12
+    failure_signal: silhouette topology must be reconstructed for a lower viewpoint
+  - id: C-P1-EXTERNAL-CIRCLE-VIEWPOINT
+    kind: hard
+    description: The horizontal missile distance from the cylinder axis exceeds the target radius.
+    expression: rho>R_T
+    symbols: [VAR-HORIZONTAL-RADIAL, PAR-TARGET-RADIUS]
+    tolerance: 1.0e-12
+    failure_signal: the external tangent angle is undefined
+  - id: C-P1-ACTIVE-WINDOW
+    kind: hard
+    description: Occlusion is evaluated only during the registered smoke active interval.
+    expression: t_b<=t<=t_b+T_e
+    symbols: [VAR-TIME, PAR-SMOKE-ACTIVE-DURATION]
+    tolerance: 1.0e-12
+    failure_signal: an interval boundary lies outside the active interval
+  - id: C-P1-FULL-EDGE-OCCLUSION
+    kind: hard
+    description: The maximum distance from the smoke centre to all silhouette sight segments does not exceed the smoke radius.
+    expression: D(t)<=R_s
+    symbols: [VAR-MAX-EDGE-DISTANCE, PAR-SMOKE-RADIUS]
+    tolerance: 1.0e-9
+    failure_signal: at least one silhouette sight segment avoids the smoke sphere
+
+algorithm:
+  method: deterministic exact silhouette construction, vectorized closed-segment distances and Brent event roots
+  deterministic: true
+  steps:
+    - id: STEP-P1-LOAD-REGISTRY
+      description: Load all parameter values and assumptions by semantic id.
+      uses: [IN-P1-KINEMATICS, IN-P1-ASSUMPTIONS, IN-P1-TARGET]
+    - id: STEP-P1-KINEMATICS
+      description: Compute release, burst and active smoke states.
+      uses: [M-P1-KINEMATICS]
+      produces: [VAR-MISSILE-POS, VAR-SMOKE-CENTER]
+    - id: STEP-P1-EDGE-CONSTRUCTION
+      description: Compute the exact tangent angle and sample only the two rim arcs and two side tangent generators.
+      uses: [M-P1-SILHOUETTE-EDGE, C-P1-MISSILE-ABOVE-CYLINDER, C-P1-EXTERNAL-CIRCLE-VIEWPOINT]
+      produces: [VAR-SILHOUETTE-EDGE, VAR-TANGENT-ANGLE]
+    - id: STEP-P1-EDGE-DISTANCE
+      description: Vectorize clipped point-to-segment distances and retain the maximum over the four edge curves.
+      uses: [M-P1-EDGE-SEGMENT-COVERAGE, C-P1-FULL-EDGE-OCCLUSION]
+      produces: [VAR-MAX-EDGE-DISTANCE, VAR-EFFECTIVE-SET]
+    - id: STEP-P1-ROOT
+      description: Scan the active interval and refine both occlusion boundaries with Brent roots.
+      uses: [F-P1-EFFECTIVE-DURATION, C-P1-ACTIVE-WINDOW]
+      produces: [VAR-DURATION]
+  termination: Both event roots converge and all required geometry, resolution and residual checks pass.
+  complexity_note: The dominant cost is linear in the number of sampled points on the four silhouette curves; no target surface grid or projection matrix is evaluated.
+
+outputs:
+  - id: OUT-P1-RELEASE-BURST
+    description: Release point, burst time and burst point
+    data_type: object
+    unit: null
+    depends_on: [F-P1-MOTION-TRAJECTORIES, F-P1-BOMB-POSITION]
+    destination: tests/case002/results/problem1_result.json
+    acceptance: Values agree with direct hand calculation.
+  - id: OUT-P1-COVERAGE-INTERVAL
+    description: Complete silhouette-edge sight-segment occlusion interval and duration
+    data_type: object
+    unit: s
+    depends_on: [F-P1-EDGE-COVERAGE, F-P1-EFFECTIVE-DURATION]
+    destination: tests/case002/results/problem1_result.json
+    acceptance: Interval lies in the active window and both boundary residuals are below tolerance.
+
+validation:
+  checks:
+    - id: V-P1-HAND-CALC
+      type: analytic_case
+      description: Verify release point, burst time and burst point by direct substitution.
+      target_ids: [OUT-P1-RELEASE-BURST]
+      acceptance: All registered hand-check values agree to numerical precision.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+    - id: V-P1-EXACT-TANGENCY
+      type: residual
+      description: Verify that each side generator begins and ends at an exact circle tangency point.
+      target_ids: [VAR-TANGENT-ANGLE, VAR-SILHOUETTE-EDGE]
+      acceptance: Maximum tangent orthogonality residual is below tolerance.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+    - id: V-P1-EDGE-GEOMETRY
+      type: residual
+      description: Verify that all sampled arc and generator points lie on the registered cylinder boundary.
+      target_ids: [VAR-SILHOUETTE-EDGE]
+      acceptance: Maximum radial and height residual is below tolerance.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+    - id: V-P1-TIME-CONVERGENCE
+      type: sensitivity
+      description: Refine the time scan before root refinement.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL]
+      acceptance: Maximum duration change is below 0.001 s.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+    - id: V-P1-EDGE-RESOLUTION
+      type: sensitivity
+      description: Refine both rim-arc and side-generator sampling.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL]
+      acceptance: Finest two duration estimates differ by less than 0.001 s.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+    - id: V-P1-BOUNDARY-RESIDUAL
+      type: residual
+      description: Verify that the maximum edge sight-segment distance equals the smoke radius at both event boundaries.
+      target_ids: [OUT-P1-COVERAGE-INTERVAL, VAR-MAX-EDGE-DISTANCE]
+      acceptance: Maximum absolute distance residual is below 1e-7 m.
+      required: true
+      status: pass
+      evidence: tests/case002/results/problem1_result.json
+  sensitivity_policy:
+    declared_before_final_result: true
+    parameters: [PAR-TARGET-RADIUS, PAR-TARGET-HEIGHT, PAR-SMOKE-RADIUS]
+    acceptance: Declared time and edge refinements must change duration by less than 0.001 s.
+
+provenance:
+  reference_exposure_status: independent
+  source_artifacts:
+    - id: SRC-PROBLEM-PDF
+      location: tests/case002/local/problem/official/A题.pdf
+      availability: local
+      role: authoritative_input
+      sha256: a37f6aad30b16ea09da9cb320ce194b12d3a28874008cf9ff19549f6c6079447
+    - id: SRC-P1-PARAMETERS
+      location: tests/case002/registry/parameters.yaml
+      availability: repository
+      role: derived_input
+    - id: SRC-P1-ASSUMPTIONS
+      location: tests/case002/registry/assumptions.yaml
+      availability: repository
+      role: derived_input
+    - id: SRC-P1-SOLVER
+      location: tests/case002/code/problem1_solver.py
+      availability: repository
+      role: implementation
+    - id: SRC-P1-REQUIREMENTS
+      location: tests/case002/code/requirements.txt
+      availability: repository
+      role: implementation
+    - id: SRC-P1-RESULT
+      location: tests/case002/results/problem1_result.json
+      availability: repository
+      role: evidence
+  evidence_paths:
+    - tests/case002/results/problem1_result.json
+    - tests/case002/results/problem1_simulation.csv
+    - tests/case002/figures/problem1_occlusion_simulation.png
+    - tests/case002/review/independent_baseline.yaml
+
+human_checkpoints:
+  - id: H-P1-EDGE-DEFINITION
+    decision: Use only the exact two-arc and two-side-generator cylinder silhouette, and test smoke-centre distance to missile-edge-point closed segments without a projection plane or whole-surface sampling.
+    authority: user
+    status: approved
+    record: tests/case002/review/problem1_definition_revision3.yaml
+
+limitations:
+  - Air resistance, wind and smoke deformation remain outside the current physical model.
+  - The selected four-curve topology applies while the missile remains above the target cylinder.
+  - Continuous edge extrema are approximated by refined curve sampling; convergence is numerical rather than a symbolic extremum proof.
+
+claims:
+  allowed:
+    - Under the registered assumptions, the complete silhouette-edge sight-segment occlusion interval is 8.056445463662 s to 9.448088158702 s and its duration is 1.391642695039 s.
+    - The exact tangency, cylinder edge geometry, active-window, time-refinement and edge-resolution checks pass within their declared tolerances.
+    - The beginning event is controlled by the bottom near rim arc and the ending event by the top far rim arc.
+  forbidden:
+    - A perspective projection plane is used by the current problem 1 solver.
+    - The complete cylinder surface is sampled by the current problem 1 solver.
+    - Refined edge sampling is a symbolic proof of the continuous maximum.
+
+implementation:
+  entrypoints:
+    - path: tests/case002/code/problem1_solver.py
+      role: solver
+      availability: repository
+  environment:
+    python: ">=3.10"
+    dependencies: [numpy, scipy, PyYAML, matplotlib]
+  reproduction_command: python tests/case002/code/problem1_solver.py

@@ -1,0 +1,10 @@
+schema_version: 1
+project_id: case002
+cycle_id: problem1_revision4
+current_problem: problem1
+status: waiting_for_problem1_review
+scope: problem1_only
+unlocked_problems: [problem1]
+locked_problems: [problem2, problem3, problem4, problem5]
+lock_reason: problem1 silhouette-edge VS Code simulation revision 4 review is pending
+expected_stop_status: waiting_for_problem1_review
