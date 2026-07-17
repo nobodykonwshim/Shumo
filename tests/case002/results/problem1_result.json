@@ -80,6 +80,21 @@
     "target_edge": "top far rim arc, bottom near rim arc, and two exact side tangency generators",
     "whole_surface_sampling_used": false
   },
+  "numerical_discretization": {
+    "fine_arc_interval_count_per_arc": 720,
+    "fine_arc_point_count_per_arc": 721,
+    "fine_side_height_step_m": 0.0625,
+    "fine_side_interval_count_per_generator": 160,
+    "fine_side_point_count_per_generator": 161,
+    "fine_total_edge_point_count": 1764,
+    "root_absolute_tolerance_s": 1e-11,
+    "sight_segment_minimum": "analytic clipped orthogonal projection; no samples are taken along each missile-to-edge-point segment",
+    "time_scan_steps_s": [
+      0.05,
+      0.02,
+      0.01
+    ]
+  },
   "parameters": {
     "burst_delay_s": 3.6,
     "fake_target_m": [
@@ -133,6 +148,12 @@
     "parameters": "tests/case002/registry/parameters.yaml"
   },
   "schema_version": 4,
+  "simulation_outputs": {
+    "csv": "tests/case002/results/problem1_simulation.csv",
+    "figure": "tests/case002/figures/problem1_occlusion_simulation.png",
+    "row_count": 2001,
+    "time_step_s": 0.01
+  },
   "time_scan_convergence": [
     {
       "duration_s": 1.3916430073759987,

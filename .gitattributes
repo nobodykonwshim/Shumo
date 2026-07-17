@@ -2,4 +2,5 @@
 .gitattributes text eol=lf
 skills/math_modeling/** text eol=lf
 tests/case002/** text eol=lf
+tests/case002/**/*.png binary
 tests/specs/** text eol=lf

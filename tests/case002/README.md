@@ -12,12 +12,42 @@
 判据。当前求解不建立投影平面，也不离散完整圆柱表面。模型建立段只使用符号，参数值与假设
 分别存放在登记库中。
 
-数值结果复现命令：
+## 在 VS Code 中直接运行
+
+下载并解压本分支后，用 VS Code 打开仓库根目录，并安装微软官方 Python 扩展。首次运行时执行：
+
+1. 按 `Ctrl+Shift+P`，选择 `Tasks: Run Task`；
+2. 选择 `2025A 问题一：首次安装并运行`；
+3. 后续可直接按 `F5`，选择 `2025A 问题一：运行边缘线段遮蔽仿真`。
+
+也可以打开 `tests/case002/code/problem1_solver.py`，点击 VS Code 右上角的
+“Run Python File”。程序会根据自身文件位置自动定位参数库，不要求终端当前目录位于仓库根目录。
+
+运行后自动生成：
+
+- `tests/case002/results/problem1_result.json`：完整数值结果和验证信息；
+- `tests/case002/results/problem1_simulation.csv`：烟幕有效期内按时间采样的事件函数；
+- `tests/case002/figures/problem1_occlusion_simulation.png`：最大视线段距离与烟幕半径仿真图。
+
+数值结果也会在 VS Code 终端中按小数点后六位输出。程序只离散圆柱视轮廓；对于每条
+“导弹—轮廓点”闭视线线段，球心最短距离由截断正交投影解析计算，不在线段内部取点。
+
+## 命令行复现
+
+安装依赖：
 
 ```bash
-python tests/case002/code/problem1_solver.py \
-  --output tests/case002/results/problem1_result.json
+python -m pip install -r tests/case002/code/requirements.txt
 ```
+
+直接运行，无需命令行参数：
+
+```bash
+python tests/case002/code/problem1_solver.py
+```
+
+可选参数包括 `--simulation-step`、`--show-figure`、`--no-figure`、`--output`、
+`--simulation-csv` 和 `--simulation-figure`。
 
 LaTeX 符号与结构检查：
 

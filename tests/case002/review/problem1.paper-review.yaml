@@ -1,87 +1,116 @@
 schema_version: "1.0"
-review_id: REVIEW-CASE002-P1-R3
+review_id: REVIEW-CASE002-P1-R4
 project_id: case002
 project_config_path: tests/case002/project.yaml
 problem_id: problem1
 sequence_index: 1
 previous_review_path: null
 artifacts:
-  - id: ART-P1-MODEL-R3
+  - id: ART-P1-MODEL-R4
     role: model_spec
     path: tests/case002/artifacts/modeling/problem1.model.yaml
-    sha256: 9b5795e3cfddf09356fc2c33e6be6806386ef1ff93e69b16c49188878a5342dd
-  - id: ART-P1-BLUEPRINT-R3
+    sha256: 39ed4e397c9cd790c82d5c130f9929f0f6e9884b5de51c13354800eebf86964a
+  - id: ART-P1-BLUEPRINT-R4
     role: paper_blueprint
     path: tests/case002/artifacts/architecture/problem1.paper-blueprint.yaml
     sha256: 17df2a275ea990d77309804696ceb55d98980b8e6a6ec8e033593f53293ae8b8
-  - id: ART-P1-ANALYSIS-LATEX-R3
+  - id: ART-P1-ANALYSIS-LATEX-R4
     role: latex_section
     path: tests/case002/paper/sections/02_problem_analysis/problem1.tex
     sha256: 34438f29fc26c740dc2c89a99de66a2ff12e9d0536ae52766b250d55347a59d3
-  - id: ART-P1-MODEL-LATEX-R3
+  - id: ART-P1-MODEL-LATEX-R4
     role: latex_section
     path: tests/case002/paper/sections/05_model_solution/problem1.tex
     sha256: dfcc6d187122938969429f9b9db765bbb6ae0b268581580b31c44e448365515e
-  - id: ART-P1-SOLVER-R3
+  - id: ART-P1-SOLVER-R4
     role: other
     path: tests/case002/code/problem1_solver.py
-    sha256: d2e63f6318c6e67172f28d996924796c43a0428541a6447bf416294abf48da61
-  - id: ART-P1-PAPER-CHECKER-R3
+    sha256: 77a53ceaf78ba7942dde3de665038a1c271e4dce45f488b9d23a236606979aca
+  - id: ART-P1-PAPER-CHECKER-R4
     role: other
     path: tests/case002/code/problem1_paper_check.py
     sha256: 674f9fc8872539d9d32f4a9346c3dbfb08da41d59c760aa48bbb36927a0a7c76
-  - id: ART-P1-PARAMETERS-R3
+  - id: ART-P1-REQUIREMENTS-R4
+    role: other
+    path: tests/case002/code/requirements.txt
+    sha256: e0b7a4a6c426e90a1de9c083a55754ab171303d3b048264f6c9517d6c31f098c
+  - id: ART-P1-VSCODE-LAUNCH-R4
+    role: other
+    path: .vscode/launch.json
+    sha256: caf0ea8c92bf5cefcb8066352c49831095cf52319cb3319fd106eeb0dc84395f
+  - id: ART-P1-VSCODE-TASKS-R4
+    role: other
+    path: .vscode/tasks.json
+    sha256: cbf6dcbec3878386574d2961c7146556666255dafef954615c90251ff21dc521
+  - id: ART-P1-README-R4
+    role: other
+    path: tests/case002/README.md
+    sha256: 274cd7ffc57df3bfb783cbec29f53e2278ca16e404f0617491bb4ab79ad79f45
+  - id: ART-P1-GIT-ATTRIBUTES-R4
+    role: other
+    path: .gitattributes
+    sha256: 700ccb1ffd2436a9736b1dbdfc9c0557b2803f0fec105c0e9f892f131863701b
+  - id: ART-P1-PARAMETERS-R4
     role: other
     path: tests/case002/registry/parameters.yaml
     sha256: f57c132a8d4284895a6d132e0caf0176ca62be54f606409cd1075370413a6fc7
-  - id: ART-P1-ASSUMPTIONS-R3
+  - id: ART-P1-ASSUMPTIONS-R4
     role: other
     path: tests/case002/registry/assumptions.yaml
     sha256: 03689e46811fa153e11fa55ab00baf39124a6c8d2ab5b2343e210557f92017fe
-  - id: ART-P1-FORMULAS-R3
+  - id: ART-P1-FORMULAS-R4
     role: other
     path: tests/case002/registry/formulas.yaml
     sha256: bc7e84b29457c108fe20c83f5b1c3c4130d34709dba60124d7372a839008e664
-  - id: ART-P1-MODEL-CONTRACT-R3
+  - id: ART-P1-MODEL-CONTRACT-R4
     role: other
     path: tests/case002/registry/model_contracts.yaml
     sha256: b41f809f109731912cb13b851b85b1ac52ed258d993724553e52b02f9391b8bf
-  - id: ART-P1-DEFINITION-R3
+  - id: ART-P1-DEFINITION-R4
     role: other
     path: tests/case002/review/problem1_definition_revision3.yaml
     sha256: 03513ef5f8f0fb1430d08b9d951d86cf8266e819ecf5e050251d22e6897bb548
-  - id: ART-P1-RESULT-R3
+  - id: ART-P1-RESULT-R4
     role: result
     path: tests/case002/results/problem1_result.json
-    sha256: 4dcfae5b16ed7b3f40cdca0aa7d272296ae75215a2984256c86613b0726d6bbd
-  - id: ART-P1-MODEL-CHECK-R3
+    sha256: 00376addee4a7451572822d9990d031de505bbfd3824d4edbed84cf4088a4741
+  - id: ART-P1-SIMULATION-CSV-R4
+    role: result
+    path: tests/case002/results/problem1_simulation.csv
+    sha256: 7dcbb001ad9c15b4faa53c9e7e64608f8fe1bba3411ba49f46ba43ec54be5fb2
+  - id: ART-P1-SIMULATION-FIGURE-R4
+    role: result
+    path: tests/case002/figures/problem1_occlusion_simulation.png
+    sha256: 570f0a9cb339d68d54988cb0312815a7ed6d1568294e7df11eec79b60e8ce2b6
+  - id: ART-P1-MODEL-CHECK-R4
     role: validation_evidence
     path: tests/case002/results/problem1_model_spec_check.json
-    sha256: a661d5a4f41564dcdfe6b0ddbdf2b90c0d5e3178bd4e5d4c56eba6e9ec78014b
-  - id: ART-P1-BLUEPRINT-CHECK-R3
+    sha256: 8ec34a52fa1f20967bf79411563d538bd5eb3f7f54442ba7962869825fb40133
+  - id: ART-P1-BLUEPRINT-CHECK-R4
     role: validation_evidence
     path: tests/case002/results/problem1_blueprint_check.json
-    sha256: 8053b793981b949a5569ccca6e68e9338ee8199fd1ac47feab1d643a2fd76376
-  - id: ART-P1-SYMBOLIC-CHECK-R3
+    sha256: c8c2fb84f2d31a92b162b08e1d4fff06676364b61d577bf942dd680b729851ef
+  - id: ART-P1-SYMBOLIC-CHECK-R4
     role: validation_evidence
     path: tests/case002/results/problem1_symbolic_check.json
     sha256: cfc34f3b78d2726d356a8f79aa23b93f9b45472bf388965e6d67e5d055b7dd48
-  - id: ART-P1-PAPER-CHECK-R3
+  - id: ART-P1-PAPER-CHECK-R4
     role: validation_evidence
     path: tests/case002/results/problem1_paper_static_check.json
-    sha256: 756aa5ab6f666c1990983acfb48419520a346ced88748bc92f25a925a9313330
+    sha256: 3dea3a326a1ef6bac5ea55f4f7952c97c6f7c159f12e8456f912049721b01a8b
 review:
-  revision: 3
+  revision: 4
   status: pending
   authority: user
   feedback:
-    - Revision 3 removes the perspective-projection route and uses only exact cylinder-silhouette edge sight segments.
-    - The target edge consists of the top far rim arc, bottom near rim arc and two exact side tangent generators.
-    - Final wording, formulas, numerical result and code remain pending user review.
+    - Revision 4 retains the exact silhouette-edge segment model and adds a zero-argument VS Code simulation workflow.
+    - The solver now locates registries from its own file path and exports JSON, CSV and a PNG event-function plot.
+    - Sight-segment minima remain analytic; only the two arcs and two side generators are discretized.
+    - Final paper wording, numerical presentation and simulation package remain pending user review.
   reviewed_at: null
 next_problem_id: problem2
 notes:
-  - This review covers problem 1 revision 3 only.
+  - This review covers problem 1 revision 4 only.
   - Assumptions and parameter values are registered outside LaTeX and are reused by semantic id.
   - Any change to a bound artifact requires another revision, refreshed hashes and pending status.
   - Problem 2 remains locked until this exact revision is approved.

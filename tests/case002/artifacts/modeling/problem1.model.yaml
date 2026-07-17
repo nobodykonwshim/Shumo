@@ -296,12 +296,18 @@ provenance:
       location: tests/case002/code/problem1_solver.py
       availability: repository
       role: implementation
+    - id: SRC-P1-REQUIREMENTS
+      location: tests/case002/code/requirements.txt
+      availability: repository
+      role: implementation
     - id: SRC-P1-RESULT
       location: tests/case002/results/problem1_result.json
       availability: repository
       role: evidence
   evidence_paths:
     - tests/case002/results/problem1_result.json
+    - tests/case002/results/problem1_simulation.csv
+    - tests/case002/figures/problem1_occlusion_simulation.png
     - tests/case002/review/independent_baseline.yaml
 
 human_checkpoints:
@@ -333,5 +339,5 @@ implementation:
       availability: repository
   environment:
     python: ">=3.10"
-    dependencies: [numpy, scipy]
-  reproduction_command: python tests/case002/code/problem1_solver.py --output tests/case002/results/problem1_result.json
+    dependencies: [numpy, scipy, PyYAML, matplotlib]
+  reproduction_command: python tests/case002/code/problem1_solver.py

@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
+import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Callable
@@ -12,6 +14,16 @@ from typing import Callable
 import numpy as np
 import yaml
 from scipy.optimize import brentq
+
+
+SCRIPT_PATH = Path(__file__).resolve()
+REPO_ROOT = SCRIPT_PATH.parents[3]
+CASE_ROOT = REPO_ROOT / "tests" / "case002"
+DEFAULT_PARAMETERS = CASE_ROOT / "registry" / "parameters.yaml"
+DEFAULT_ASSUMPTIONS = CASE_ROOT / "registry" / "assumptions.yaml"
+DEFAULT_RESULT = CASE_ROOT / "results" / "problem1_result.json"
+DEFAULT_SIMULATION_CSV = CASE_ROOT / "results" / "problem1_simulation.csv"
+DEFAULT_SIMULATION_FIGURE = CASE_ROOT / "figures" / "problem1_occlusion_simulation.png"
 
 
 @dataclass(frozen=True)
@@ -341,6 +353,141 @@ def edge_metrics(
     }
 
 
+def simulate_time_series(
+    p: Parameters,
+    *,
+    resolution: Resolution,
+    step_s: float,
+) -> list[dict[str, object]]:
+    """Sample the continuous-time occlusion event function for plotting/export."""
+    if step_s <= 0.0:
+        raise ValueError("simulation step must be positive")
+    start_s = burst_time(p)
+    end_s = start_s + p.smoke_active_duration_s
+    count = int(np.ceil((end_s - start_s) / step_s))
+    times = np.linspace(start_s, end_s, count + 1)
+    rows: list[dict[str, object]] = []
+    for time_s in times:
+        metrics = edge_metrics(float(time_s), resolution, p)
+        distance_m = float(metrics["max_edge_segment_distance_m"])
+        rows.append(
+            {
+                "time_s": float(time_s),
+                "max_edge_segment_distance_m": distance_m,
+                "smoke_radius_m": p.smoke_radius_m,
+                "fully_occluded": distance_m <= p.smoke_radius_m,
+                "worst_curve": str(metrics["worst_curve"]),
+            }
+        )
+    return rows
+
+
+def write_simulation_csv(path: Path, rows: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "time_s",
+        "max_edge_segment_distance_m",
+        "smoke_radius_m",
+        "fully_occluded",
+        "worst_curve",
+    ]
+    with path.open("w", encoding="utf-8-sig", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    "time_s": f"{float(row['time_s']):.6f}",
+                    "max_edge_segment_distance_m": (
+                        f"{float(row['max_edge_segment_distance_m']):.12f}"
+                    ),
+                    "smoke_radius_m": f"{float(row['smoke_radius_m']):.6f}",
+                    "fully_occluded": row["fully_occluded"],
+                    "worst_curve": row["worst_curve"],
+                }
+            )
+
+
+def write_simulation_figure(
+    path: Path,
+    rows: list[dict[str, object]],
+    *,
+    start_s: float,
+    end_s: float,
+    show: bool,
+) -> None:
+    import matplotlib
+
+    if not show:
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    times = np.asarray([row["time_s"] for row in rows], dtype=float)
+    distances = np.asarray(
+        [row["max_edge_segment_distance_m"] for row in rows], dtype=float
+    )
+    radius = float(rows[0]["smoke_radius_m"])
+    figure, axes = plt.subplots(2, 1, figsize=(10.5, 8.0), constrained_layout=True)
+
+    for axis in axes:
+        axis.plot(times, distances, color="#2155a3", linewidth=1.5, label="D(t)")
+        axis.axhline(
+            radius,
+            color="#c83e32",
+            linestyle="--",
+            linewidth=1.4,
+            label="smoke radius",
+        )
+        axis.axvspan(
+            start_s,
+            end_s,
+            color="#5aae61",
+            alpha=0.22,
+            label="full occlusion",
+        )
+        axis.scatter(
+            [start_s, end_s],
+            [radius, radius],
+            color="#c83e32",
+            s=28,
+            zorder=4,
+        )
+        axis.grid(alpha=0.25)
+        axis.set_ylabel("max segment distance D(t) / m")
+
+    axes[0].set_title("2025 CUMCM A Problem 1: smoke occlusion simulation")
+    axes[0].set_xlim(float(times[0]), float(times[-1]))
+    axes[0].legend(loc="best")
+
+    padding = max(1.0, 0.75 * (end_s - start_s))
+    zoom_left = max(float(times[0]), start_s - padding)
+    zoom_right = min(float(times[-1]), end_s + padding)
+    zoom_mask = (times >= zoom_left) & (times <= zoom_right)
+    zoom_values = distances[zoom_mask]
+    axes[1].set_xlim(zoom_left, zoom_right)
+    if zoom_values.size:
+        lower = min(float(np.min(zoom_values)), radius)
+        upper = max(float(np.max(zoom_values)), radius)
+        margin = max(0.5, 0.08 * (upper - lower))
+        axes[1].set_ylim(lower - margin, upper + margin)
+    axes[1].set_xlabel("task time t / s")
+    axes[1].set_title("Boundary-event detail")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=180)
+    if show:
+        plt.show()
+    plt.close(figure)
+
+
+def repository_display_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
 def find_positive_intervals(
     margin: Callable[[float], float],
     start_s: float,
@@ -507,6 +654,19 @@ def solve(p: Parameters) -> dict:
             "whole_surface_sampling_used": False,
             "root_method": "Brent bracketing root refinement",
         },
+        "numerical_discretization": {
+            "fine_arc_point_count_per_arc": fine.arc_count,
+            "fine_arc_interval_count_per_arc": fine.arc_count - 1,
+            "fine_side_point_count_per_generator": fine.line_count,
+            "fine_side_interval_count_per_generator": fine.line_count - 1,
+            "fine_side_height_step_m": p.target_height_m / (fine.line_count - 1),
+            "fine_total_edge_point_count": (
+                2 * fine.arc_count + 2 * fine.line_count
+            ),
+            "sight_segment_minimum": "analytic clipped orthogonal projection; no samples are taken along each missile-to-edge-point segment",
+            "time_scan_steps_s": [0.05, 0.02, 0.01],
+            "root_absolute_tolerance_s": 1.0e-11,
+        },
         "parameters": asdict(p),
         "hand_calculation": {
             "release_point_m": release.tolist(),
@@ -595,33 +755,107 @@ def solve(p: Parameters) -> dict:
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_RESULT,
+        help=f"result JSON path (default: {DEFAULT_RESULT})",
+    )
     parser.add_argument(
         "--parameters",
         type=Path,
-        default=Path("tests/case002/registry/parameters.yaml"),
+        default=DEFAULT_PARAMETERS,
     )
     parser.add_argument(
         "--assumptions",
         type=Path,
-        default=Path("tests/case002/registry/assumptions.yaml"),
+        default=DEFAULT_ASSUMPTIONS,
+    )
+    parser.add_argument(
+        "--simulation-csv",
+        type=Path,
+        default=DEFAULT_SIMULATION_CSV,
+        help=f"time-series CSV path (default: {DEFAULT_SIMULATION_CSV})",
+    )
+    parser.add_argument(
+        "--simulation-figure",
+        type=Path,
+        default=DEFAULT_SIMULATION_FIGURE,
+        help=f"simulation figure path (default: {DEFAULT_SIMULATION_FIGURE})",
+    )
+    parser.add_argument(
+        "--simulation-step",
+        type=float,
+        default=0.01,
+        help="time step for exported simulation series in seconds (default: 0.01)",
+    )
+    parser.add_argument(
+        "--no-figure",
+        action="store_true",
+        help="skip PNG generation",
+    )
+    parser.add_argument(
+        "--show-figure",
+        action="store_true",
+        help="show the figure after saving it",
     )
     args = parser.parse_args()
     parameters = load_parameters(args.parameters)
     assumption_ids = load_assumption_ids(args.assumptions)
     report = solve(parameters)
     report["registry_sources"] = {
-        "parameters": str(args.parameters.as_posix()),
-        "assumptions": str(args.assumptions.as_posix()),
+        "parameters": repository_display_path(args.parameters),
+        "assumptions": repository_display_path(args.assumptions),
         "loaded_assumption_ids": assumption_ids,
+    }
+    fine = RESOLUTIONS[-1]
+    simulation_rows = simulate_time_series(
+        parameters,
+        resolution=fine,
+        step_s=args.simulation_step,
+    )
+    write_simulation_csv(args.simulation_csv, simulation_rows)
+    coverage = report["full_edge_occlusion"]
+    if not args.no_figure:
+        write_simulation_figure(
+            args.simulation_figure,
+            simulation_rows,
+            start_s=float(coverage["start_s"]),
+            end_s=float(coverage["end_s"]),
+            show=args.show_figure,
+        )
+    report["simulation_outputs"] = {
+        "time_step_s": args.simulation_step,
+        "row_count": len(simulation_rows),
+        "csv": repository_display_path(args.simulation_csv),
+        "figure": (
+            None
+            if args.no_figure
+            else repository_display_path(args.simulation_figure)
+        ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    hand = report["hand_calculation"]
+    print("2025 CUMCM A 问题一仿真完成")
+    print(f"投放点: {tuple(hand['release_point_m'])} m")
+    print(f"起爆时刻: {float(hand['burst_absolute_time_s']):.6f} s")
+    print(f"起爆点: {tuple(hand['burst_point_m'])} m")
+    print(f"完全遮蔽开始: {float(coverage['start_s']):.6f} s")
+    print(f"完全遮蔽结束: {float(coverage['end_s']):.6f} s")
+    print(f"有效遮蔽时长: {float(coverage['duration_s']):.6f} s")
+    print(f"轮廓离散点: {fine.arc_count}×2 圆弧点 + {fine.line_count}×2 母线点")
+    print("每条导弹—轮廓点视线段使用解析最短距离，不在线段内部离散取点")
+    print(f"结果 JSON: {args.output.resolve()}")
+    print(f"仿真 CSV: {args.simulation_csv.resolve()}")
+    if not args.no_figure:
+        print(f"仿真图: {args.simulation_figure.resolve()}")
     return 0
 
 
