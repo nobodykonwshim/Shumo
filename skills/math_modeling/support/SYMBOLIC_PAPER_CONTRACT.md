@@ -41,40 +41,33 @@
 问题分析说明目标、对象关系、输入输出和求解难点，不列参数值和假设。问题模型建立保持完全
 符号化；模型求解读取登记库并说明算法；结果分析报告数值、原因、边界和问题答案。
 
-## 4. 视点投影与完整遮挡的向量表达
+## 4. 目标视轮廓与边缘视线段判别
 
-若遮挡对象具有不可忽略的空间尺度，不能只检查一个目标参考点。对视点
-\(\boldsymbol r_V(t)\)、目标点集 \(\mathcal T\) 及其登记参考点
-\(\boldsymbol r_{T,c}\)，先定义观察平面的单位法向量
+当目标为凸体且题目要求完整遮挡时，可以用视点下的闭合视轮廓代替整个目标表面。对圆柱目标，
+视轮廓由上底远侧圆弧、下底近侧圆弧及两条侧面切线母线组成。侧线端点应由“视点到圆周相切”
+条件精确确定；直接取离径向平面最远点只可作为远距离近似。
 
-\[
-\boldsymbol n(t)=
-\frac{\boldsymbol r_{T,c}-\boldsymbol r_V(t)}
-{\lVert\boldsymbol r_{T,c}-\boldsymbol r_V(t)\rVert}.
-\]
-
-选择不与 \(\boldsymbol n\) 平行的登记参考向量 \(\boldsymbol k\)，构造观察平面的两个正交
-基向量，并以三者为行组成世界坐标到视点坐标的正交矩阵 \(\boldsymbol R(t)\)。对任意空间点
-\(\boldsymbol X\)，先计算
+对视点 \(\boldsymbol r_V(t)\)、轮廓点 \(\boldsymbol X\) 和球形遮挡物中心
+\(\boldsymbol r_C(t)\)，定义
 
 \[
-\boldsymbol x_c=\boldsymbol R(t)
-[\boldsymbol X-\boldsymbol r_V(t)],
+\boldsymbol a=\boldsymbol X-\boldsymbol r_V(t),\qquad
+\boldsymbol b=\boldsymbol r_C(t)-\boldsymbol r_V(t),
 \]
 
-再用深度归一化完成透视投影。不得把忽略深度的正交投影直接当作视点成像；只有在项目模型
-给出近似条件和误差验证时才可使用该简化。
+并把球心投影到闭视线段：
 
-球形遮挡物在像平面上的边界由“视点—球体”切锥与像平面的交线给出，可写成齐次二次曲线
-\(\widetilde{\boldsymbol y}^{\mathsf T}\boldsymbol Q
-\widetilde{\boldsymbol y}=0\)。完整遮挡须同时满足：
+\[
+\lambda^*=\operatorname{clip}
+\left(\frac{\boldsymbol a^{\mathsf T}\boldsymbol b}
+{\boldsymbol a^{\mathsf T}\boldsymbol a},0,1\right),\qquad
+d=\lVert\boldsymbol b-\lambda^*\boldsymbol a\rVert.
+\]
 
-1. 目标点集的全部透视投影均落入该二次曲线的遮挡区域；
-2. 每条对应目标射线先与遮挡物相交，再到达目标点。
-
-第二个条件用于排除“遮挡物在目标之后但二维投影重合”的伪遮挡。实现时可用视线段与球的
-相交判据作为等价的数值计算器，但论文投影表述、数值等价性和验证证据必须保持一致。视点、
-目标点集、参考向量、球半径和有效期均来自项目登记库，通用 Skill 不固定题目数值。
+若轮廓中每一点对应的距离均不超过登记的烟幕半径，则轮廓被遮挡。由于目标和球形遮挡区域均为
+凸集，在适用边界成立时可由闭合轮廓推出内部视线同时被覆盖。项目必须登记轮廓构造适用条件，
+并通过圆周切线残差、边缘加密和时间步长加密验证数值稳定性。若目标非凸、遮挡区域有孔洞或
+视点穿过目标高度范围，则不得直接沿用该简化。
 
 ## 5. 检查
 

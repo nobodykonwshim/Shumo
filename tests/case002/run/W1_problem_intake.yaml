@@ -9,7 +9,7 @@ coordinate_system:
   ground_plane: z=0
   units: m
 problem1:
-  objective: calculate the interval for which the missile-view perspective projection of the true cylinder is completely covered by the smoke-sphere shadow projection, with smoke before the target on every sight ray
+  objective: calculate the interval for which every missile-to-cylinder-silhouette edge segment intersects the active smoke sphere
   prescribed_controls:
     uav: FY1
     heading: horizontally toward the fake target
@@ -20,17 +20,17 @@ problem1:
     - release_point_m
     - burst_absolute_time_s
     - burst_point_m
-    - full_projection_coverage_start_s
-    - full_projection_coverage_end_s
-    - full_projection_coverage_duration_s
+    - full_edge_occlusion_start_s
+    - full_edge_occlusion_end_s
+    - full_edge_occlusion_duration_s
   precision:
     reported_time_s: 0.001
   dependencies: []
   acceptance:
     - release and burst points agree with independent hand calculation
     - all occlusion times lie inside the 20 s post-burst active window
-    - duration changes by less than 0.001 s under denser target-boundary resolution
-    - the view rotation matrix is orthonormal within tolerance
-    - every sampled target projection lies inside the smoke conic and the corresponding ray intersects smoke before the target
+    - exact circle tangency and cylinder edge geometry residuals are within tolerance
+    - duration changes by less than 0.001 s under denser two-arc and two-generator resolution
+    - the maximum edge sight-segment distance equals the smoke radius at both event boundaries within tolerance
 other_problems:
   status: locked_pending_problem1_approval

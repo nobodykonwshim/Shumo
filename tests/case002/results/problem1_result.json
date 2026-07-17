@@ -1,45 +1,57 @@
 {
-  "definition_revision": 2,
-  "full_projection_coverage": {
-    "duration_s": 1.3916426692947468,
-    "end_s": 9.448088158701717,
-    "max_segment_distance_at_end_m": 10.000000000000549,
-    "max_segment_distance_at_start_m": 10.00000000000049,
-    "midpoint_all_projected_points_inside_smoke_conic": true,
-    "midpoint_all_rays_intersect_smoke_before_target": true,
-    "midpoint_min_projected_conic_value": 49.42267726880834,
-    "midpoint_s": 8.752266824054344,
-    "smoke_center_camera_at_midpoint_m": [
-      2.292902697774651,
-      6.646288964413366,
-      199.66322496595737
+  "definition_revision": 3,
+  "edge_resolution_convergence": [
+    {
+      "arc_count": 181,
+      "duration_change_from_previous_s": null,
+      "duration_s": 1.3916430073769988,
+      "edge_point_count": 444,
+      "end_s": 9.448088158702,
+      "line_count": 41,
+      "name": "coarse",
+      "start_s": 8.056445151325
+    },
+    {
+      "arc_count": 361,
+      "duration_change_from_previous_s": -2.740322422312147e-07,
+      "duration_s": 1.3916427333447565,
+      "edge_point_count": 884,
+      "end_s": 9.448088158701712,
+      "line_count": 81,
+      "name": "standard",
+      "start_s": 8.056445425356955
+    },
+    {
+      "arc_count": 721,
+      "duration_change_from_previous_s": -3.8305438820884774e-08,
+      "duration_s": 1.3916426950393177,
+      "edge_point_count": 1764,
+      "end_s": 9.448088158701715,
+      "line_count": 161,
+      "name": "fine",
+      "start_s": 8.056445463662397
+    }
+  ],
+  "full_edge_occlusion": {
+    "duration_s": 1.3916426950393177,
+    "end_s": 9.448088158701715,
+    "fine_edge_point_count": 1764,
+    "max_edge_segment_distance_at_end_m": 10.000000000000423,
+    "max_edge_segment_distance_at_start_m": 9.99999999999982,
+    "midpoint_max_edge_segment_distance_m": 7.111774436725244,
+    "midpoint_s": 8.752266811182057,
+    "midpoint_worst_curve": "bottom_near_arc",
+    "start_s": 8.056445463662397,
+    "worst_curve_at_end": "top_far_arc",
+    "worst_curve_at_start": "bottom_near_arc",
+    "worst_edge_point_at_end_m": [
+      0.08433810954713825,
+      206.99949191608061,
+      10.0
     ],
-    "start_s": 8.05644548940697,
-    "view_rotation_matrix_at_midpoint": [
-      [
-        -0.011501854060971537,
-        -0.9999338514887672,
-        0.0
-      ],
-      [
-        -0.09920734021657639,
-        0.00114114383391393,
-        0.9950661291783088
-      ],
-      [
-        -0.9950003070352855,
-        0.01144510539882476,
-        -0.09921390306855794
-      ]
-    ],
-    "worst_target_point_at_end_m": [
-      7.0,
-      200.0,
-      0.0
-    ],
-    "worst_target_point_at_start_m": [
-      1.3356629676358145,
-      206.87139028413364,
+    "worst_edge_point_at_start_m": [
+      1.3262401725410393,
+      206.87321518684948,
       0.0
     ]
   },
@@ -60,49 +72,13 @@
       25.1
     ]
   },
-  "mesh_convergence": [
-    {
-      "boundary_point_count": 9180,
-      "duration_change_from_previous_s": null,
-      "duration_s": 1.3916453683130001,
-      "end_s": 9.448088158702,
-      "name": "coarse",
-      "radial_count": 17,
-      "start_s": 8.056442790389,
-      "theta_count": 180,
-      "vertical_count": 17
-    },
-    {
-      "boundary_point_count": 33480,
-      "duration_change_from_previous_s": -2.6990183084052433e-06,
-      "duration_s": 1.3916426692946917,
-      "end_s": 9.448088158701712,
-      "name": "standard",
-      "radial_count": 31,
-      "start_s": 8.05644548940702,
-      "theta_count": 360,
-      "vertical_count": 31
-    },
-    {
-      "boundary_point_count": 131760,
-      "duration_change_from_previous_s": 5.5067062021407764e-14,
-      "duration_s": 1.3916426692947468,
-      "end_s": 9.448088158701717,
-      "name": "fine",
-      "radial_count": 61,
-      "start_s": 8.05644548940697,
-      "theta_count": 720,
-      "vertical_count": 61
-    }
-  ],
   "method": {
-    "camera_normal": "missile-to-target-geometric-centre sight direction",
-    "camera_origin": "missile position",
-    "equivalent_numeric_margin": "smoke radius minus maximum distance over missile-to-target-point sight segments",
-    "primary_predicate": "full target perspective projection is covered by the smoke-sphere shadow projection and every covered ray intersects smoke before the target",
-    "projection": "pinhole perspective projection through a time-dependent orthonormal view matrix",
+    "edge_construction": "horizontal radial plane through the missile and cylinder axis with exact circle tangency correction",
+    "primary_predicate": "maximum smoke-centre distance to missile-to-silhouette-edge-point segments is at most the smoke radius",
+    "projection_model_used": false,
     "root_method": "Brent bracketing root refinement",
-    "smoke_projection": "image-plane conic induced by the tangent cone from missile to smoke sphere"
+    "target_edge": "top far rim arc, bottom near rim arc, and two exact side tangency generators",
+    "whole_surface_sampling_used": false
   },
   "parameters": {
     "burst_delay_s": 3.6,
@@ -118,7 +94,6 @@
       2000.0
     ],
     "missile_speed_m_per_s": 300.0,
-    "normalized_focal_length": 1.0,
     "release_time_s": 1.5,
     "smoke_active_duration_s": 20.0,
     "smoke_radius_m": 10.0,
@@ -127,11 +102,6 @@
       0.0,
       200.0,
       0.0
-    ],
-    "target_geometric_center_m": [
-      0.0,
-      200.0,
-      5.0
     ],
     "target_height_m": 10.0,
     "target_radius_m": 7.0,
@@ -145,12 +115,7 @@
       0.0,
       1800.0
     ],
-    "uav_speed_m_per_s": 120.0,
-    "view_up": [
-      0.0,
-      0.0,
-      1.0
-    ]
+    "uav_speed_m_per_s": 120.0
   },
   "problem_id": "problem1",
   "project_id": "case002",
@@ -158,48 +123,51 @@
     "assumptions": "tests/case002/registry/assumptions.yaml",
     "loaded_assumption_ids": [
       "A-P1-BALLISTIC",
+      "A-P1-EDGE-SILHOUETTE",
       "A-P1-MISSILE-UNIFORM",
       "A-P1-NO-DRIFT",
-      "A-P1-PINHOLE-VIEW",
       "A-P1-SPHERE",
       "A-P1-TARGET-CYLINDER",
       "A-P1-UAV-UNIFORM"
     ],
     "parameters": "tests/case002/registry/parameters.yaml"
   },
-  "schema_version": 3,
+  "schema_version": 4,
   "time_scan_convergence": [
     {
-      "duration_s": 1.3916453683130001,
+      "duration_s": 1.3916430073759987,
       "end_s": 9.448088158702,
       "scan_step_s": 0.05,
-      "start_s": 8.056442790389
+      "start_s": 8.056445151326
     },
     {
-      "duration_s": 1.3916453683130001,
+      "duration_s": 1.3916430073769988,
       "end_s": 9.448088158702,
       "scan_step_s": 0.02,
-      "start_s": 8.056442790389
+      "start_s": 8.056445151325
     },
     {
-      "duration_s": 1.391645368311,
+      "duration_s": 1.3916430073759987,
       "end_s": 9.448088158702,
       "scan_step_s": 0.01,
-      "start_s": 8.056442790391
+      "start_s": 8.056445151326
     }
   ],
   "validation": {
     "all_required_checks_pass": true,
-    "boundary_residual_max_m": 5.488942633746774e-13,
+    "boundary_residual_max_m": 4.227729277772596e-13,
     "burst_point_hand_check_pass": true,
     "burst_time_hand_check_pass": true,
+    "cylinder_edge_geometry_pass": true,
+    "cylinder_radial_residual_m": 1.5987211554602254e-14,
+    "edge_resolution_change_below_0_001_s_pass": true,
+    "edge_resolution_duration_change_s": 3.8305438820884774e-08,
+    "exact_tangency_pass": true,
+    "exact_tangency_residual_m2": 1.5234036254696548e-11,
     "inside_active_window_pass": true,
-    "mesh_duration_change_below_0_001_s_pass": true,
-    "mesh_duration_change_s": 5.5067062021407764e-14,
-    "projection_containment_midpoint_pass": true,
+    "missile_above_target_pass": true,
     "release_point_hand_check_pass": true,
     "scan_duration_change_below_0_001_s_pass": true,
-    "scan_duration_change_s": 2.000177801164682e-12,
-    "view_matrix_orthonormal_residual": 1.111870541841552e-16
+    "scan_duration_change_s": 1.000088900582341e-12
   }
 }

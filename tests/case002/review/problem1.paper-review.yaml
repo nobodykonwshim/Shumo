@@ -1,78 +1,87 @@
 schema_version: "1.0"
-review_id: REVIEW-CASE002-P1-R2
+review_id: REVIEW-CASE002-P1-R3
 project_id: case002
 project_config_path: tests/case002/project.yaml
 problem_id: problem1
 sequence_index: 1
 previous_review_path: null
 artifacts:
-  - id: ART-P1-MODEL-R2
+  - id: ART-P1-MODEL-R3
     role: model_spec
     path: tests/case002/artifacts/modeling/problem1.model.yaml
-    sha256: 50f4626bd287fd9b89ae3562ec61bfbe4c08fc09cb669d26d9204e9ddde87a2e
-  - id: ART-P1-BLUEPRINT-R2
+    sha256: 9b5795e3cfddf09356fc2c33e6be6806386ef1ff93e69b16c49188878a5342dd
+  - id: ART-P1-BLUEPRINT-R3
     role: paper_blueprint
     path: tests/case002/artifacts/architecture/problem1.paper-blueprint.yaml
-    sha256: 8a34daead3c45d8bff103d1c574e3e9f2e9990113660b9f84c682eae36f80322
-  - id: ART-P1-ANALYSIS-LATEX-R2
+    sha256: 17df2a275ea990d77309804696ceb55d98980b8e6a6ec8e033593f53293ae8b8
+  - id: ART-P1-ANALYSIS-LATEX-R3
     role: latex_section
     path: tests/case002/paper/sections/02_problem_analysis/problem1.tex
-    sha256: d96ec38240b769e9ec8a07e9db07116c5a43645b650c7184808ee8754ba94eef
-  - id: ART-P1-MODEL-LATEX-R2
+    sha256: 34438f29fc26c740dc2c89a99de66a2ff12e9d0536ae52766b250d55347a59d3
+  - id: ART-P1-MODEL-LATEX-R3
     role: latex_section
     path: tests/case002/paper/sections/05_model_solution/problem1.tex
-    sha256: 997f89b851c780e6a4e3274f6a2bea8e4edce2252605af5943a093e9ca9e8609
-  - id: ART-P1-SOLVER-R2
+    sha256: dfcc6d187122938969429f9b9db765bbb6ae0b268581580b31c44e448365515e
+  - id: ART-P1-SOLVER-R3
     role: other
     path: tests/case002/code/problem1_solver.py
-    sha256: 5c463ba1d578f41da51b5522bdae720efa002699c51575036ca1e2a7c02758b9
-  - id: ART-P1-PARAMETERS-R2
+    sha256: d2e63f6318c6e67172f28d996924796c43a0428541a6447bf416294abf48da61
+  - id: ART-P1-PAPER-CHECKER-R3
+    role: other
+    path: tests/case002/code/problem1_paper_check.py
+    sha256: 674f9fc8872539d9d32f4a9346c3dbfb08da41d59c760aa48bbb36927a0a7c76
+  - id: ART-P1-PARAMETERS-R3
     role: other
     path: tests/case002/registry/parameters.yaml
-    sha256: 228410c3de5fc8ade335af75dca0c2e8be701bc4bae04b3388420f9a04258918
-  - id: ART-P1-ASSUMPTIONS-R2
+    sha256: f57c132a8d4284895a6d132e0caf0176ca62be54f606409cd1075370413a6fc7
+  - id: ART-P1-ASSUMPTIONS-R3
     role: other
     path: tests/case002/registry/assumptions.yaml
-    sha256: a9bd45b2e737f6c91686d32fe72b048deb48a09ceb5fe6267501048df3cf13d4
-  - id: ART-P1-FORMULAS-R2
+    sha256: 03689e46811fa153e11fa55ab00baf39124a6c8d2ab5b2343e210557f92017fe
+  - id: ART-P1-FORMULAS-R3
     role: other
     path: tests/case002/registry/formulas.yaml
-    sha256: 025c457e6a22875c164efb6e24a5643b6ccf0e21e9d9b6dbe87e006f833c0e0a
-  - id: ART-P1-MODEL-CONTRACT-R2
+    sha256: bc7e84b29457c108fe20c83f5b1c3c4130d34709dba60124d7372a839008e664
+  - id: ART-P1-MODEL-CONTRACT-R3
     role: other
     path: tests/case002/registry/model_contracts.yaml
-    sha256: acd675db22ac58c33ab53c06f1418a0af7a33e61113ed348a875ba929e0c4f10
-  - id: ART-P1-RESULT-R2
+    sha256: b41f809f109731912cb13b851b85b1ac52ed258d993724553e52b02f9391b8bf
+  - id: ART-P1-DEFINITION-R3
+    role: other
+    path: tests/case002/review/problem1_definition_revision3.yaml
+    sha256: 03513ef5f8f0fb1430d08b9d951d86cf8266e819ecf5e050251d22e6897bb548
+  - id: ART-P1-RESULT-R3
     role: result
     path: tests/case002/results/problem1_result.json
-    sha256: 175ca7cbd5d9a75a801884b7ff4c0f4b58867278f06fc75ded391ed4c97368f3
-  - id: ART-P1-MODEL-CHECK-R2
+    sha256: 4dcfae5b16ed7b3f40cdca0aa7d272296ae75215a2984256c86613b0726d6bbd
+  - id: ART-P1-MODEL-CHECK-R3
     role: validation_evidence
     path: tests/case002/results/problem1_model_spec_check.json
     sha256: a661d5a4f41564dcdfe6b0ddbdf2b90c0d5e3178bd4e5d4c56eba6e9ec78014b
-  - id: ART-P1-BLUEPRINT-CHECK-R2
+  - id: ART-P1-BLUEPRINT-CHECK-R3
     role: validation_evidence
     path: tests/case002/results/problem1_blueprint_check.json
-    sha256: 08d1f378abda2cc4ef342c40961bb4cfa783d5680b60e9bd21de2a141de69e47
-  - id: ART-P1-SYMBOLIC-CHECK-R2
+    sha256: 8053b793981b949a5569ccca6e68e9338ee8199fd1ac47feab1d643a2fd76376
+  - id: ART-P1-SYMBOLIC-CHECK-R3
     role: validation_evidence
     path: tests/case002/results/problem1_symbolic_check.json
-    sha256: 481e64f1b07fc61f4badd86f2badd81eebf55a83650a67032358709596d080db
-  - id: ART-P1-PAPER-CHECK-R2
+    sha256: cfc34f3b78d2726d356a8f79aa23b93f9b45472bf388965e6d67e5d055b7dd48
+  - id: ART-P1-PAPER-CHECK-R3
     role: validation_evidence
     path: tests/case002/results/problem1_paper_static_check.json
-    sha256: da5eb73694cdef6e0f3d8c30174b87b3da74b8c9ba308a9ea91746e37ef51992
+    sha256: 756aa5ab6f666c1990983acfb48419520a346ced88748bc92f25a925a9313330
 review:
-  revision: 2
+  revision: 3
   status: pending
   authority: user
   feedback:
-    - Revision 2 replaces the first draft with the user-approved missile-view perspective projection definition and symbolic paper structure.
-    - Final wording, formulas and numerical result remain pending user review.
+    - Revision 3 removes the perspective-projection route and uses only exact cylinder-silhouette edge sight segments.
+    - The target edge consists of the top far rim arc, bottom near rim arc and two exact side tangent generators.
+    - Final wording, formulas, numerical result and code remain pending user review.
   reviewed_at: null
 next_problem_id: problem2
 notes:
-  - This review covers problem 1 revision 2 only.
+  - This review covers problem 1 revision 3 only.
   - Assumptions and parameter values are registered outside LaTeX and are reused by semantic id.
   - Any change to a bound artifact requires another revision, refreshed hashes and pending status.
   - Problem 2 remains locked until this exact revision is approved.

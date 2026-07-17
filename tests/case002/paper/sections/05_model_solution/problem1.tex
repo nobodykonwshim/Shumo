@@ -1,4 +1,4 @@
-% 第5章模型建立与求解中的问题一片段（revision 2）
+% 第五章模型建立与求解中的问题一片段（revision 3）
 \providecommand{\PoneReleasePoint}{(17620,\,0,\,1800)}
 \providecommand{\PoneBurstTime}{5.1}
 \providecommand{\PoneBurstPoint}{(17188,\,0,\,1736.496)}
@@ -16,9 +16,9 @@
 \paragraph{运动状态的向量表示}
 
 记假目标位置为 $\boldsymbol r_O$，导弹和无人机的初始位置分别为
-$\boldsymbol r_{M,0}$ 与 $\boldsymbol r_{F,0}$；其速度大小分别记为 $v_M$ 与 $v_F$，
-无人机航向单位向量记为 $\boldsymbol e_F$。导弹指向假目标的单位向量为
-$\boldsymbol e_M$，则两者的运动方程为
+$\boldsymbol r_{M,0}$ 和 $\boldsymbol r_{F,0}$，二者速度大小分别为 $v_M$ 和 $v_F$，
+无人机航向单位向量为 $\boldsymbol e_F$。导弹指向假目标的单位向量记为
+$\boldsymbol e_M$，则运动方程为
 \begin{equation}
   \boldsymbol e_M=
   \frac{\boldsymbol r_O-\boldsymbol r_{M,0}}
@@ -31,140 +31,116 @@ $\boldsymbol e_M$，则两者的运动方程为
   \label{eq:p1-motion}
 \end{equation}
 
-设烟幕弹投放时刻为 $t_d$，投放至起爆的延迟为 $\tau_b$，因而
-$t_b=t_d+\tau_b$。以 $\boldsymbol e_z$ 表示竖直向上的单位向量，烟幕弹投放点及起爆前
-的轨迹写为
+设烟幕弹投放时刻为 $t_d$，投放至起爆的延迟为 $\tau_b$，故
+$t_b=t_d+\tau_b$。以 $\boldsymbol e_z$ 表示竖直向上的单位向量，烟幕弹投放点及
+起爆前轨迹为
 \begin{equation}
-  \boldsymbol r_d=\boldsymbol r_F(t_d),\qquad
+  \boldsymbol r_d=\boldsymbol r_F(t_d),
+  \qquad
   \boldsymbol r_B(t)=\boldsymbol r_d
   +v_F(t-t_d)\boldsymbol e_F
-  -\frac{1}{2}g(t-t_d)^2\boldsymbol e_z ,
-  \quad t_d\le t\le t_b .
+  -\frac{1}{2}g(t-t_d)^2\boldsymbol e_z,
+  \quad t_d\le t\le t_b.
   \label{eq:p1-bomb}
 \end{equation}
 记起爆点为 $\boldsymbol r_b=\boldsymbol r_B(t_b)$，烟幕球心下沉速度为 $v_s$，
-有效持续时间为 $T_e$，则烟幕球心满足
+有效持续时间为 $T_e$，则起爆后烟幕球心满足
 \begin{equation}
   \boldsymbol r_C(t)=\boldsymbol r_b-v_s(t-t_b)\boldsymbol e_z,
-  \qquad t_b\le t\le t_b+T_e .
+  \qquad t_b\le t\le t_b+T_e.
   \label{eq:p1-smoke}
 \end{equation}
 
-\paragraph{导弹视点下的观测平面}
+\paragraph{圆柱视轮廓的精确构造}
 
-记真目标几何中心为 $\boldsymbol r_{T,c}$，选取不与视线平行的参考向量
-$\boldsymbol k$。观测平面的法向量、水平基向量和竖直基向量分别为
+记真目标下底面圆心为 $\boldsymbol r_{T,0}$、半径为 $R_T$、高度为 $H_T$，并令
+$\boldsymbol P_h=\boldsymbol I-\boldsymbol e_z\boldsymbol e_z^{\mathsf T}$ 为水平投影算子。
+导弹与圆柱轴线确定的竖直径向平面，其水平径向、横向单位向量及圆截面切点角分别为
+\begin{equation}
+  \begin{gathered}
+    \boldsymbol q(t)=\boldsymbol P_h
+    [\boldsymbol r_M(t)-\boldsymbol r_{T,0}],
+    \qquad \rho(t)=\lVert\boldsymbol q(t)\rVert,\\
+    \boldsymbol e_r(t)=\frac{\boldsymbol q(t)}{\rho(t)},
+    \qquad \boldsymbol e_t(t)=\boldsymbol e_z\times\boldsymbol e_r(t),
+    \qquad \alpha(t)=\arccos\!\frac{R_T}{\rho(t)}.
+  \end{gathered}
+  \label{eq:p1-edge-basis}
+\end{equation}
+其中 $\boldsymbol e_t$ 同时垂直于竖直径向平面和水平面内的径向方向。
+$\alpha(t)$ 由外点到圆的切线条件精确确定，而非采用远距离近似。
+
+以
 \[
-  \boldsymbol n(t)=
-  \frac{\boldsymbol r_{T,c}-\boldsymbol r_M(t)}
-       {\lVert\boldsymbol r_{T,c}-\boldsymbol r_M(t)\rVert},
-  \qquad
-  \boldsymbol e_h(t)=
-  \frac{\boldsymbol k\times\boldsymbol n(t)}
-       {\lVert\boldsymbol k\times\boldsymbol n(t)\rVert},
-  \qquad
-  \boldsymbol e_v(t)=\boldsymbol n(t)\times\boldsymbol e_h(t).
+  \boldsymbol X(z,\theta,t)=\boldsymbol r_{T,0}+z\boldsymbol e_z
+  +R_T[\cos\theta\,\boldsymbol e_r(t)+\sin\theta\,\boldsymbol e_t(t)]
 \]
-由此得到世界坐标到导弹相机坐标的正交变换矩阵
+表示圆柱表面点。本题运动区间内导弹位于目标上方，故圆柱视轮廓由上底面背向圆弧、
+下底面朝向圆弧以及两条侧切母线构成：
 \begin{equation}
-  \boldsymbol R(t)=
-  \begin{bmatrix}
-    \boldsymbol e_h^{\mathsf T}(t)\\
-    \boldsymbol e_v^{\mathsf T}(t)\\
-    \boldsymbol n^{\mathsf T}(t)
-  \end{bmatrix},
-  \qquad
-  \boldsymbol R(t)\boldsymbol R^{\mathsf T}(t)=\boldsymbol I .
-  \label{eq:p1-view-matrix}
+  \begin{aligned}
+  \Gamma(t)&=\Gamma_{\mathrm{tf}}(t)\cup
+  \Gamma_{\mathrm{bn}}(t)\cup\Gamma_{+}(t)\cup\Gamma_{-}(t),\\
+  \Gamma_{\mathrm{tf}}(t)&=
+  \{\boldsymbol X(H_T,\theta,t):\alpha(t)\le\theta\le2\pi-\alpha(t)\},\\
+  \Gamma_{\mathrm{bn}}(t)&=
+  \{\boldsymbol X(0,\theta,t):-\alpha(t)\le\theta\le\alpha(t)\},\\
+  \Gamma_{\pm}(t)&=
+  \{\boldsymbol X(z,\pm\alpha(t),t):0\le z\le H_T\}.
+  \end{aligned}
+  \label{eq:p1-edge-set}
 \end{equation}
 
-\paragraph{三维目标的二维透视投影}
+\paragraph{边缘视线段的遮蔽判据}
 
-对任意空间点 $\boldsymbol X$，其相机坐标记为
-$\boldsymbol x_c=(x_c,y_c,z_c)^{\mathsf T}
-=\boldsymbol R(t)[\boldsymbol X-\boldsymbol r_M(t)]$。
-取像平面焦距尺度为 $f$，则该点的齐次二维投影为
+对任意轮廓点 $\boldsymbol X\in\Gamma(t)$，记导弹至该点的视线段方向和导弹至烟幕
+球心的向量分别为
+$\boldsymbol a=\boldsymbol X-\boldsymbol r_M(t)$、
+$\boldsymbol b=\boldsymbol r_C(t)-\boldsymbol r_M(t)$。
+将烟幕球心在视线所在直线上的投影参数截断到闭线段，可得
 \begin{equation}
-  \widetilde{\boldsymbol y}(\boldsymbol X,t)=
-  \begin{bmatrix}
-    f x_c/z_c\\
-    f y_c/z_c\\
-    1
-  \end{bmatrix}
-  =\frac{1}{z_c}\boldsymbol K\boldsymbol R(t)
-  [\boldsymbol X-\boldsymbol r_M(t)],
+  \lambda_{\boldsymbol X}(t)=
+  \min\!\left\{1,\max\!\left\{0,
+  \frac{\boldsymbol a^{\mathsf T}\boldsymbol b}
+       {\boldsymbol a^{\mathsf T}\boldsymbol a}\right\}\right\},
   \qquad
-  \boldsymbol K=\operatorname{diag}(f,f,1).
-  \label{eq:p1-perspective}
+  d(\boldsymbol X,t)=
+  \left\lVert\boldsymbol b-\lambda_{\boldsymbol X}(t)\boldsymbol a\right\rVert.
+  \label{eq:p1-segment-distance}
 \end{equation}
-式\eqref{eq:p1-perspective}中的深度归一化使远近物体具有正确的视角尺度。将真目标点集记为
-$\mathcal T$，则其像平面投影集合为
-$\Omega_T(t)=\{\widetilde{\boldsymbol y}(\boldsymbol X,t):
-\boldsymbol X\in\mathcal T\}$。
-
-\paragraph{烟幕投影及完整覆盖判据}
-
-将烟幕球心转换到相机坐标系，记
-$\boldsymbol c(t)=\boldsymbol R(t)[\boldsymbol r_C(t)-\boldsymbol r_M(t)]$。
-由导弹视点到烟幕球的切锥可得像平面二次曲线矩阵
+式\eqref{eq:p1-segment-distance}中的截断保证最近点确实位于导弹与目标轮廓点之间，
+因而不会将目标后方烟幕造成的直线重合误判为有效遮蔽。定义最不利轮廓视线段距离
 \begin{equation}
-  \boldsymbol Q(t)=\boldsymbol K^{-\mathsf T}
-  \left[
-    \boldsymbol c(t)\boldsymbol c^{\mathsf T}(t)
-    -\bigl(\boldsymbol c^{\mathsf T}(t)\boldsymbol c(t)-R_s^2\bigr)
-     \boldsymbol I
-  \right]\boldsymbol K^{-1}.
-  \label{eq:p1-smoke-conic}
+  D(t)=\max_{\boldsymbol X\in\Gamma(t)}d(\boldsymbol X,t),
+  \qquad D(t)\le R_s,
+  \label{eq:p1-edge-coverage}
 \end{equation}
-因此，烟幕在像平面上的遮挡区域为
-\[
-  \Omega_S(t)=
-  \left\{\widetilde{\boldsymbol y}:
-  \widetilde{\boldsymbol y}^{\mathsf T}
-  \boldsymbol Q(t)\widetilde{\boldsymbol y}\ge0\right\}.
-\]
-
-仅有二维包含关系还不足以保证遮挡，因为烟幕可能位于目标之后。对目标点
-$\boldsymbol X$ 的投影，令
-$\boldsymbol d=\boldsymbol K^{-1}\widetilde{\boldsymbol y}(\boldsymbol X,t)$，
-其相机深度为 $z_c$。该目标射线在到达目标前与烟幕球相交，当且仅当存在
-$s\in[0,z_c]$ 使 $\lVert s\boldsymbol d-\boldsymbol c(t)\rVert\le R_s$。
-据此定义完整遮蔽判据
+其中 $R_s$ 为烟幕球半径。式\eqref{eq:p1-edge-coverage}成立时，全部轮廓视线段均与
+烟幕球相交，判定真目标被完全遮蔽。有效遮蔽时间集合及其时长为
 \begin{equation}
-  \Omega_T(t)\subseteq\Omega_S(t),
-  \qquad
-  \forall\,\boldsymbol X\in\mathcal T,
-  \exists\,s\in[0,z_c]:
-  \lVert s\boldsymbol d-\boldsymbol c(t)\rVert\le R_s .
-  \label{eq:p1-coverage}
-\end{equation}
-式\eqref{eq:p1-coverage}等价于对目标中每一点检查“导弹—目标点”视线段是否与烟幕球相交，
-但二维投影形式能够直接表示导弹视野中的完全覆盖关系。有效遮蔽集合及其持续时间为
-\begin{equation}
-  \mathcal I=
-  \left\{t\in[t_b,t_b+T_e]:\text{式\eqref{eq:p1-coverage}成立}\right\},
-  \qquad
-  \Delta t=\operatorname{meas}(\mathcal I).
+  \mathcal I=\{t\in[t_b,t_b+T_e]:D(t)\le R_s\},
+  \qquad \Delta t=\operatorname{meas}(\mathcal I).
   \label{eq:p1-duration}
 \end{equation}
 % SHUMO-SYMBOLIC-MODEL-END
 
 \subsubsection{模型求解}
 
-求解时，从参数登记库读取问题一参数集合，并从假设登记库载入对应的运动和投影边界，不在正文中
-重复列示。首先依据式\eqref{eq:p1-motion}、式\eqref{eq:p1-bomb}和式\eqref{eq:p1-smoke}计算导弹位置、投放点、起爆点
-和烟幕球心；随后由式\eqref{eq:p1-view-matrix}建立随导弹运动变化的观测坐标系，并按
-式\eqref{eq:p1-perspective}将圆柱目标边界投影至二维像平面。
+求解时，程序从参数登记库和假设登记库读取问题一所需数据，不在模型建立部分重复写入
+题设数值。首先依据式\eqref{eq:p1-motion}、式\eqref{eq:p1-bomb}和式\eqref{eq:p1-smoke}
+计算导弹、烟幕弹与烟幕球心的时变位置；随后依据式\eqref{eq:p1-edge-basis}计算精确切点角，
+并按式\eqref{eq:p1-edge-set}分别离散两段圆弧和两条侧切母线。
 
-对每个计算时刻，根据式\eqref{eq:p1-smoke-conic}形成烟幕遮挡二次曲线，逐点检查目标投影的
-二次型符号及烟幕—目标深度顺序。对烟幕有效期进行时间扫描，发现覆盖状态变化后使用有界求根法
-求精开始和结束时刻。计算中同步加密时间步长与圆柱侧面、上下底面的离散网格，并检查视图矩阵的
-正交残差、投影包含关系和边界距离残差。
+对每个候选时刻，利用式\eqref{eq:p1-segment-distance}向量化计算全部边缘视线段的最近距离，
+取其最大值形成式\eqref{eq:p1-edge-coverage}的事件函数。程序先在烟幕有效期内扫描事件函数，
+再采用有界求根方法求精遮蔽开始与结束时刻。为验证结果稳定性，分别加密时间扫描步长、圆弧
+离散点和侧切母线离散点，并检查圆截面切点的正交残差、轮廓点圆柱几何残差以及两个事件边界
+处的距离残差。上述检验均满足预设容差。
 
 \begin{table}[htbp]
   \centering
-  \caption{问题一投放、起爆与有效遮蔽结果}
-  \label{tab:p1-projection-results}
+  \caption{问题一投放、起爆与边缘线段遮蔽结果}
+  \label{tab:p1-edge-results}
   \begin{tabular}{lc}
     \toprule
     指标 & 计算结果 \\
@@ -172,8 +148,8 @@ $s\in[0,z_c]$ 使 $\lVert s\boldsymbol d-\boldsymbol c(t)\rVert\le R_s$。
     烟幕弹投放点/$\mathrm m$ & $\PoneReleasePoint$ \\
     绝对起爆时刻/$\mathrm s$ & $\PoneBurstTime$ \\
     烟幕弹起爆点/$\mathrm m$ & $\PoneBurstPoint$ \\
-    完整投影遮蔽开始时刻/$\mathrm s$ & $\PoneCoverageStart$ \\
-    完整投影遮蔽结束时刻/$\mathrm s$ & $\PoneCoverageEnd$ \\
+    完全遮蔽开始时刻/$\mathrm s$ & $\PoneCoverageStart$ \\
+    完全遮蔽结束时刻/$\mathrm s$ & $\PoneCoverageEnd$ \\
     有效遮蔽时长/$\mathrm s$ & $\PoneCoverageDuration$ \\
     \bottomrule
   \end{tabular}
@@ -181,13 +157,12 @@ $s\in[0,z_c]$ 使 $\lVert s\boldsymbol d-\boldsymbol c(t)\rVert\le R_s$。
 
 \subsubsection{结果分析}
 
-由式\eqref{eq:p1-duration}及表\ref{tab:p1-projection-results}可知，在导弹视点下，烟幕投影从任务开始后的
-$\PoneCoverageStart\,\mathrm s$ 起能够完全覆盖真目标投影，并在
-$\PoneCoverageEnd\,\mathrm s$ 后失去完整覆盖，因此问题一的有效遮蔽时长为
+由式\eqref{eq:p1-duration}和表\ref{tab:p1-edge-results}可知，烟幕从任务开始后的
+$\PoneCoverageStart\,\mathrm s$ 起能够遮蔽全部目标视轮廓，并在
+$\PoneCoverageEnd\,\mathrm s$ 后失去完全遮蔽能力，因此问题一的有效遮蔽时长为
 $\boxed{\PoneCoverageDuration\,\mathrm s}$。
 
-遮蔽开始边界由圆柱投影中最不利边缘射线与烟幕投影边界相切决定；随着导弹继续接近烟幕，
-目标投影进入烟幕切锥内部，从而形成完整覆盖。遮蔽结束时，导弹到达烟幕球边界附近，随后导弹
-越过烟幕，烟幕不再位于导弹与目标之间，因此深度条件先于单纯的二维重叠关系失效。加密计算表明，
-时间步长和目标边界网格的变化均不足以改变三位小数结果，且视图矩阵正交残差与覆盖边界残差均在
-预设容差内。
+遮蔽开始边界的最不利视线来自下底面朝向圆弧，遮蔽结束边界的最不利视线来自上底面背向
+圆弧，说明上下圆弧而非侧切母线控制了本算例的两个临界时刻。边缘离散加密后，时长变化远小于
+结果保留精度；两端事件函数的距离残差、精确切点残差及圆柱轮廓几何残差也均处于数值容差内，
+表明所报三位小数结果稳定。该结论对应当前采用的“圆柱视轮廓边缘线段全部与烟幕球相交”判据。

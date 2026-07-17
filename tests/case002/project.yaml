@@ -58,9 +58,11 @@ modeling:
   validation_required:
     - hand_calculation
     - active_window_check
-    - discretization_convergence
-    - view_matrix_orthonormality
-    - projection_containment_and_depth_order
+    - exact_tangency_check
+    - silhouette_edge_geometry_check
+    - time_scan_convergence
+    - edge_resolution_convergence
+    - event_boundary_residual
 
 paper_architecture:
   equation_numbering: global

@@ -166,7 +166,8 @@ capabilities:
     limits:
       - numeric-literal checks detect direct substitutions but cannot prove every symbol is registered
       - structural mathematical constants remain allowed inside the symbolic model block
-      - chapter placement and the choice of target reference point remain project-level decisions
+      - silhouette-edge reduction is valid only after the project records its convexity and viewpoint conditions
+      - chapter placement and the choice of target boundary representation remain project-level decisions
 
   - capability_id: agent_admission
     name: bounded agent admission and runtime token

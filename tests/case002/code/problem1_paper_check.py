@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static and numerical consistency checks for problem-1 revision-2 LaTeX."""
+"""Static and numerical consistency checks for problem-1 revision-3 LaTeX."""
 
 from __future__ import annotations
 
@@ -14,12 +14,12 @@ REQUIRED_LABELS = {
     "eq:p1-motion",
     "eq:p1-bomb",
     "eq:p1-smoke",
-    "eq:p1-view-matrix",
-    "eq:p1-perspective",
-    "eq:p1-smoke-conic",
-    "eq:p1-coverage",
+    "eq:p1-edge-basis",
+    "eq:p1-edge-set",
+    "eq:p1-segment-distance",
+    "eq:p1-edge-coverage",
     "eq:p1-duration",
-    "tab:p1-projection-results",
+    "tab:p1-edge-results",
 }
 
 ANALYSIS_HEADINGS = (
@@ -138,7 +138,7 @@ def check(
         )
 
     macros = extract_macros(model)
-    coverage = result["full_projection_coverage"]
+    coverage = result["full_edge_occlusion"]
     expected_results = {
         "PoneCoverageStart": rounded(coverage["start_s"]),
         "PoneCoverageEnd": rounded(coverage["end_s"]),
@@ -203,11 +203,10 @@ def check(
                 [label for label in labels if label.startswith("eq:")]
             ),
             "result_macros_checked": len(expected_results),
-            "coverage_duration_s": coverage["duration_s"],
+            "edge_occlusion_duration_s": coverage["duration_s"],
             "symbolic_contract_status": symbolic["status"],
-            "projection_containment_pass": validation.get(
-                "projection_containment_midpoint_pass"
-            ),
+            "exact_tangency_pass": validation.get("exact_tangency_pass"),
+            "edge_geometry_pass": validation.get("cylinder_edge_geometry_pass"),
         },
     }
 

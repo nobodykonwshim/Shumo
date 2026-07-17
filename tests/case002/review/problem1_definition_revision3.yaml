@@ -1,0 +1,31 @@
+schema_version: 1
+project_id: case002
+problem_id: problem1
+definition_revision: 3
+status: approved_for_modeling_and_redraft
+authority: user
+decision:
+  primary_method: silhouette_edge_segment_distance
+  target_edge:
+    - top_far_rim_arc
+    - bottom_near_rim_arc
+    - positive_side_tangent_generator
+    - negative_side_tangent_generator
+  occlusion_test: the smoke-centre distance to every closed missile-to-edge-point segment is at most the smoke radius
+  projection_plane_used: false
+  whole_target_surface_sampling_used: false
+geometry_refinement:
+  requested_construction: the missile and cylinder axis define a vertical radial plane and the boundary consists of two arcs and two side lines
+  implemented_correction: arc endpoints and side generators use exact external-point circle tangency rather than the farthest-from-radial-plane approximation
+writing_requirements:
+  chapter_2: problem analysis only
+  chapter_5:
+    - problem_model_establishment
+    - model_solution
+    - result_analysis
+  model_formulas: symbolic_only
+  parameter_values_and_assumptions: registry_only
+  complete_code: repository
+does_not_approve:
+  - problem1_revision3_paper_result
+  - problem2_unlock

@@ -1,10 +1,10 @@
 schema_version: 1
 project_id: case002
-cycle_id: problem1_revision2
+cycle_id: problem1_revision3
 current_problem: problem1
 status: waiting_for_problem1_review
 scope: problem1_only
 unlocked_problems: [problem1]
 locked_problems: [problem2, problem3, problem4, problem5]
-lock_reason: problem1 projection-model revision 2 review is pending
+lock_reason: problem1 silhouette-edge segment model revision 3 review is pending
 expected_stop_status: waiting_for_problem1_review

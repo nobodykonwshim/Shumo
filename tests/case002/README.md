@@ -6,9 +6,11 @@
 原始 PDF、Excel 和 Word 二进制材料位于 gitignored 的 `local/problem/`。仓库只跟踪
 `problem/source_manifest.yaml` 中的结构、字节数和 SHA-256，不公开复制用户本地材料。
 
-问题一 revision 2 采用导弹视点下的透视投影：观察平面垂直于导弹—目标中心视线，
-烟幕球的切锥在像平面上形成二次曲线；只有完整目标投影被覆盖且烟幕位于每条目标射线前方时，
-才计为有效遮蔽。模型建立段只使用符号，参数值与假设分别存放在登记库中。
+问题一 revision 3 仅采用圆柱视轮廓边缘线段判别法。导弹与圆柱轴线确定竖直径向平面，
+目标视轮廓由上底面背向圆弧、下底面朝向圆弧以及两条精确侧切母线组成。程序对这些边缘点
+计算烟幕球心到“导弹—边缘点”闭线段的最短距离，并以最大距离不超过烟幕半径作为完整遮蔽
+判据。当前求解不建立投影平面，也不离散完整圆柱表面。模型建立段只使用符号，参数值与假设
+分别存放在登记库中。
 
 数值结果复现命令：
 
@@ -30,6 +32,7 @@ python tests/case002/code/problem1_paper_check.py \
   --analysis-tex tests/case002/paper/sections/02_problem_analysis/problem1.tex \
   --model-tex tests/case002/paper/sections/05_model_solution/problem1.tex \
   --result tests/case002/results/problem1_result.json \
+  --repo-root . \
   --output tests/case002/results/problem1_paper_static_check.json
 ```
 

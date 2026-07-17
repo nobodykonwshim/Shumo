@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Solve 2025 CUMCM A problem 1 with a perspective-projection coverage model."""
+"""Solve 2025 CUMCM A problem 1 with the cylinder-silhouette edge test."""
 
 from __future__ import annotations
 
@@ -31,9 +31,6 @@ class Parameters:
     target_bottom_center_m: tuple[float, float, float]
     target_radius_m: float
     target_height_m: float
-    target_geometric_center_m: tuple[float, float, float]
-    view_up: tuple[float, float, float]
-    normalized_focal_length: float
 
 
 PARAMETER_IDS = {
@@ -52,9 +49,6 @@ PARAMETER_IDS = {
     "target_bottom_center_m": "PAR-TARGET-BOTTOM-CENTER",
     "target_radius_m": "PAR-TARGET-RADIUS",
     "target_height_m": "PAR-TARGET-HEIGHT",
-    "target_geometric_center_m": "PAR-TARGET-GEOMETRIC-CENTER",
-    "view_up": "PAR-VIEW-UP",
-    "normalized_focal_length": "PAR-NORMALIZED-FOCAL-LENGTH",
 }
 
 VECTOR_FIELDS = {
@@ -63,8 +57,6 @@ VECTOR_FIELDS = {
     "uav_initial_m",
     "uav_direction",
     "target_bottom_center_m",
-    "target_geometric_center_m",
-    "view_up",
 }
 
 REQUIRED_ASSUMPTION_IDS = {
@@ -74,7 +66,7 @@ REQUIRED_ASSUMPTION_IDS = {
     "A-P1-NO-DRIFT",
     "A-P1-SPHERE",
     "A-P1-TARGET-CYLINDER",
-    "A-P1-PINHOLE-VIEW",
+    "A-P1-EDGE-SILHOUETTE",
 }
 
 
@@ -104,17 +96,7 @@ def load_parameters(path: Path) -> Parameters:
             values[field] = tuple(float(value) for value in raw)
         else:
             values[field] = float(raw)
-    parameters = Parameters(**values)
-
-    derived_center = np.asarray(parameters.target_bottom_center_m, dtype=float).copy()
-    derived_center[2] += 0.5 * parameters.target_height_m
-    if not np.allclose(
-        derived_center,
-        np.asarray(parameters.target_geometric_center_m, dtype=float),
-        atol=1.0e-12,
-    ):
-        raise ValueError("registered target geometric centre is inconsistent with cylinder geometry")
-    return parameters
+    return Parameters(**values)
 
 
 def load_assumption_ids(path: Path) -> list[str]:
@@ -134,17 +116,16 @@ def load_assumption_ids(path: Path) -> list[str]:
 
 
 @dataclass(frozen=True)
-class Mesh:
+class Resolution:
     name: str
-    theta_count: int
-    vertical_count: int
-    radial_count: int
+    arc_count: int
+    line_count: int
 
 
-MESHES = (
-    Mesh("coarse", 180, 17, 17),
-    Mesh("standard", 360, 31, 31),
-    Mesh("fine", 720, 61, 61),
+RESOLUTIONS = (
+    Resolution("coarse", 181, 41),
+    Resolution("standard", 361, 81),
+    Resolution("fine", 721, 161),
 )
 
 
@@ -175,9 +156,15 @@ def bomb_position(t_s: float, p: Parameters) -> np.ndarray:
     if t_s < p.release_time_s:
         raise ValueError("bomb motion is only defined after release")
     tau = t_s - p.release_time_s
-    inherited_velocity = p.uav_speed_m_per_s * unit(np.asarray(p.uav_direction, dtype=float))
+    inherited_velocity = p.uav_speed_m_per_s * unit(
+        np.asarray(p.uav_direction, dtype=float)
+    )
     gravity = np.array([0.0, 0.0, -p.gravity_m_per_s2])
-    return uav_position(p.release_time_s, p) + inherited_velocity * tau + 0.5 * gravity * tau**2
+    return (
+        uav_position(p.release_time_s, p)
+        + inherited_velocity * tau
+        + 0.5 * gravity * tau**2
+    )
 
 
 def smoke_center(t_s: float, p: Parameters) -> np.ndarray:
@@ -190,81 +177,136 @@ def smoke_center(t_s: float, p: Parameters) -> np.ndarray:
     return center
 
 
-def target_geometric_center(p: Parameters) -> np.ndarray:
-    return np.asarray(p.target_geometric_center_m, dtype=float)
+def circle_points(
+    bottom: np.ndarray,
+    height_m: float,
+    radius_m: float,
+    radial: np.ndarray,
+    transverse: np.ndarray,
+    angles: np.ndarray,
+) -> np.ndarray:
+    horizontal = radius_m * (
+        np.cos(angles)[:, None] * radial
+        + np.sin(angles)[:, None] * transverse
+    )
+    points = bottom + horizontal
+    points[:, 2] += height_m
+    return points
 
 
-def cylinder_boundary_points(mesh: Mesh, p: Parameters) -> np.ndarray:
-    """Sample the side and both caps of the fixed target cylinder."""
-    theta = np.linspace(0.0, 2.0 * np.pi, mesh.theta_count, endpoint=False)
+def cylinder_silhouette_edges(
+    t_s: float,
+    resolution: Resolution,
+    p: Parameters,
+) -> dict[str, object]:
+    """Return the exact two rim arcs and two side tangency generators."""
+    missile = missile_position(t_s, p)
     bottom = np.asarray(p.target_bottom_center_m, dtype=float)
-    z_values = np.linspace(0.0, p.target_height_m, mesh.vertical_count)
-    theta_side, z_side = np.meshgrid(theta, z_values, indexing="ij")
-    side = np.column_stack(
+    vertical = np.array([0.0, 0.0, 1.0])
+    horizontal_to_missile = missile - bottom
+    horizontal_to_missile[2] = 0.0
+    horizontal_distance = float(np.linalg.norm(horizontal_to_missile))
+    if horizontal_distance <= p.target_radius_m:
+        raise ValueError("missile horizontal projection lies inside the target cylinder")
+    if missile[2] <= bottom[2] + p.target_height_m:
+        raise ValueError("two-arc silhouette selection requires the missile above the cylinder")
+
+    radial = horizontal_to_missile / horizontal_distance
+    transverse = unit(np.cross(vertical, radial))
+    tangent_angle = float(np.arccos(p.target_radius_m / horizontal_distance))
+
+    top_far_angles = np.linspace(
+        tangent_angle,
+        2.0 * np.pi - tangent_angle,
+        resolution.arc_count,
+    )
+    bottom_near_angles = np.linspace(
+        -tangent_angle,
+        tangent_angle,
+        resolution.arc_count,
+    )
+    top_far = circle_points(
+        bottom,
+        p.target_height_m,
+        p.target_radius_m,
+        radial,
+        transverse,
+        top_far_angles,
+    )
+    bottom_near = circle_points(
+        bottom,
+        0.0,
+        p.target_radius_m,
+        radial,
+        transverse,
+        bottom_near_angles,
+    )
+
+    tangent_plus = circle_points(
+        bottom,
+        0.0,
+        p.target_radius_m,
+        radial,
+        transverse,
+        np.array([tangent_angle]),
+    )[0]
+    tangent_minus = circle_points(
+        bottom,
+        0.0,
+        p.target_radius_m,
+        radial,
+        transverse,
+        np.array([-tangent_angle]),
+    )[0]
+    heights = np.linspace(0.0, p.target_height_m, resolution.line_count)
+    side_plus = tangent_plus + heights[:, None] * vertical
+    side_minus = tangent_minus + heights[:, None] * vertical
+
+    points = np.vstack((top_far, bottom_near, side_plus, side_minus))
+    curve_names = np.concatenate(
         (
-            bottom[0] + p.target_radius_m * np.cos(theta_side).ravel(),
-            bottom[1] + p.target_radius_m * np.sin(theta_side).ravel(),
-            bottom[2] + z_side.ravel(),
+            np.full(top_far.shape[0], "top_far_arc", dtype=object),
+            np.full(bottom_near.shape[0], "bottom_near_arc", dtype=object),
+            np.full(side_plus.shape[0], "side_tangent_plus", dtype=object),
+            np.full(side_minus.shape[0], "side_tangent_minus", dtype=object),
         )
     )
 
-    radii = np.linspace(0.0, p.target_radius_m, mesh.radial_count)
-    theta_cap, radius_cap = np.meshgrid(theta, radii, indexing="ij")
-    cap_x = bottom[0] + radius_cap.ravel() * np.cos(theta_cap).ravel()
-    cap_y = bottom[1] + radius_cap.ravel() * np.sin(theta_cap).ravel()
-    lower = np.column_stack((cap_x, cap_y, np.full(cap_x.shape, bottom[2])))
-    upper = np.column_stack(
-        (cap_x, cap_y, np.full(cap_x.shape, bottom[2] + p.target_height_m))
+    tangent_offsets = np.vstack((tangent_plus - bottom, tangent_minus - bottom))
+    tangent_rays = np.vstack(
+        (
+            missile[:2] - tangent_plus[:2],
+            missile[:2] - tangent_minus[:2],
+        )
     )
-    return np.vstack((side, lower, upper))
+    tangency_residual = float(
+        np.max(np.abs(np.einsum("ij,ij->i", tangent_rays, tangent_offsets[:, :2])))
+    )
+    radial_residual = float(
+        np.max(
+            np.abs(
+                np.linalg.norm(points[:, :2] - bottom[:2], axis=1)
+                - p.target_radius_m
+            )
+        )
+    )
 
-
-def camera_frame(t_s: float, p: Parameters) -> np.ndarray:
-    """Rows are horizontal, vertical, and optical-axis unit vectors."""
-    missile = missile_position(t_s, p)
-    normal = unit(target_geometric_center(p) - missile)
-    up = unit(np.asarray(p.view_up, dtype=float))
-    horizontal_raw = np.cross(up, normal)
-    if np.linalg.norm(horizontal_raw) < 1.0e-12:
-        up = np.array([0.0, 1.0, 0.0])
-        horizontal_raw = np.cross(up, normal)
-    horizontal = unit(horizontal_raw)
-    vertical = unit(np.cross(normal, horizontal))
-    return np.vstack((horizontal, vertical, normal))
-
-
-def perspective_projection(
-    t_s: float, points: np.ndarray, p: Parameters
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Map world points to normalized image-plane coordinates."""
-    missile = missile_position(t_s, p)
-    rotation = camera_frame(t_s, p)
-    camera = (rotation @ (points - missile).T).T
-    depth = camera[:, 2]
-    if np.any(depth <= 0.0):
-        raise ValueError("target point lies behind the missile camera plane")
-    focal = p.normalized_focal_length
-    image = focal * camera[:, :2] / depth[:, None]
-    homogeneous = np.column_stack((image, np.ones(image.shape[0])))
-    return image, homogeneous, depth
-
-
-def smoke_projection_conic(t_s: float, p: Parameters) -> tuple[np.ndarray, np.ndarray]:
-    """Return image-plane conic matrix and smoke centre in camera coordinates."""
-    missile = missile_position(t_s, p)
-    rotation = camera_frame(t_s, p)
-    center_camera = rotation @ (smoke_center(t_s, p) - missile)
-    focal = p.normalized_focal_length
-    calibration_inverse = np.diag([1.0 / focal, 1.0 / focal, 1.0])
-    angular = np.outer(center_camera, center_camera) - (
-        float(np.dot(center_camera, center_camera)) - p.smoke_radius_m**2
-    ) * np.eye(3)
-    conic = calibration_inverse.T @ angular @ calibration_inverse
-    return conic, center_camera
+    return {
+        "points": points,
+        "curve_names": curve_names,
+        "horizontal_distance_m": horizontal_distance,
+        "tangent_angle_rad": tangent_angle,
+        "radial_unit": radial,
+        "transverse_unit": transverse,
+        "tangency_residual_m2": tangency_residual,
+        "cylinder_radial_residual_m": radial_residual,
+    }
 
 
 def distances_to_sight_segments(
-    smoke: np.ndarray, missile: np.ndarray, target_points: np.ndarray
+    smoke: np.ndarray,
+    missile: np.ndarray,
+    target_points: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
     sight = target_points - missile
     smoke_from_missile = smoke - missile
@@ -275,55 +317,35 @@ def distances_to_sight_segments(
     return np.linalg.norm(smoke - nearest, axis=1), fraction
 
 
-def coverage_metrics(
-    t_s: float, target_points: np.ndarray, p: Parameters
+def edge_metrics(
+    t_s: float,
+    resolution: Resolution,
+    p: Parameters,
 ) -> dict[str, object]:
-    """Evaluate equivalent 3-D segment and 2-D perspective coverage tests."""
     missile = missile_position(t_s, p)
     smoke = smoke_center(t_s, p)
-    distances, fractions = distances_to_sight_segments(smoke, missile, target_points)
+    geometry = cylinder_silhouette_edges(t_s, resolution, p)
+    points = geometry["points"]
+    distances, fractions = distances_to_sight_segments(smoke, missile, points)
     worst_index = int(np.argmax(distances))
-
-    _, homogeneous, target_depth = perspective_projection(t_s, target_points, p)
-    conic, center_camera = smoke_projection_conic(t_s, p)
-    conic_values = np.einsum("ij,jk,ik->i", homogeneous, conic, homogeneous)
-
-    focal = p.normalized_focal_length
-    rays = np.column_stack(
-        (
-            homogeneous[:, 0] / focal,
-            homogeneous[:, 1] / focal,
-            np.ones(homogeneous.shape[0]),
-        )
-    )
-    ray_norm2 = np.einsum("ij,ij->i", rays, rays)
-    ray_center = rays @ center_camera
-    discriminant = ray_center**2 - ray_norm2 * (
-        float(np.dot(center_camera, center_camera)) - p.smoke_radius_m**2
-    )
-    sqrt_disc = np.sqrt(np.maximum(discriminant, 0.0))
-    near = (ray_center - sqrt_disc) / ray_norm2
-    far = (ray_center + sqrt_disc) / ray_norm2
-    segment_intersection = (
-        (discriminant >= -1.0e-9)
-        & (np.maximum(near, 0.0) <= np.minimum(far, target_depth) + 1.0e-9)
-    )
-
     return {
-        "max_segment_distance_m": float(distances[worst_index]),
-        "worst_target_point_m": target_points[worst_index],
-        "projection_fraction_at_worst": float(fractions[worst_index]),
-        "min_projected_conic_value": float(np.min(conic_values)),
-        "min_ray_discriminant": float(np.min(discriminant)),
-        "all_projected_points_inside_smoke_conic": bool(np.all(conic_values >= -1.0e-9)),
-        "all_rays_intersect_smoke_before_target": bool(np.all(segment_intersection)),
-        "rotation_matrix": camera_frame(t_s, p),
-        "smoke_center_camera_m": center_camera,
+        "max_edge_segment_distance_m": float(distances[worst_index]),
+        "worst_edge_point_m": points[worst_index],
+        "worst_curve": str(geometry["curve_names"][worst_index]),
+        "segment_fraction_at_worst": float(fractions[worst_index]),
+        "edge_point_count": int(points.shape[0]),
+        "horizontal_distance_m": geometry["horizontal_distance_m"],
+        "tangent_angle_rad": geometry["tangent_angle_rad"],
+        "tangency_residual_m2": geometry["tangency_residual_m2"],
+        "cylinder_radial_residual_m": geometry["cylinder_radial_residual_m"],
     }
 
 
 def find_positive_intervals(
-    margin: Callable[[float], float], start_s: float, end_s: float, scan_step_s: float
+    margin: Callable[[float], float],
+    start_s: float,
+    end_s: float,
+    scan_step_s: float,
 ) -> list[tuple[float, float]]:
     count = int(np.ceil((end_s - start_s) / scan_step_s))
     times = np.linspace(start_s, end_s, count + 1)
@@ -354,7 +376,10 @@ def find_positive_intervals(
     return intervals
 
 
-def sole_interval(intervals: list[tuple[float, float]], label: str) -> tuple[float, float]:
+def sole_interval(
+    intervals: list[tuple[float, float]],
+    label: str,
+) -> tuple[float, float]:
     if len(intervals) != 1:
         raise RuntimeError(f"expected one {label} interval, received {intervals}")
     return intervals[0]
@@ -382,22 +407,22 @@ def solve(p: Parameters) -> dict:
     release = uav_position(p.release_time_s, p)
     burst = bomb_position(t_burst, p)
 
-    meshes = {mesh.name: cylinder_boundary_points(mesh, p) for mesh in MESHES}
-
-    def margin_for(points: np.ndarray) -> Callable[[float], float]:
+    def margin_for(resolution: Resolution) -> Callable[[float], float]:
         def margin(t_s: float) -> float:
-            metrics = coverage_metrics(t_s, points, p)
-            return p.smoke_radius_m - float(metrics["max_segment_distance_m"])
+            metrics = edge_metrics(t_s, resolution, p)
+            return p.smoke_radius_m - float(
+                metrics["max_edge_segment_distance_m"]
+            )
 
         return margin
 
-    coarse_margin = margin_for(meshes["coarse"])
+    coarse_margin = margin_for(RESOLUTIONS[0])
     scan_convergence = []
     coarse_intervals: dict[float, tuple[float, float]] = {}
     for scan_step in (0.05, 0.02, 0.01):
         interval = sole_interval(
             find_positive_intervals(coarse_margin, t_burst, active_end, scan_step),
-            f"projection/{scan_step}",
+            f"edge/{scan_step}",
         )
         coarse_intervals[scan_step] = interval
         scan_convergence.append(
@@ -409,26 +434,27 @@ def solve(p: Parameters) -> dict:
             }
         )
 
-    mesh_convergence = []
-    mesh_intervals: dict[str, tuple[float, float]] = {
+    resolution_convergence = []
+    resolution_intervals: dict[str, tuple[float, float]] = {
         "coarse": coarse_intervals[0.02]
     }
-    estimate_start, estimate_end = mesh_intervals["coarse"]
-    for mesh in MESHES[1:]:
-        margin = margin_for(meshes[mesh.name])
+    estimate_start, estimate_end = resolution_intervals["coarse"]
+    for resolution in RESOLUTIONS[1:]:
+        margin = margin_for(resolution)
         start = refine_near(margin, estimate_start, t_burst, active_end)
         end = refine_near(margin, estimate_end, t_burst, active_end)
-        mesh_intervals[mesh.name] = (start, end)
+        resolution_intervals[resolution.name] = (start, end)
         estimate_start, estimate_end = start, end
 
     previous_duration = None
-    for mesh in MESHES:
-        start, end = mesh_intervals[mesh.name]
+    for resolution in RESOLUTIONS:
+        start, end = resolution_intervals[resolution.name]
         duration = end - start
-        mesh_convergence.append(
+        point_count = 2 * resolution.arc_count + 2 * resolution.line_count
+        resolution_convergence.append(
             {
-                **asdict(mesh),
-                "boundary_point_count": int(meshes[mesh.name].shape[0]),
+                **asdict(resolution),
+                "edge_point_count": point_count,
                 "start_s": start,
                 "end_s": end,
                 "duration_s": duration,
@@ -439,31 +465,46 @@ def solve(p: Parameters) -> dict:
         )
         previous_duration = duration
 
-    start_s, end_s = mesh_intervals["fine"]
+    fine = RESOLUTIONS[-1]
+    start_s, end_s = resolution_intervals[fine.name]
     midpoint_s = 0.5 * (start_s + end_s)
-    start_metrics = coverage_metrics(start_s, meshes["fine"], p)
-    end_metrics = coverage_metrics(end_s, meshes["fine"], p)
-    midpoint_metrics = coverage_metrics(midpoint_s, meshes["fine"], p)
+    start_metrics = edge_metrics(start_s, fine, p)
+    end_metrics = edge_metrics(end_s, fine, p)
+    midpoint_metrics = edge_metrics(midpoint_s, fine, p)
     duration_s = end_s - start_s
     scan_change = max(item["duration_s"] for item in scan_convergence) - min(
         item["duration_s"] for item in scan_convergence
     )
-    mesh_change = abs(
-        mesh_convergence[-1]["duration_s"] - mesh_convergence[-2]["duration_s"]
+    resolution_change = abs(
+        resolution_convergence[-1]["duration_s"]
+        - resolution_convergence[-2]["duration_s"]
+    )
+    boundary_residual = max(
+        abs(start_metrics["max_edge_segment_distance_m"] - p.smoke_radius_m),
+        abs(end_metrics["max_edge_segment_distance_m"] - p.smoke_radius_m),
+    )
+    tangency_residual = max(
+        start_metrics["tangency_residual_m2"],
+        midpoint_metrics["tangency_residual_m2"],
+        end_metrics["tangency_residual_m2"],
+    )
+    radial_residual = max(
+        start_metrics["cylinder_radial_residual_m"],
+        midpoint_metrics["cylinder_radial_residual_m"],
+        end_metrics["cylinder_radial_residual_m"],
     )
 
     report = {
-        "schema_version": 3,
+        "schema_version": 4,
         "project_id": "case002",
         "problem_id": "problem1",
-        "definition_revision": 2,
+        "definition_revision": 3,
         "method": {
-            "primary_predicate": "full target perspective projection is covered by the smoke-sphere shadow projection and every covered ray intersects smoke before the target",
-            "camera_origin": "missile position",
-            "camera_normal": "missile-to-target-geometric-centre sight direction",
-            "projection": "pinhole perspective projection through a time-dependent orthonormal view matrix",
-            "smoke_projection": "image-plane conic induced by the tangent cone from missile to smoke sphere",
-            "equivalent_numeric_margin": "smoke radius minus maximum distance over missile-to-target-point sight segments",
+            "primary_predicate": "maximum smoke-centre distance to missile-to-silhouette-edge-point segments is at most the smoke radius",
+            "target_edge": "top far rim arc, bottom near rim arc, and two exact side tangency generators",
+            "edge_construction": "horizontal radial plane through the missile and cylinder axis with exact circle tangency correction",
+            "projection_model_used": False,
+            "whole_surface_sampling_used": False,
             "root_method": "Brent bracketing root refinement",
         },
         "parameters": asdict(p),
@@ -473,61 +514,63 @@ def solve(p: Parameters) -> dict:
             "burst_point_m": burst.tolist(),
             "smoke_active_interval_s": [t_burst, active_end],
         },
-        "full_projection_coverage": {
+        "full_edge_occlusion": {
             "start_s": start_s,
             "end_s": end_s,
             "duration_s": duration_s,
             "midpoint_s": midpoint_s,
-            "max_segment_distance_at_start_m": start_metrics["max_segment_distance_m"],
-            "max_segment_distance_at_end_m": end_metrics["max_segment_distance_m"],
-            "worst_target_point_at_start_m": start_metrics["worst_target_point_m"].tolist(),
-            "worst_target_point_at_end_m": end_metrics["worst_target_point_m"].tolist(),
-            "midpoint_all_projected_points_inside_smoke_conic": midpoint_metrics[
-                "all_projected_points_inside_smoke_conic"
+            "max_edge_segment_distance_at_start_m": start_metrics[
+                "max_edge_segment_distance_m"
             ],
-            "midpoint_all_rays_intersect_smoke_before_target": midpoint_metrics[
-                "all_rays_intersect_smoke_before_target"
+            "max_edge_segment_distance_at_end_m": end_metrics[
+                "max_edge_segment_distance_m"
             ],
-            "midpoint_min_projected_conic_value": midpoint_metrics[
-                "min_projected_conic_value"
-            ],
-            "view_rotation_matrix_at_midpoint": midpoint_metrics[
-                "rotation_matrix"
+            "worst_edge_point_at_start_m": start_metrics[
+                "worst_edge_point_m"
             ].tolist(),
-            "smoke_center_camera_at_midpoint_m": midpoint_metrics[
-                "smoke_center_camera_m"
+            "worst_edge_point_at_end_m": end_metrics[
+                "worst_edge_point_m"
             ].tolist(),
+            "worst_curve_at_start": start_metrics["worst_curve"],
+            "worst_curve_at_end": end_metrics["worst_curve"],
+            "midpoint_max_edge_segment_distance_m": midpoint_metrics[
+                "max_edge_segment_distance_m"
+            ],
+            "midpoint_worst_curve": midpoint_metrics["worst_curve"],
+            "fine_edge_point_count": midpoint_metrics["edge_point_count"],
         },
         "time_scan_convergence": scan_convergence,
-        "mesh_convergence": mesh_convergence,
+        "edge_resolution_convergence": resolution_convergence,
         "validation": {
             "release_point_hand_check_pass": bool(
                 np.allclose(release, np.array([17620.0, 0.0, 1800.0]), atol=1.0e-12)
             ),
             "burst_time_hand_check_pass": bool(abs(t_burst - 5.1) <= 1.0e-12),
             "burst_point_hand_check_pass": bool(
-                np.allclose(burst, np.array([17188.0, 0.0, 1736.496]), atol=1.0e-9)
-            ),
-            "inside_active_window_pass": bool(t_burst <= start_s <= end_s <= active_end),
-            "projection_containment_midpoint_pass": bool(
-                midpoint_metrics["all_projected_points_inside_smoke_conic"]
-                and midpoint_metrics["all_rays_intersect_smoke_before_target"]
-            ),
-            "view_matrix_orthonormal_residual": float(
-                np.linalg.norm(
-                    midpoint_metrics["rotation_matrix"]
-                    @ midpoint_metrics["rotation_matrix"].T
-                    - np.eye(3)
+                np.allclose(
+                    burst,
+                    np.array([17188.0, 0.0, 1736.496]),
+                    atol=1.0e-9,
                 )
             ),
-            "boundary_residual_max_m": max(
-                abs(float(start_metrics["max_segment_distance_m"]) - p.smoke_radius_m),
-                abs(float(end_metrics["max_segment_distance_m"]) - p.smoke_radius_m),
+            "inside_active_window_pass": bool(
+                t_burst <= start_s <= end_s <= active_end
             ),
+            "missile_above_target_pass": bool(
+                missile_position(active_end, p)[2]
+                > p.target_bottom_center_m[2] + p.target_height_m
+            ),
+            "exact_tangency_residual_m2": tangency_residual,
+            "exact_tangency_pass": bool(tangency_residual < 1.0e-8),
+            "cylinder_radial_residual_m": radial_residual,
+            "cylinder_edge_geometry_pass": bool(radial_residual < 1.0e-10),
+            "boundary_residual_max_m": boundary_residual,
             "scan_duration_change_s": scan_change,
             "scan_duration_change_below_0_001_s_pass": bool(scan_change < 0.001),
-            "mesh_duration_change_s": mesh_change,
-            "mesh_duration_change_below_0_001_s_pass": bool(mesh_change < 0.001),
+            "edge_resolution_duration_change_s": resolution_change,
+            "edge_resolution_change_below_0_001_s_pass": bool(
+                resolution_change < 0.001
+            ),
             "all_required_checks_pass": False,
         },
     }
@@ -539,13 +582,13 @@ def solve(p: Parameters) -> dict:
             "burst_time_hand_check_pass",
             "burst_point_hand_check_pass",
             "inside_active_window_pass",
-            "projection_containment_midpoint_pass",
+            "missile_above_target_pass",
+            "exact_tangency_pass",
+            "cylinder_edge_geometry_pass",
             "scan_duration_change_below_0_001_s_pass",
-            "mesh_duration_change_below_0_001_s_pass",
+            "edge_resolution_change_below_0_001_s_pass",
         )
-    ) and checks["view_matrix_orthonormal_residual"] < 1.0e-10 and checks[
-        "boundary_residual_max_m"
-    ] < 1.0e-7
+    ) and checks["boundary_residual_max_m"] < 1.0e-7
     if not checks["all_required_checks_pass"]:
         raise RuntimeError(f"problem 1 validation failed: {checks}")
     return report

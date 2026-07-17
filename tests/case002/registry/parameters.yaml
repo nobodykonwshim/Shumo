@@ -107,27 +107,6 @@ parameters:
     unit: m
     source: SRC-PROBLEM-PDF
     owner_problem: problem1
-  - id: PAR-TARGET-GEOMETRIC-CENTER
-    symbol: \boldsymbol{r}_{T,c}
-    description: geometric centre used to define the camera optical axis
-    value: [0, 200, 5]
-    unit: m
-    source: derived_from_PAR-TARGET-BOTTOM-CENTER_and_PAR-TARGET-HEIGHT
-    owner_problem: problem1
-  - id: PAR-VIEW-UP
-    symbol: \boldsymbol{k}
-    description: reference vector used to construct the view-plane basis
-    value: [0, 0, 1]
-    unit: null
-    source: coordinate_convention
-    owner_problem: problem1
-  - id: PAR-NORMALIZED-FOCAL-LENGTH
-    symbol: f
-    description: common positive scale of the normalized image plane
-    value: 1
-    unit: null
-    source: projective_normalization
-    owner_problem: problem1
 reuse_policy:
   later_problems:
     - read values and symbols by parameter id

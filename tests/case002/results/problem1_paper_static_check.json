@@ -7,10 +7,11 @@
   "schema_version": 2,
   "status": "pass",
   "summary": {
-    "coverage_duration_s": 1.3916426692947468,
+    "edge_geometry_pass": true,
+    "edge_occlusion_duration_s": 1.3916426950393177,
     "equation_label_count": 8,
+    "exact_tangency_pass": true,
     "label_count": 9,
-    "projection_containment_pass": true,
     "result_macros_checked": 3,
     "symbolic_contract_status": "pass"
   },
